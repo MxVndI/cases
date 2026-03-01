@@ -1,0 +1,62 @@
+# Динамическая конфигурация роутеров и сервисов
+http:
+  routers:
+    auth-api:
+      rule: "PathPrefix(`/api/auth`)"
+      entryPoints:
+        - web
+      middlewares:
+        - auth-stripprefix
+        - cors-headers 
+      service: auth-api-service
+
+    user-api:
+      rule: "PathPrefix(`/api/user`)"
+      entryPoints:
+        - web
+      middlewares:
+        - user-stripprefix
+      service: user-api-service
+
+  middlewares:
+    auth-stripprefix:
+      stripPrefix:
+        prefixes:
+          - "/api/auth"
+
+    user-stripprefix:
+      stripPrefix:
+        prefixes:
+          - "/api/user"
+    cors-headers:
+      headers:
+        accessControlAllowOriginList:
+          - "http://localhost:5173"
+          - "http://localhost:3000"
+        accessControlAllowCredentials: true
+        accessControlAllowMethods:
+          - "GET"
+          - "POST"
+          - "PUT"
+          - "DELETE"
+          - "OPTIONS"
+        accessControlAllowHeaders:
+          - "Content-Type"
+          - "Authorization"
+        accessControlMaxAge: 100
+  services:
+    auth-api-service:
+      loadBalancer:
+        servers:
+          - url: "http://authservice:8000"
+        healthCheck:
+          path: /health
+          interval: 30s
+
+    user-api-service:
+      loadBalancer:
+        servers:
+          - url: "http://userservice:8000"
+        healthCheck:
+          path: /health
+          interval: 30s
