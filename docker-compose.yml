@@ -1,0 +1,162 @@
+
+services: 
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik-ch
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro    
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic:/etc/traefik/dynamic:ro
+    networks:
+      - backend
+    depends_on:
+      - authservice
+      - userservice
+    restart: unless-stopped
+
+  redis:
+    image: redis:8.4.0
+    container_name: redis-ch
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - casehub_redis_data:/data
+    networks:
+      - backend
+
+  mongodb:
+    image: mongo:8.0
+    container_name: mongodb-ch
+    ports:
+      - "27017:27017"
+    volumes:
+      - casehub_db_data:/data/db
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express-ch
+    restart: always
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_BASICAUTH_USERNAME: admin
+      ME_CONFIG_BASICAUTH_PASSWORD: admin
+      ME_CONFIG_MONGODB_URL: mongodb://mongodb:27017/
+    ports:
+      - "8081:8081"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - backend
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    restart: always
+    environment:
+    
+      REDIS_HOSTS: local:redis:6379 
+    ports:
+      - 8082:8081 
+    depends_on:
+      - redis
+    networks:
+      - backend
+
+ 
+  authservice:
+    build:
+      context: ./backend
+      dockerfile: auth/Dockerfile_api
+    container_name: auth.api-ch
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:   
+      MONGODB_DB_NAME: auth_db      
+      APP_NAME: auth.api
+      LOG_LEVEL: INFO
+    depends_on:   
+      - redis    
+      - mongodb 
+    networks:
+      - backend
+    restart: unless-stopped
+
+  authconsumer:
+    build:
+      context: ./backend
+      dockerfile: auth/Dockerfile_amqp
+    container_name: auth.consumer-ch   
+    env_file:
+      - .env
+    environment:   
+      MONGODB_DB_NAME: auth_db      
+      APP_NAME: auth.consumer
+      LOG_LEVEL: INFO
+    depends_on: 
+      - redis    
+      - mongodb 
+    networks:
+      - backend
+    restart: unless-stopped
+
+  userservice:
+    build:
+      context: ./backend
+      dockerfile: user/Dockerfile_api
+    container_name: community.api-ch
+    ports:
+      - "8001:8000"
+    env_file:
+      - .env
+    environment:   
+      MONGODB_DB_NAME: user_db      
+      APP_NAME: user.service
+      LOG_LEVEL: INFO
+    depends_on:
+      - redis
+      - mongodb    
+    networks:
+      - backend
+    restart: unless-stopped
+
+  userconsumer:
+    build:
+      context: ./backend
+      dockerfile: user/Dockerfile_amqp
+    container_name: community.consumer-ch
+ 
+    env_file:
+      - .env
+    environment:   
+      MONGODB_DB_NAME: user_db      
+      APP_NAME: user.consumer
+      LOG_LEVEL: INFO
+    depends_on:
+      - redis
+      - mongodb    
+    networks:
+      - backend
+    restart: unless-stopped
+
+
+ 
+volumes:
+  casehub_db_data:
+  casehub_redis_data:
+
+networks:
+  backend:
+    driver: bridge
