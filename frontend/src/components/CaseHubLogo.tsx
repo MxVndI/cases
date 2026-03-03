@@ -24,9 +24,9 @@ export const CaseHubLogo: React.FC<CaseHubLogoProps> = ({
                     <circle cx="2" cy="2" r="0.5" fill="white" fillOpacity="0.1" />
                 </pattern>
                 <linearGradient id="orangeGrad" x1="0" y1="0" x2="40" y2="40" gradientUnits="userSpaceOnUse">
-                    <stop offset="0%" stopColor="#FF6B2C" />
-                    <stop offset="70%" stopColor="#F97316" />
-                    <stop offset="100%" stopColor="#E05F0C" />
+                    <stop offset="0%" stopColor="#F7971D" />
+                    <stop offset="70%" stopColor="#F7971D" />
+                    <stop offset="100%" stopColor="#F7971D" />
                 </linearGradient>
             </defs>
 

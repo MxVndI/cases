@@ -209,3 +209,10 @@ __marimo__/
 # JS
 node_modules/
 # *.yml
+
+# Jekyll (docs)
+docs/_site/
+docs/.sass-cache/
+docs/.jekyll-cache/
+docs/.jekyll-metadata
+docs/Gemfile.lock

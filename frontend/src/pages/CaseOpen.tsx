@@ -1,9 +1,8 @@
 import { useState, useEffect } from "react";
 import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
 import { Link, useParams, useNavigate } from "@tanstack/react-router";
-import { Navbar } from "@/components/Navbar";
 import { dummyCases, rarityColors, rarityLabels, dummyBalance } from "@/data/dummy-data";
-import { Box, ChevronLeft, RefreshCw, Check } from "lucide-react";
+import { Box, ChevronLeft, RefreshCw, Check, Coins } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 export function CaseOpen() {
@@ -64,7 +63,6 @@ export function CaseOpen() {
     if (!caseItem) {
         return (
             <div className="min-h-screen bg-background">
-                <Navbar />
                 <div className="flex items-center justify-center h-full">
                     <div className="text-center">
                         <h2 className="text-2xl font-bold text-foreground mb-2">Кейс не найден</h2>
@@ -79,9 +77,7 @@ export function CaseOpen() {
 
     return (
         <div className="min-h-screen bg-background">
-            <Navbar />
-
-            <main className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <motion.div
                     initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -106,10 +102,10 @@ export function CaseOpen() {
                             {caseItem.name}
                         </h1>
                         <p className="text-muted-foreground">
-                            Стоимость: <span className="text-orange-500 font-semibold">{caseItem.price} HC</span>
+                            Стоимость: <span className="text-orange-500 font-semibold inline-flex items-center gap-1">{caseItem.price} <Coins className="h-4 w-4" /></span>
                             {hasSpun && (
-                                <span className="ml-4 text-sm">
-                                    Баланс: <span className="text-orange-500">{balance - caseItem.price} HC</span>
+                                <span className="ml-4 text-sm inline-flex items-center gap-1">
+                                    Баланс: <span className="text-orange-500 inline-flex items-center gap-1">{balance - caseItem.price} <Coins className="h-3.5 w-3.5" /></span>
                                 </span>
                             )}
                         </p>
@@ -168,7 +164,7 @@ export function CaseOpen() {
                                 ) : (
                                     <>
                                         <RefreshCw className="mr-2 h-5 w-5" />
-                                        Прокрутить за {caseItem.price} HC
+                                        Прокрутить за {caseItem.price} <Coins className="h-4 w-4" />
                                     </>
                                 )}
                             </Button>
@@ -242,7 +238,7 @@ export function CaseOpen() {
                                             transition={{ delay: 0.7 }}
                                             className="text-3xl font-bold text-orange-500"
                                         >
-                                            {wonItem.price} HC
+                                            <span className="flex items-center justify-center gap-1">{wonItem.price} <Coins className="h-6 w-6" /></span>
                                         </motion.p>
 
                                         {/* Кнопка */}
