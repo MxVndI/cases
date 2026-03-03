@@ -1,5 +1,15 @@
 # React + TypeScript + Vite
 
+## Запуск проекта в Windows (если Node.js не в PATH)
+
+```powershell
+cd c:\Users\rexandel\Documents\github\cases\frontend
+& "C:\Program Files\nodejs\npm.cmd" install
+& "C:\Program Files\nodejs\npm.cmd" run dev -- --host 0.0.0.0 --port 5173
+```
+
+После запуска приложение доступно по адресу: `http://localhost:5173/`.
+
 This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
 
 Currently, two official plugins are available:

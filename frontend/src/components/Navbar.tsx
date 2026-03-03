@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useAuth } from "@/AuthContext";
-import { User, LogOut, Coins } from "lucide-react";
+import { Coins, ChevronDown, LogOut, User } from "lucide-react";
+import caseHubLogo from "@/assets/casehub-logo.svg";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -9,94 +10,67 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { CaseHubLogo } from "@/components/CaseHubLogo";
-import { dummyBalance } from "@/data/dummy-data";
 
 export function Navbar() {
     const { user, logout } = useAuth();
-    const balance = dummyBalance.hubCoins;
 
     return (
         <motion.nav
             initial={{ opacity: 0, y: -20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.3 }}
-            className="w-full border-b border-border/40 bg-card/80 backdrop-blur-xl sticky top-0 z-50"
+            className="w-full rounded-2xl border border-border/40 bg-card/80 backdrop-blur-xl shadow-lg"
         >
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div className="px-4 sm:px-6">
                 <div className="flex items-center justify-between h-16">
-                    <Link to="/" className="flex-shrink-0">
-                        <div className="flex items-center gap-3">
-                            <CaseHubLogo size={40} />
-                            <span className="text-lg font-semibold text-foreground">CaseHub</span>
-                        </div>
+                    <Link to="/" className="inline-flex h-full flex-shrink-0 items-center">
+                        <img src={caseHubLogo} alt="CaseHub" className="h-8 w-auto" />
                     </Link>
 
-                    <div className="flex items-center gap-6">
-                        <Link
-                            to="/"
-                            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                            Главная
-                        </Link>
-                        <Link
-                            to="/cases"
-                            className="text-sm text-muted-foreground hover:text-foreground transition-colors"
-                        >
-                            Кейсы
-                        </Link>
-                        {user &&
-                            <Link
-                                to="/balance"
-                                className="flex items-center gap-2 text-sm text-orange-500 hover:text-orange-400 transition-colors"
-                            >
-                                <Coins className="h-4 w-4" />
-                                <span className="font-medium">{balance} HC</span>
-                            </Link>
-                        }
+                    <div className="flex items-center gap-5">
                         {user ? (
-                            <DropdownMenu>
-                                <DropdownMenuTrigger asChild>
-                                    <button className="flex items-center gap-2 rounded-full bg-orange-500/10 p-1.5 hover:bg-orange-500/20 transition-colors">
-                                        <div className="w-8 h-8 bg-orange-500 rounded-full flex items-center justify-center">
-                                            <User className="h-5 w-5 text-white" />
-                                        </div>
-                                    </button>
-                                </DropdownMenuTrigger>
-                                <DropdownMenuContent
-                                    align="end"
-                                    className="w-56 rounded-xl border-border/60 bg-card/95 backdrop-blur-xl"
+                            <>
+                                {/* Balance */}
+                                <Link
+                                    to="/balance"
+                                    className="hidden sm:flex items-center gap-1.5 text-lg text-orange-500 font-bold hover:text-orange-400 transition-colors"
                                 >
-                                    <div className="px-4 py-3 border-b border-border/40">
-                                        <p className="text-sm font-medium text-foreground">
-                                            {user.nickname || "Пользователь"}
-                                        </p>
-                                        <p className="text-xs text-muted-foreground truncate">
-                                            {user.email}
-                                        </p>
-                                    </div>
-                                    <DropdownMenuItem asChild>
-                                        <Link to="/profile" className="cursor-pointer">
-                                            <User className="mr-2 h-4 w-4" />
-                                            Профиль
-                                        </Link>
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator className="bg-border/40" />
-                                    <DropdownMenuItem
-                                        onClick={() => logout()}
-                                        className="cursor-pointer text-destructive focus:text-destructive"
-                                    >
-                                        <LogOut className="mr-2 h-4 w-4" />
-                                        Выйти
-                                    </DropdownMenuItem>
-                                </DropdownMenuContent>
-                            </DropdownMenu>
+                                    <Coins className="h-4 w-4" />
+                                    {(user.balance ?? 0).toLocaleString()}
+                                </Link>
+
+                                {/* Username dropdown */}
+                                <DropdownMenu>
+                                    <DropdownMenuTrigger asChild>
+                                        <button className="flex items-center gap-1.5 text-base font-semibold text-white hover:text-white/80 transition-colors cursor-pointer outline-none select-none rounded-lg border border-border/40 px-3 py-1.5 hover:border-orange-500/40">
+                                            {user.nickname || user.email || "Пользователь"}
+                                            <ChevronDown className="h-4 w-4 opacity-60" />
+                                        </button>
+                                    </DropdownMenuTrigger>
+                                    <DropdownMenuContent align="end" className="w-44 bg-card border-border/60 text-foreground backdrop-blur-xl">
+                                        <DropdownMenuItem asChild>
+                                            <Link to="/profile" className="flex items-center gap-2 cursor-pointer">
+                                                <User className="h-4 w-4" />
+                                                Профиль
+                                            </Link>
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                        <DropdownMenuItem
+                                            onClick={() => logout()}
+                                            className="flex items-center gap-2 text-red-400 focus:text-red-400 cursor-pointer"
+                                        >
+                                            <LogOut className="h-4 w-4" />
+                                            Выйти
+                                        </DropdownMenuItem>
+                                    </DropdownMenuContent>
+                                </DropdownMenu>
+                            </>
                         ) : (
                             <Link
                                 to="/login"
-                                className="text-sm text-muted-foreground hover:text-foreground transition-colors"
+                                className="group/button inline-flex items-center justify-center rounded-xl bg-orange-500 px-5 py-2 text-sm font-medium text-white hover:bg-white hover:text-black transition-all duration-300 ease-out"
                             >
-                                Войти
+                                <span className="transition-all duration-300 ease-out">Войти</span>
                             </Link>
                         )}
                     </div>

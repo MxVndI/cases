@@ -1,16 +1,18 @@
 import { motion, useReducedMotion } from "framer-motion";
-import { Link } from "@tanstack/react-router";
-import { Navbar } from "@/components/Navbar";
+import { Link, Outlet, useParams } from "@tanstack/react-router";
 import { dummyCases } from "@/data/dummy-data";
-import { Box, ArrowRight } from "lucide-react";
+import { Box, ArrowRight, Coins } from "lucide-react";
 
 export function Cases() {
     const shouldReduceMotion = useReducedMotion();
+    const { caseId } = useParams({ strict: false });
+
+    if (caseId) {
+        return <Outlet />;
+    }
 
     return (
         <div className="min-h-screen bg-background">
-            <Navbar />
-
             <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <motion.div
                     initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
@@ -22,10 +24,10 @@ export function Cases() {
                 >
                     {/* Заголовок */}
                     <div className="mb-8">
-                        <h1 className="text-3xl font-bold text-foreground mb-2">
+                        <h1 className="text-2xl font-bold text-foreground mb-2">
                             Кейсы
                         </h1>
-                        <p className="text-muted-foreground">
+                        <p className="text-sm text-muted-foreground">
                             Выберите кейс и испытайте удачу
                         </p>
                     </div>
@@ -69,8 +71,8 @@ export function Cases() {
                                     <div className="flex items-center justify-between mb-4">
                                         <div>
                                             <p className="text-xs text-muted-foreground">Цена</p>
-                                            <p className="text-lg font-bold text-orange-500">
-                                                {caseItem.price} HC
+                                            <p className="text-lg font-bold text-orange-500 flex items-center gap-1">
+                                                {caseItem.price.toLocaleString()} <Coins className="h-4 w-4" />
                                             </p>
                                         </div>
                                         <div>

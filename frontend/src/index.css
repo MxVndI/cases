@@ -43,6 +43,9 @@
     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
     --color-sidebar-border: var(--sidebar-border);
     --color-sidebar-ring: var(--sidebar-ring);
+    --color-orange-400: #F7971D;
+    --color-orange-500: #F7971D;
+    --color-orange-600: #F7971D;
 }
 
 :root {
@@ -121,4 +124,17 @@
   body {
     @apply bg-background text-foreground;
     }
+  button, [role="button"], a, [type="submit"], [type="reset"], [type="button"], select, summary, [tabindex]:not([tabindex="-1"]) {
+    cursor: pointer;
+  }
+}
+
+@layer utilities {
+  .scrollbar-none {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-none::-webkit-scrollbar {
+    display: none;
+  }
 }

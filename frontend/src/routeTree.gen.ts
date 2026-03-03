@@ -9,18 +9,38 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UserRouteImport } from './routes/user'
+import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
+import { Route as FarmRouteImport } from './routes/farm'
 import { Route as CasesRouteImport } from './routes/cases'
 import { Route as BalanceRouteImport } from './routes/balance'
 import { Route as ProtectedRouteImport } from './routes/_protected'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as UserUserIdRouteImport } from './routes/user/$userId'
 import { Route as CasesCaseIdRouteImport } from './routes/cases/$caseId'
 import { Route as ProtectedProfileRouteImport } from './routes/_protected/profile'
+import { Route as ProtectedAdminRouteImport } from './routes/_protected/admin'
 import { Route as CasesCaseIdOpenRouteImport } from './routes/cases/$caseId/open'
 
+const UserRoute = UserRouteImport.update({
+  id: '/user',
+  path: '/user',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const RegisterRoute = RegisterRouteImport.update({
+  id: '/register',
+  path: '/register',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const LoginRoute = LoginRouteImport.update({
   id: '/login',
   path: '/login',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FarmRoute = FarmRouteImport.update({
+  id: '/farm',
+  path: '/farm',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CasesRoute = CasesRouteImport.update({
@@ -42,6 +62,11 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const UserUserIdRoute = UserUserIdRouteImport.update({
+  id: '/$userId',
+  path: '/$userId',
+  getParentRoute: () => UserRoute,
+} as any)
 const CasesCaseIdRoute = CasesCaseIdRouteImport.update({
   id: '/$caseId',
   path: '/$caseId',
@@ -50,6 +75,11 @@ const CasesCaseIdRoute = CasesCaseIdRouteImport.update({
 const ProtectedProfileRoute = ProtectedProfileRouteImport.update({
   id: '/profile',
   path: '/profile',
+  getParentRoute: () => ProtectedRoute,
+} as any)
+const ProtectedAdminRoute = ProtectedAdminRouteImport.update({
+  id: '/admin',
+  path: '/admin',
   getParentRoute: () => ProtectedRoute,
 } as any)
 const CasesCaseIdOpenRoute = CasesCaseIdOpenRouteImport.update({
@@ -62,18 +92,28 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/balance': typeof BalanceRoute
   '/cases': typeof CasesRouteWithChildren
+  '/farm': typeof FarmRoute
   '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/user': typeof UserRouteWithChildren
+  '/admin': typeof ProtectedAdminRoute
   '/profile': typeof ProtectedProfileRoute
   '/cases/$caseId': typeof CasesCaseIdRouteWithChildren
+  '/user/$userId': typeof UserUserIdRoute
   '/cases/$caseId/open': typeof CasesCaseIdOpenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/balance': typeof BalanceRoute
   '/cases': typeof CasesRouteWithChildren
+  '/farm': typeof FarmRoute
   '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/user': typeof UserRouteWithChildren
+  '/admin': typeof ProtectedAdminRoute
   '/profile': typeof ProtectedProfileRoute
   '/cases/$caseId': typeof CasesCaseIdRouteWithChildren
+  '/user/$userId': typeof UserUserIdRoute
   '/cases/$caseId/open': typeof CasesCaseIdOpenRoute
 }
 export interface FileRoutesById {
@@ -82,9 +122,14 @@ export interface FileRoutesById {
   '/_protected': typeof ProtectedRouteWithChildren
   '/balance': typeof BalanceRoute
   '/cases': typeof CasesRouteWithChildren
+  '/farm': typeof FarmRoute
   '/login': typeof LoginRoute
+  '/register': typeof RegisterRoute
+  '/user': typeof UserRouteWithChildren
+  '/_protected/admin': typeof ProtectedAdminRoute
   '/_protected/profile': typeof ProtectedProfileRoute
   '/cases/$caseId': typeof CasesCaseIdRouteWithChildren
+  '/user/$userId': typeof UserUserIdRoute
   '/cases/$caseId/open': typeof CasesCaseIdOpenRoute
 }
 export interface FileRouteTypes {
@@ -93,18 +138,28 @@ export interface FileRouteTypes {
     | '/'
     | '/balance'
     | '/cases'
+    | '/farm'
     | '/login'
+    | '/register'
+    | '/user'
+    | '/admin'
     | '/profile'
     | '/cases/$caseId'
+    | '/user/$userId'
     | '/cases/$caseId/open'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/balance'
     | '/cases'
+    | '/farm'
     | '/login'
+    | '/register'
+    | '/user'
+    | '/admin'
     | '/profile'
     | '/cases/$caseId'
+    | '/user/$userId'
     | '/cases/$caseId/open'
   id:
     | '__root__'
@@ -112,9 +167,14 @@ export interface FileRouteTypes {
     | '/_protected'
     | '/balance'
     | '/cases'
+    | '/farm'
     | '/login'
+    | '/register'
+    | '/user'
+    | '/_protected/admin'
     | '/_protected/profile'
     | '/cases/$caseId'
+    | '/user/$userId'
     | '/cases/$caseId/open'
   fileRoutesById: FileRoutesById
 }
@@ -123,16 +183,40 @@ export interface RootRouteChildren {
   ProtectedRoute: typeof ProtectedRouteWithChildren
   BalanceRoute: typeof BalanceRoute
   CasesRoute: typeof CasesRouteWithChildren
+  FarmRoute: typeof FarmRoute
   LoginRoute: typeof LoginRoute
+  RegisterRoute: typeof RegisterRoute
+  UserRoute: typeof UserRouteWithChildren
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/user': {
+      id: '/user'
+      path: '/user'
+      fullPath: '/user'
+      preLoaderRoute: typeof UserRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/register': {
+      id: '/register'
+      path: '/register'
+      fullPath: '/register'
+      preLoaderRoute: typeof RegisterRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/login': {
       id: '/login'
       path: '/login'
       fullPath: '/login'
       preLoaderRoute: typeof LoginRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/farm': {
+      id: '/farm'
+      path: '/farm'
+      fullPath: '/farm'
+      preLoaderRoute: typeof FarmRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/cases': {
@@ -163,6 +247,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/user/$userId': {
+      id: '/user/$userId'
+      path: '/$userId'
+      fullPath: '/user/$userId'
+      preLoaderRoute: typeof UserUserIdRouteImport
+      parentRoute: typeof UserRoute
+    }
     '/cases/$caseId': {
       id: '/cases/$caseId'
       path: '/$caseId'
@@ -177,6 +268,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProtectedProfileRouteImport
       parentRoute: typeof ProtectedRoute
     }
+    '/_protected/admin': {
+      id: '/_protected/admin'
+      path: '/admin'
+      fullPath: '/admin'
+      preLoaderRoute: typeof ProtectedAdminRouteImport
+      parentRoute: typeof ProtectedRoute
+    }
     '/cases/$caseId/open': {
       id: '/cases/$caseId/open'
       path: '/open'
@@ -188,10 +286,12 @@ declare module '@tanstack/react-router' {
 }
 
 interface ProtectedRouteChildren {
+  ProtectedAdminRoute: typeof ProtectedAdminRoute
   ProtectedProfileRoute: typeof ProtectedProfileRoute
 }
 
 const ProtectedRouteChildren: ProtectedRouteChildren = {
+  ProtectedAdminRoute: ProtectedAdminRoute,
   ProtectedProfileRoute: ProtectedProfileRoute,
 }
 
@@ -221,12 +321,25 @@ const CasesRouteChildren: CasesRouteChildren = {
 
 const CasesRouteWithChildren = CasesRoute._addFileChildren(CasesRouteChildren)
 
+interface UserRouteChildren {
+  UserUserIdRoute: typeof UserUserIdRoute
+}
+
+const UserRouteChildren: UserRouteChildren = {
+  UserUserIdRoute: UserUserIdRoute,
+}
+
+const UserRouteWithChildren = UserRoute._addFileChildren(UserRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ProtectedRoute: ProtectedRouteWithChildren,
   BalanceRoute: BalanceRoute,
   CasesRoute: CasesRouteWithChildren,
+  FarmRoute: FarmRoute,
   LoginRoute: LoginRoute,
+  RegisterRoute: RegisterRoute,
+  UserRoute: UserRouteWithChildren,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
