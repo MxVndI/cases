@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, type ReactNode } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import { authApi, type UpdateProfileData } from './services/api';
+import { authApi, MOCK_MODE, mockAuth, type UpdateProfileData } from './services/api';
 import { type User } from './types/user'
 interface AuthContextType {
     user: User | null;
@@ -68,6 +68,12 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const user = authResponse?.authenticated ? authResponse.user : null;
 
     const login = (provider: string) => {
+        if (MOCK_MODE) {
+            const mockEmail = `${provider}.demo@casehub.local`;
+            mockAuth.login(mockEmail, 'demo');
+            queryClient.invalidateQueries({ queryKey: authKeys.user() });
+            return;
+        }
         // Сохраняем текущий URL для редиректа
         localStorage.setItem('redirectAfterLogin', window.location.pathname);
         // Редирект на OAuth провайдера

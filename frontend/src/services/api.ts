@@ -9,10 +9,12 @@ export interface LoginCredentials {
   provider: 'yandex' | 'discord' | 'google';
 }
 
-const MOCK_MODE = true;
+export const MOCK_MODE = true;
+
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost/api';
 
 const api = axios.create({
-  baseURL: 'http://localhost/api',
+  baseURL: apiBaseUrl,
   withCredentials: true,
   headers: {
     'Content-Type': 'application/json',
@@ -73,6 +75,9 @@ export const authApi = {
   },
 
   getLoginUrl: (provider: string): string => {
+    if (MOCK_MODE) {
+      return '#';
+    }
     return `${api.defaults.baseURL}/auth/${provider}/login`;
   },
 };
