@@ -1,0 +1,37 @@
+site_name: CaseHub Documentation
+site_description: Требования к проекту CaseHub
+site_url: https://mxvndi.github.io/cases/
+repo_url: https://github.com/MxVndI/cases
+repo_name: MxVndI/cases
+
+docs_dir: docs
+site_dir: site
+use_directory_urls: true
+
+theme:
+  name: material
+  language: ru
+  features:
+    - navigation.sections
+    - navigation.expand
+    - navigation.top
+    - search.suggest
+    - content.code.copy
+
+plugins:
+  - search
+
+markdown_extensions:
+  - tables
+  - attr_list
+  - md_in_html
+  - admonition
+  - toc:
+      permalink: true
+
+nav:
+  - Главная: index.md
+  - Глоссарий: glossary.md
+  - Команда: team.md
+  - Требования к фронтенду: frontend-requirements/index.md
+  - Требования к бэкенду: backend-requirements/index.md
