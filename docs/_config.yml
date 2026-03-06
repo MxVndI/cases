@@ -1,12 +1,12 @@
 title: CaseHub Documentation
 description: Требования к проекту CaseHub — платформа виртуальных кейсов CS2
 theme: just-the-docs
-url: ""
-baseurl: "/cases"
+url: "https://mxvndi.github.io"
+baseurl: ""
 
 aux_links:
   "GitHub Repository":
-    - "https://github.com/rexandel/cases"
+    - "https://github.com/MxVndI/cases"
 
 nav_enabled: true
 search_enabled: true
