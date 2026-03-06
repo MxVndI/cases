@@ -749,14 +749,14 @@ export function Admin() {
                                                         </span>
                                                     </div>
                                                     <p className="text-sm text-muted-foreground truncate">{u.email}</p>
-                                                    <div className="flex items-center gap-3 mt-1 text-xs text-muted-foreground">
+                                                    <div className="flex items-center gap-2 mt-1 text-xs text-muted-foreground flex-wrap">
                                                         <span className="flex items-center gap-1">
                                                             <Calendar className="h-3 w-3" />
                                                             Рег: {new Date(u.registeredAt).toLocaleDateString("ru-RU")}
                                                         </span>
-                                                        <span className="flex items-center gap-1">
+                                                        <span className="hidden sm:flex items-center gap-1">
                                                             <Clock className="h-3 w-3" />
-                                                            Последний вход: {new Date(u.lastLoginAt).toLocaleDateString("ru-RU")}{" "}
+                                                            Вход: {new Date(u.lastLoginAt).toLocaleDateString("ru-RU")}{" "}
                                                             {new Date(u.lastLoginAt).toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })}
                                                         </span>
                                                     </div>
@@ -815,19 +815,19 @@ export function Admin() {
                             <div className="rounded-2xl border border-border/60 bg-card/80 backdrop-blur-xl overflow-hidden">
                                 <div className="divide-y divide-border/40">
                                     {cases.map(c => (
-                                        <div key={c.id} className="flex items-center justify-between p-4 hover:bg-background/30 transition-colors">
-                                            <div className="flex items-center gap-4">
-                                                <div className="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center">
-                                                    <Package className="h-6 w-6 text-orange-500" />
+                                        <div key={c.id} className="flex items-center justify-between p-3 sm:p-4 gap-2 hover:bg-background/30 transition-colors">
+                                            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                                                <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                                    <Package className="h-5 w-5 sm:h-6 sm:w-6 text-orange-500" />
                                                 </div>
-                                                <div>
-                                                    <p className="font-medium text-foreground">{c.name}</p>
-                                                    <p className="text-sm text-muted-foreground">
+                                                <div className="min-w-0">
+                                                    <p className="font-medium text-foreground truncate">{c.name}</p>
+                                                    <p className="text-xs sm:text-sm text-muted-foreground truncate">
                                                         {c.category} &bull; {c.items.length} предметов
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-3">
+                                            <div className="flex items-center gap-2 sm:gap-3 flex-shrink-0">
                                                 <span className="text-sm font-bold text-orange-500 flex items-center gap-1">
                                                     {c.price.toLocaleString()} <Coins className="h-3.5 w-3.5" />
                                                 </span>
@@ -859,7 +859,7 @@ export function Admin() {
 
             {/* ════════════  ADD CASE DIALOG  ════════════ */}
             <Dialog open={addCaseOpen} onOpenChange={setAddCaseOpen}>
-                <DialogContent className="sm:max-w-5xl max-h-[85vh] overflow-hidden">
+                <DialogContent className="w-[95vw] sm:max-w-5xl max-h-[85vh] overflow-hidden">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                             <Plus className="h-5 w-5 text-orange-500" /> Новый кейс
@@ -884,7 +884,7 @@ export function Admin() {
 
             {/* ════════════  EDIT CASE DIALOG  ════════════ */}
             <Dialog open={editCaseOpen} onOpenChange={setEditCaseOpen}>
-                <DialogContent className="sm:max-w-5xl max-h-[85vh] overflow-hidden">
+                <DialogContent className="w-[95vw] sm:max-w-5xl max-h-[85vh] overflow-hidden">
                     <DialogHeader>
                         <DialogTitle className="flex items-center gap-2">
                             <Settings className="h-5 w-5 text-orange-500" /> Редактировать кейс

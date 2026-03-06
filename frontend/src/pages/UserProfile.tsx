@@ -34,17 +34,17 @@ export function UserProfile() {
             <Link
                 to="/"
                 aria-label="На главную"
-                className="peer/home-edge fixed inset-y-0 left-0 z-10 w-24 cursor-pointer"
+                className="peer/home-edge hidden lg:block fixed inset-y-0 left-0 z-10 w-24 cursor-pointer"
             />
             <Link
                 to="/"
-                className="peer/home fixed left-8 top-1/2 z-20 -translate-y-1/2 origin-left transform-gpu text-2xl font-semibold text-muted-foreground transition-all duration-300 ease-out hover:scale-110 hover:text-white peer-hover/home-edge:scale-110 peer-hover/home-edge:text-white"
+                className="peer/home hidden lg:block fixed left-8 top-1/2 z-20 -translate-y-1/2 origin-left transform-gpu text-2xl font-semibold text-muted-foreground transition-all duration-300 ease-out hover:scale-110 hover:text-white peer-hover/home-edge:scale-110 peer-hover/home-edge:text-white"
             >
                 На главную
             </Link>
             <div
                 aria-hidden="true"
-                className="pointer-events-none fixed inset-y-0 left-0 z-0 w-[30vw] max-w-[440px] opacity-0 transition-opacity duration-300 ease-out peer-hover/home:opacity-100 peer-hover/home-edge:opacity-100 bg-[linear-gradient(to_right,rgba(249,115,22,0.11),rgba(251,146,60,0.055)_35%,rgba(255,200,120,0.02)_65%,transparent),conic-gradient(from_290deg_at_0%_50%,rgba(249,115,22,0.06),rgba(251,146,60,0.025),transparent,rgba(249,115,22,0.04))] blur-xl"
+                className="hidden lg:block pointer-events-none fixed inset-y-0 left-0 z-0 w-[30vw] max-w-[440px] opacity-0 transition-opacity duration-300 ease-out peer-hover/home:opacity-100 peer-hover/home-edge:opacity-100 bg-[linear-gradient(to_right,rgba(249,115,22,0.11),rgba(251,146,60,0.055)_35%,rgba(255,200,120,0.02)_65%,transparent),conic-gradient(from_290deg_at_0%_50%,rgba(249,115,22,0.06),rgba(251,146,60,0.025),transparent,rgba(249,115,22,0.04))] blur-xl"
             />
 
             <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -58,14 +58,14 @@ export function UserProfile() {
                 >
 
                     {/* Profile card */}
-                    <div className="rounded-3xl border border-border/60 bg-gradient-to-br from-orange-500/10 via-card/90 to-card/90 p-8 backdrop-blur-xl shadow-xl mb-8">
-                        <div className="flex items-center gap-6 mb-6">
-                            <div className="w-20 h-20 bg-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30">
-                                <User className="h-12 w-12 text-white" />
+                    <div className="rounded-3xl border border-border/60 bg-gradient-to-br from-orange-500/10 via-card/90 to-card/90 p-5 sm:p-8 backdrop-blur-xl shadow-xl mb-8">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6 mb-6">
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30 flex-shrink-0">
+                                <User className="h-8 w-8 sm:h-12 sm:w-12 text-white" />
                             </div>
-                            <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-1">
-                                    <h1 className="text-2xl font-bold text-foreground">
+                            <div className="flex-1 min-w-0">
+                                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-1">
+                                    <h1 className="text-xl sm:text-2xl font-bold text-foreground">
                                         {profileUser.nickname}
                                     </h1>
                                     {isAdmin && (

@@ -212,7 +212,7 @@ export function Welcome() {
                                     <motion.div
                                         whileHover={shouldReduceMotion ? undefined : { scale: 1.04 }}
                                         transition={{ duration: 0.2 }}
-                                        className="group relative min-w-[300px] rounded-2xl border border-border/60 bg-card/80 p-4 overflow-hidden backdrop-blur-xl hover:border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/10 transition-all duration-300 cursor-pointer text-left"
+                                        className="group relative min-w-[220px] sm:min-w-[300px] rounded-2xl border border-border/60 bg-card/80 p-3 sm:p-4 overflow-hidden backdrop-blur-xl hover:border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/10 transition-all duration-300 cursor-pointer text-left"
                                     >
                                         <div className="pointer-events-none absolute inset-0 bg-gradient-to-br from-orange-500/20 via-transparent to-transparent" />
                                         <div className="relative z-10 flex items-start gap-3">
@@ -278,7 +278,7 @@ export function Welcome() {
                                 transition={{ duration: 0.3, ease: [0.16, 1, 0.3, 1] }}
                                 className="overflow-hidden"
                             >
-                                <div className="rounded-2xl border border-border/60 bg-card/80 p-6 backdrop-blur-xl space-y-6">
+                                <div className="rounded-2xl border border-border/60 bg-card/80 p-4 sm:p-6 backdrop-blur-xl space-y-6">
                                     {/* Цена кейса */}
                                     <div>
                                         <div className="flex items-center justify-between mb-3">

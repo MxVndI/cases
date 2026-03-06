@@ -145,17 +145,17 @@ export function Profile() {
             <Link
                 to="/"
                 aria-label="На главную"
-                className="peer/home-edge fixed inset-y-0 left-0 z-10 w-24 cursor-pointer"
+                className="peer/home-edge hidden lg:block fixed inset-y-0 left-0 z-10 w-24 cursor-pointer"
             />
             <Link
                 to="/"
-                className="peer/home fixed left-8 top-1/2 z-20 -translate-y-1/2 origin-left transform-gpu text-2xl font-semibold text-muted-foreground transition-all duration-300 ease-out hover:scale-110 hover:text-white peer-hover/home-edge:scale-110 peer-hover/home-edge:text-white"
+                className="peer/home hidden lg:block fixed left-8 top-1/2 z-20 -translate-y-1/2 origin-left transform-gpu text-2xl font-semibold text-muted-foreground transition-all duration-300 ease-out hover:scale-110 hover:text-white peer-hover/home-edge:scale-110 peer-hover/home-edge:text-white"
             >
                 На главную
             </Link>
             <div
                 aria-hidden="true"
-                className="pointer-events-none fixed inset-y-0 left-0 z-0 w-[30vw] max-w-[440px] opacity-0 transition-opacity duration-300 ease-out peer-hover/home:opacity-100 peer-hover/home-edge:opacity-100 bg-[linear-gradient(to_right,rgba(249,115,22,0.11),rgba(251,146,60,0.055)_35%,rgba(255,200,120,0.02)_65%,transparent),conic-gradient(from_290deg_at_0%_50%,rgba(249,115,22,0.06),rgba(251,146,60,0.025),transparent,rgba(249,115,22,0.04))] blur-xl"
+                className="hidden lg:block pointer-events-none fixed inset-y-0 left-0 z-0 w-[30vw] max-w-[440px] opacity-0 transition-opacity duration-300 ease-out peer-hover/home:opacity-100 peer-hover/home-edge:opacity-100 bg-[linear-gradient(to_right,rgba(249,115,22,0.11),rgba(251,146,60,0.055)_35%,rgba(255,200,120,0.02)_65%,transparent),conic-gradient(from_290deg_at_0%_50%,rgba(249,115,22,0.06),rgba(251,146,60,0.025),transparent,rgba(249,115,22,0.04))] blur-xl"
             />
 
             <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -168,14 +168,14 @@ export function Profile() {
                     }}
                 >
                     {/* Header с информацией пользователя */}
-                    <div className="rounded-3xl border border-orange-500/30 bg-gradient-to-br from-orange-500/10 via-card/90 to-card/90 p-8 backdrop-blur-xl shadow-2xl shadow-orange-500/10 mb-8">
-                        <div className="flex items-center gap-6">
-                            <div className="w-20 h-20 bg-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30">
-                                <User className="h-12 w-12 text-white" />
+                    <div className="rounded-3xl border border-orange-500/30 bg-gradient-to-br from-orange-500/10 via-card/90 to-card/90 p-5 sm:p-8 backdrop-blur-xl shadow-2xl shadow-orange-500/10 mb-8">
+                        <div className="flex flex-col sm:flex-row items-start sm:items-center gap-4 sm:gap-6">
+                            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30 flex-shrink-0">
+                                <User className="h-8 w-8 sm:h-12 sm:w-12 text-white" />
                             </div>
-                            <div className="flex-1">
-                                <div className="flex items-center gap-3 mb-1">
-                                    <h1 className="text-2xl font-bold text-foreground">
+                            <div className="flex-1 min-w-0">
+                                <div className="flex flex-wrap items-center gap-2 sm:gap-3 mb-1">
+                                    <h1 className="text-xl sm:text-2xl font-bold text-foreground">
                                         {user?.nickname || "Пользователь"}
                                     </h1>
                                     {user?.role === "admin" && (
@@ -251,21 +251,21 @@ export function Profile() {
                             </div>
 
                             {/* Последние выигрыши */}
-                            <div className="rounded-2xl border border-border/60 bg-card/80 p-6 backdrop-blur-xl">
+                            <div className="rounded-2xl border border-border/60 bg-card/80 p-4 sm:p-6 backdrop-blur-xl">
                                 <h2 className="text-lg font-semibold text-foreground mb-4">Последние выигрыши</h2>
                                 <div className="space-y-3">
                                     {history.slice(0, 3).map((item) => (
-                                        <div key={item.id} className="flex items-center justify-between p-3 rounded-xl border border-border/40 bg-background/50">
-                                            <div className="flex items-center gap-3">
-                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center border ${rarityColors[item.wonItem.rarity]}`}>
+                                        <div key={item.id} className="flex items-center justify-between p-3 rounded-xl border border-border/40 bg-background/50 gap-2">
+                                            <div className="flex items-center gap-3 min-w-0">
+                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center border flex-shrink-0 ${rarityColors[item.wonItem.rarity]}`}>
                                                     <Box className="h-4 w-4" />
                                                 </div>
-                                                <div>
-                                                    <p className="text-sm font-medium text-foreground">{item.wonItem.name}</p>
-                                                    <p className="text-xs text-muted-foreground">{item.caseName}</p>
+                                                <div className="min-w-0">
+                                                    <p className="text-sm font-medium text-foreground truncate">{item.wonItem.name}</p>
+                                                    <p className="text-xs text-muted-foreground truncate">{item.caseName}</p>
                                                 </div>
                                             </div>
-                                            <span className="text-sm font-semibold text-orange-500 flex items-center gap-1">+{item.wonItem.price} <Coins className="h-3.5 w-3.5" /></span>
+                                            <span className="text-sm font-semibold text-orange-500 flex items-center gap-1 flex-shrink-0">+{item.wonItem.price} <Coins className="h-3.5 w-3.5" /></span>
                                         </div>
                                     ))}
                                 </div>
@@ -278,23 +278,23 @@ export function Profile() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                         >
-                            <div className="rounded-2xl border border-border/60 bg-card/80 p-6 backdrop-blur-xl">
+                            <div className="rounded-2xl border border-border/60 bg-card/80 p-4 sm:p-6 backdrop-blur-xl">
                                 <h2 className="text-lg font-semibold text-foreground mb-4">История открытий</h2>
                                 <div className="space-y-3">
                                     {history.map((item) => (
-                                        <div key={item.id} className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-background/50">
-                                            <div className="flex items-center gap-4">
-                                                <div className={`w-10 h-10 rounded-lg flex items-center justify-center border-2 ${rarityColors[item.wonItem.rarity]}`}>
-                                                    <Box className="h-5 w-5" />
+                                        <div key={item.id} className="flex items-center justify-between p-3 sm:p-4 rounded-xl border border-border/40 bg-background/50 gap-2">
+                                            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                                                <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center border-2 flex-shrink-0 ${rarityColors[item.wonItem.rarity]}`}>
+                                                    <Box className="h-4 w-4 sm:h-5 sm:w-5" />
                                                 </div>
-                                                <div>
-                                                    <p className="font-medium text-foreground">{item.wonItem.name}</p>
-                                                    <p className="text-sm text-muted-foreground">
+                                                <div className="min-w-0">
+                                                    <p className="font-medium text-foreground truncate">{item.wonItem.name}</p>
+                                                    <p className="text-xs sm:text-sm text-muted-foreground truncate">
                                                         {item.caseName} &bull; {new Date(item.spinDate).toLocaleDateString("ru-RU")}
                                                     </p>
                                                 </div>
                                             </div>
-                                            <div className="text-right">
+                                            <div className="text-right flex-shrink-0">
                                                 <p className="font-semibold text-orange-500 flex items-center gap-1">+{item.wonItem.price} <Coins className="h-3.5 w-3.5" /></p>
                                                 <p className="text-xs text-muted-foreground flex items-center gap-1">-{item.cost} <Coins className="h-3 w-3" /></p>
                                             </div>
@@ -314,8 +314,8 @@ export function Profile() {
                             animate={{ opacity: 1 }}
                         >
                             {/* Header with total + filter toggle */}
-                            <div className="rounded-2xl border border-border/60 bg-card/80 p-6 backdrop-blur-xl mb-4">
-                                <div className="flex items-center justify-between">
+                            <div className="rounded-2xl border border-border/60 bg-card/80 p-4 sm:p-6 backdrop-blur-xl mb-4">
+                                <div className="flex items-center justify-between gap-3">
                                     <div className="flex items-center gap-3">
                                         <h2 className="text-lg font-semibold text-foreground">Инвентарь</h2>
                                         <button

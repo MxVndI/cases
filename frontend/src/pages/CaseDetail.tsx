@@ -216,18 +216,18 @@ export function CaseDetail() {
             <Link
                 to="/"
                 aria-label="На главную"
-                className="peer/home-edge fixed inset-y-0 left-0 z-10 w-24 cursor-pointer"
+                className="peer/home-edge hidden lg:block fixed inset-y-0 left-0 z-10 w-24 cursor-pointer"
             />
 
             <Link
                 to="/"
-                className="peer/home fixed left-8 top-1/2 z-20 -translate-y-1/2 origin-left transform-gpu text-2xl font-semibold text-muted-foreground transition-all duration-300 ease-out hover:scale-110 hover:text-white peer-hover/home-edge:scale-110 peer-hover/home-edge:text-white"
+                className="peer/home hidden lg:block fixed left-8 top-1/2 z-20 -translate-y-1/2 origin-left transform-gpu text-2xl font-semibold text-muted-foreground transition-all duration-300 ease-out hover:scale-110 hover:text-white peer-hover/home-edge:scale-110 peer-hover/home-edge:text-white"
             >
                 На главную
             </Link>
             <div
                 aria-hidden="true"
-                className="pointer-events-none fixed inset-y-0 left-0 z-0 w-[30vw] max-w-[440px] opacity-0 transition-opacity duration-300 ease-out peer-hover/home:opacity-100 peer-hover/home-edge:opacity-100 bg-[linear-gradient(to_right,rgba(249,115,22,0.11),rgba(251,146,60,0.055)_35%,rgba(255,200,120,0.02)_65%,transparent),conic-gradient(from_290deg_at_0%_50%,rgba(249,115,22,0.06),rgba(251,146,60,0.025),transparent,rgba(249,115,22,0.04))] blur-xl"
+                className="hidden lg:block pointer-events-none fixed inset-y-0 left-0 z-0 w-[30vw] max-w-[440px] opacity-0 transition-opacity duration-300 ease-out peer-hover/home:opacity-100 peer-hover/home-edge:opacity-100 bg-[linear-gradient(to_right,rgba(249,115,22,0.11),rgba(251,146,60,0.055)_35%,rgba(255,200,120,0.02)_65%,transparent),conic-gradient(from_290deg_at_0%_50%,rgba(249,115,22,0.06),rgba(251,146,60,0.025),transparent,rgba(249,115,22,0.04))] blur-xl"
             />
 
             <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -240,7 +240,7 @@ export function CaseDetail() {
                     }}
                     className="space-y-6"
                 >
-                    <section className="rounded-3xl border border-border/60 bg-card/80 p-8 backdrop-blur-xl shadow-xl shadow-orange-500/5">
+                    <section className="rounded-3xl border border-border/60 bg-card/80 p-4 sm:p-6 lg:p-8 backdrop-blur-xl shadow-xl shadow-orange-500/5">
                         <h1 className="text-3xl font-bold text-foreground text-center mb-6">{caseName}</h1>
 
                         {/* ━━━━━━ Spinner reel ━━━━━━ */}
@@ -476,7 +476,7 @@ export function CaseDetail() {
                                 className="relative z-10"
                                 onClick={(e) => e.stopPropagation()}
                             >
-                                <div className={`relative w-80 rounded-3xl border-2 bg-card/95 p-8 backdrop-blur-2xl shadow-2xl ${rarityColors[wonItem.rarity]} ${rarityGlow[wonItem.rarity]}`}>
+                                <div className={`relative w-[min(320px,90vw)] rounded-3xl border-2 bg-card/95 p-5 sm:p-8 backdrop-blur-2xl shadow-2xl ${rarityColors[wonItem.rarity]} ${rarityGlow[wonItem.rarity]}`}>
                                     <motion.div
                                         animate={{ opacity: [0.3, 0.6, 0.3] }}
                                         transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
@@ -562,7 +562,7 @@ export function CaseDetail() {
                                                     animate={{ opacity: 1, scale: 1, y: 0 }}
                                                     transition={{ delay: idx * 0.1, duration: 0.4, ease: [0.16, 1, 0.3, 1] }}
                                                 >
-                                                    <div className={`relative w-44 rounded-2xl border-2 bg-card/95 p-4 backdrop-blur-2xl shadow-2xl transition-opacity duration-300 ${isSold ? "opacity-50" : ""} ${rarityColors[item.rarity]} ${rarityGlow[item.rarity]}`}>
+                                                    <div className={`relative w-36 sm:w-44 rounded-2xl border-2 bg-card/95 p-4 backdrop-blur-2xl shadow-2xl transition-opacity duration-300 ${isSold ? "opacity-50" : ""} ${rarityColors[item.rarity]} ${rarityGlow[item.rarity]}`}>
                                                         {!isSold && (
                                                             <motion.div animate={{ opacity: [0.3, 0.6, 0.3] }} transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }} className={`absolute -inset-[2px] rounded-2xl border-2 pointer-events-none ${rarityColors[item.rarity]}`} />
                                                         )}

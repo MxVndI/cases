@@ -208,8 +208,8 @@ export function Farm() {
                     </div>
 
                     {/* Pending pool */}
-                    <div className="rounded-2xl border border-yellow-500/30 bg-gradient-to-br from-yellow-500/10 via-card/90 to-card/90 p-5 backdrop-blur-xl mb-8 flex items-center justify-between gap-4">
-                        <div>
+                    <div className="rounded-2xl border border-yellow-500/30 bg-gradient-to-br from-yellow-500/10 via-card/90 to-card/90 p-5 backdrop-blur-xl mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
+                        <div className="min-w-0">
                             <p className="text-sm text-muted-foreground mb-0.5">Банк авто-кликера</p>
                             <p className="text-2xl font-bold text-yellow-400 flex items-center gap-1.5">{farm.pendingHC.toLocaleString()} <Coins className="h-5 w-5" /></p>
                             <p className="text-xs text-muted-foreground mt-0.5">Накапливается автоматически — заберите вручную</p>
@@ -219,7 +219,7 @@ export function Farm() {
                             whileTap={{ scale: 0.97 }}
                             onClick={claimPending}
                             disabled={farm.pendingHC <= 0}
-                            className={`flex-shrink-0 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
+                            className={`w-full sm:w-auto flex-shrink-0 px-5 py-2.5 rounded-xl font-semibold text-sm transition-all duration-200 ${
                                 farm.pendingHC > 0
                                     ? "bg-yellow-500 text-black hover:bg-yellow-400 cursor-pointer"
                                     : "bg-border/40 text-muted-foreground cursor-not-allowed opacity-50"

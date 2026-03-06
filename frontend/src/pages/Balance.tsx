@@ -30,17 +30,17 @@ export function Balance() {
             <Link
                 to="/"
                 aria-label="На главную"
-                className="peer/home-edge fixed inset-y-0 left-0 z-10 w-24 cursor-pointer"
+                className="peer/home-edge hidden lg:block fixed inset-y-0 left-0 z-10 w-24 cursor-pointer"
             />
             <Link
                 to="/"
-                className="peer/home fixed left-8 top-1/2 z-20 -translate-y-1/2 origin-left transform-gpu text-2xl font-semibold text-muted-foreground transition-all duration-300 ease-out hover:scale-110 hover:text-white peer-hover/home-edge:scale-110 peer-hover/home-edge:text-white"
+                className="peer/home hidden lg:block fixed left-8 top-1/2 z-20 -translate-y-1/2 origin-left transform-gpu text-2xl font-semibold text-muted-foreground transition-all duration-300 ease-out hover:scale-110 hover:text-white peer-hover/home-edge:scale-110 peer-hover/home-edge:text-white"
             >
                 На главную
             </Link>
             <div
                 aria-hidden="true"
-                className="pointer-events-none fixed inset-y-0 left-0 z-0 w-[30vw] max-w-[440px] opacity-0 transition-opacity duration-300 ease-out peer-hover/home:opacity-100 peer-hover/home-edge:opacity-100 bg-[linear-gradient(to_right,rgba(249,115,22,0.11),rgba(251,146,60,0.055)_35%,rgba(255,200,120,0.02)_65%,transparent),conic-gradient(from_290deg_at_0%_50%,rgba(249,115,22,0.06),rgba(251,146,60,0.025),transparent,rgba(249,115,22,0.04))] blur-xl"
+                className="hidden lg:block pointer-events-none fixed inset-y-0 left-0 z-0 w-[30vw] max-w-[440px] opacity-0 transition-opacity duration-300 ease-out peer-hover/home:opacity-100 peer-hover/home-edge:opacity-100 bg-[linear-gradient(to_right,rgba(249,115,22,0.11),rgba(251,146,60,0.055)_35%,rgba(255,200,120,0.02)_65%,transparent),conic-gradient(from_290deg_at_0%_50%,rgba(249,115,22,0.06),rgba(251,146,60,0.025),transparent,rgba(249,115,22,0.04))] blur-xl"
             />
 
             <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -63,17 +63,17 @@ export function Balance() {
                     </div>
 
                     {/* Карточка баланса */}
-                    <div className="rounded-3xl border border-orange-500/30 bg-gradient-to-br from-orange-500/20 via-card/90 to-card/90 p-8 backdrop-blur-xl shadow-2xl shadow-orange-500/10 mb-8">
+                    <div className="rounded-3xl border border-orange-500/30 bg-gradient-to-br from-orange-500/20 via-card/90 to-card/90 p-5 sm:p-8 backdrop-blur-xl shadow-2xl shadow-orange-500/10 mb-8">
                         <div className="flex items-center">
-                            <div className="flex items-center gap-6">
-                                <div className="w-20 h-20 bg-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30">
-                                    <Coins className="h-10 w-10 text-white" />
+                            <div className="flex items-center gap-4 sm:gap-6">
+                                <div className="w-14 h-14 sm:w-20 sm:h-20 bg-orange-500 rounded-2xl flex items-center justify-center shadow-lg shadow-orange-500/30">
+                                    <Coins className="h-7 w-7 sm:h-10 sm:w-10 text-white" />
                                 </div>
                                 <div>
                                     <p className="text-sm text-muted-foreground mb-1">
                                         Текущий баланс
                                     </p>
-                                    <p className="text-4xl font-bold text-white">
+                                    <p className="text-3xl sm:text-4xl font-bold text-white">
                                         {balance.toLocaleString()}
                                     </p>
 
@@ -84,54 +84,54 @@ export function Balance() {
                     </div>
 
                     {/* Статистика */}
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
-                        <div className="rounded-2xl border border-border/60 bg-card/80 p-6 backdrop-blur-xl">
-                            <div className="flex items-center gap-3 mb-2">
-                                <div className="w-10 h-10 bg-red-500/10 rounded-xl flex items-center justify-center">
-                                    <TrendingDown className="h-5 w-5 text-red-500" />
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 mb-8">
+                        <div className="rounded-2xl border border-border/60 bg-card/80 p-3 sm:p-6 backdrop-blur-xl">
+                            <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-red-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                    <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" />
                                 </div>
-                                <span className="text-sm text-muted-foreground">Потрачено</span>
+                                <span className="text-xs sm:text-sm text-muted-foreground truncate">Потрачено</span>
                             </div>
-                            <p className="text-2xl font-bold text-foreground flex items-center gap-1">{totalSpent} <Coins className="h-5 w-5 text-red-500" /></p>
+                            <p className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-1">{totalSpent} <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" /></p>
                         </div>
 
-                        <div className="rounded-2xl border border-border/60 bg-card/80 p-6 backdrop-blur-xl">
-                            <div className="flex items-center gap-3 mb-2">
-                                <div className="w-10 h-10 bg-green-500/10 rounded-xl flex items-center justify-center">
-                                    <TrendingUp className="h-5 w-5 text-green-500" />
+                        <div className="rounded-2xl border border-border/60 bg-card/80 p-3 sm:p-6 backdrop-blur-xl">
+                            <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                    <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
                                 </div>
-                                <span className="text-sm text-muted-foreground">Выиграно</span>
+                                <span className="text-xs sm:text-sm text-muted-foreground truncate">Выиграно</span>
                             </div>
-                            <p className="text-2xl font-bold text-foreground flex items-center gap-1">{totalWon} <Coins className="h-5 w-5 text-green-500" /></p>
+                            <p className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-1">{totalWon} <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" /></p>
                         </div>
 
-                        <div className="rounded-2xl border border-border/60 bg-card/80 p-6 backdrop-blur-xl">
-                            <div className="flex items-center gap-3 mb-2">
-                                <div className="w-10 h-10 bg-orange-500/10 rounded-xl flex items-center justify-center">
-                                    <Coins className="h-5 w-5 text-orange-500" />
+                        <div className="rounded-2xl border border-border/60 bg-card/80 p-3 sm:p-6 backdrop-blur-xl">
+                            <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                    <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
                                 </div>
-                                <span className="text-sm text-muted-foreground">Заработано</span>
+                                <span className="text-xs sm:text-sm text-muted-foreground truncate">Заработано</span>
                             </div>
-                            <p className="text-2xl font-bold text-orange-500 flex items-center gap-1">{earnedHC.toLocaleString()} <Coins className="h-5 w-5" /></p>
+                            <p className="text-xl sm:text-2xl font-bold text-orange-500 flex items-center gap-1">{earnedHC.toLocaleString()} <Coins className="h-4 w-4 sm:h-5 sm:w-5" /></p>
                         </div>
 
-                        <div className="rounded-2xl border border-border/60 bg-card/80 p-6 backdrop-blur-xl">
-                            <div className="flex items-center gap-3 mb-2">
-                                <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${
+                        <div className="rounded-2xl border border-border/60 bg-card/80 p-3 sm:p-6 backdrop-blur-xl">
+                            <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                                <div className={`w-8 h-8 sm:w-10 sm:h-10 rounded-xl flex items-center justify-center flex-shrink-0 ${
                                     profit >= 0 ? "bg-green-500/10" : "bg-red-500/10"
                                 }`}>
                                     {profit >= 0 ? (
-                                        <TrendingUp className="h-5 w-5 text-green-500" />
+                                        <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
                                     ) : (
-                                        <TrendingDown className="h-5 w-5 text-red-500" />
+                                        <TrendingDown className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" />
                                     )}
                                 </div>
-                                <span className="text-sm text-muted-foreground">Профит</span>
+                                <span className="text-xs sm:text-sm text-muted-foreground truncate">Профит</span>
                             </div>
-                            <p className={`text-2xl font-bold ${
+                            <p className={`text-xl sm:text-2xl font-bold ${
                                 profit >= 0 ? "text-green-500" : "text-red-500"
                             }`}>
-                                {profit >= 0 ? "+" : ""}{profit} <Coins className="h-5 w-5 ml-1" />
+                                {profit >= 0 ? "+" : ""}{profit} <Coins className="h-4 w-4 sm:h-5 sm:w-5 ml-1" />
                             </p>
                         </div>
                     </div>
@@ -174,8 +174,8 @@ export function Balance() {
                     </div>
 
                     {/* История транзакций */}
-                    <div className="rounded-2xl border border-border/60 bg-card/80 p-6 backdrop-blur-xl">
-                        <h2 className="text-xl font-semibold text-foreground mb-4">
+                    <div className="rounded-2xl border border-border/60 bg-card/80 p-5 sm:p-6 backdrop-blur-xl">
+                        <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-4">
                             История открытий
                         </h2>
                         <div className="space-y-3">
