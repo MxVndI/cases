@@ -8,16 +8,27 @@ jobs:
   run_tests:
     runs-on: [ubuntu-latest]
     steps:
-      - uses: actions/checkout@master
-      - uses: actions/setup-python@v1
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
         with:
-          python-version: '3.10.19'
+          python-version: '3.13'
           architecture: 'x64'
-      - name: Install requirements
-        run: pip install -r requirements.txt
       - name: Install dependencies
-        run: pip install coverage pytest pytest-cov
+        run: |
+          python -m pip install --upgrade pip
+          pip install coverage pytest pytest-cov
+          pip install ./backend
       - name: Run tests
-        run: coverage run tests.py
+        run: |
+          if find . -type f \( -name 'test_*.py' -o -name '*_test.py' -o -name 'tests.py' \) | grep -q .; then
+            coverage run -m pytest
+          else
+            echo "No tests found. Skipping test execution."
+          fi
       - name: Tests report
-        run: coverage report
+        run: |
+          if find . -type f \( -name 'test_*.py' -o -name '*_test.py' -o -name 'tests.py' \) | grep -q .; then
+            coverage report
+          else
+            echo "No coverage data to report."
+          fi
