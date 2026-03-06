@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
 import { Link, useParams, useNavigate } from "@tanstack/react-router";
 import { dummyCases, rarityColors, rarityLabels, dummyBalance } from "@/data/dummy-data";
@@ -29,7 +29,7 @@ export function CaseOpen() {
         return items;
     };
 
-    const [rouletteItems, setRouletteItems] = useState(generateRouletteItems());
+    const [rouletteItems] = useState(generateRouletteItems());
     const [scrollPosition, setScrollPosition] = useState(0);
 
     const handleSpin = () => {
@@ -129,7 +129,7 @@ export function CaseOpen() {
                                     ease: [0.15, 0, 0.1, 1],
                                 }}
                             >
-                                {rouletteItems.map((item, index) => (
+                                {rouletteItems.map((item) => (
                                     <div
                                         key={item.uniqueId}
                                         className={`flex-shrink-0 w-28 h-32 mx-1 rounded-xl border-2 flex flex-col items-center justify-center gap-2 ${rarityColors[item.rarity]} bg-background/50`}

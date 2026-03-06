@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, type ReactNode } from 'react';
+import React, { createContext, useContext, type ReactNode } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { authApi, MOCK_MODE, mockAuth, type UpdateProfileData } from './services/api';
 import { type User } from './types/user'
