@@ -3,6 +3,19 @@ description: Требования к проекту CaseHub — платформ
 theme: just-the-docs
 url: "https://mxvndi.github.io"
 baseurl: ""
+permalink: pretty
+
+plugins:
+  - jekyll-seo-tag
+  - jekyll-optional-front-matter
+  - jekyll-relative-links
+
+optional_front_matter:
+  remove_originals: true
+
+relative_links:
+  enabled: true
+  collections: true
 
 aux_links:
   "GitHub Repository":

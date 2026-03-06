@@ -8,8 +8,8 @@ CaseHub — веб-платформа для открытия виртуальн
 
 | Раздел | Описание | Файлы |
 |--------|----------|-------|
-| [Требования к фронтенду](frontend-requirements/README.md) | Эпики, User Stories, Use Cases и задачи для фронтенда | 7 эпиков, 33 US, 16 UC, 140 задач |
-| [Требования к бэкенду](backend-requirements/README.md) | Эпики, User Stories, Use Cases и задачи для бэкенда | 7 эпиков, 23 US, 11 UC, 89 задач |
+| [Требования к фронтенду](frontend-requirements/index.md) | Эпики, User Stories, Use Cases и задачи для фронтенда | 7 эпиков, 33 US, 16 UC, 140 задач |
+| [Требования к бэкенду](backend-requirements/index.md) | Эпики, User Stories, Use Cases и задачи для бэкенда | 7 эпиков, 23 US, 11 UC, 89 задач |
 | [Глоссарий](glossary.md) | Роли, сущности, термины, валюта, редкости | Общий для всех разделов |
 | [Команда](team.md) | Состав команды и роли | — |
 
