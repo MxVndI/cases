@@ -8,8 +8,8 @@ from faststream.redis import RedisBroker
 
 from settings import Settings
 
-from motor.motor_asyncio import AsyncIOMotorClient
-from pymongo.asynchronous.database import AsyncDatabase
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
+
 from dishka.integrations.fastapi import (
     FastapiProvider,
 )
@@ -43,7 +43,7 @@ class ServiceProvider(Provider):
     @provide(scope=Scope.APP)
     async def get_mongo_db(
         self, settings: Settings, client: AsyncIOMotorClient
-    ) -> AsyncDatabase:
+    ) -> AsyncIOMotorDatabase:
 
         return client[settings.mongodb_db_name]
 
