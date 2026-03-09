@@ -1,0 +1,84 @@
+services:
+    traefik:
+        image: traefik:v3.0
+        container_name: traefik-ch
+        ports:
+            - "80:80"
+            - "8080:8080"
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock:ro
+            - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+            - ./traefik/dynamic:/etc/traefik/dynamic:ro
+        networks:
+            - backend
+        depends_on:
+            - authservice
+            - userservice
+        restart: unless-stopped
+
+    rustfs-server:
+        image: rustfs/rustfs:latest
+        container_name: rustfs_casehub
+        restart: unless-stopped
+        ports:
+            - "9000:9000"
+            - "9001:9001"
+        volumes:
+            - /mnt/rustfs/data:/data
+        command: /data
+        environment:
+            RUSTFS_ACCESS_KEY: rustfsadmin
+            RUSTFS_SECRET_KEY: rustfsadmin
+            RUSTFS_LOG_LEVEL: info
+        user: "root"
+    redis:
+        image: redis:8.4.0
+        container_name: redis-ch
+        restart: always
+        ports:
+            - "6379:6379"
+        volumes:
+            - casehub_redis_data:/data
+
+    mongodb:
+        image: mongo:8.0
+        container_name: mongodb-ch
+        ports:
+            - "27017:27017"
+        volumes:
+            - casehub_db_data:/data/db
+
+        healthcheck:
+            test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+            interval: 10s
+            timeout: 5s
+            retries: 5
+
+    mongo-express:
+        image: mongo-express
+        container_name: mongo-express-ch
+        restart: always
+        environment:
+            ME_CONFIG_MONGODB_SERVER: mongodb
+            ME_CONFIG_BASICAUTH_USERNAME: admin
+            ME_CONFIG_BASICAUTH_PASSWORD: admin
+            ME_CONFIG_MONGODB_URL: mongodb://mongodb:27017/
+        ports:
+            - "8081:8081"
+        depends_on:
+            mongodb:
+                condition: service_healthy
+
+    redis-commander:
+        image: rediscommander/redis-commander:latest
+        restart: always
+        environment:
+            REDIS_HOSTS: local:redis:6379
+        ports:
+            - 8082:8081
+        depends_on:
+            - redis
+
+volumes:
+    casehub_db_data:
+    casehub_redis_data:

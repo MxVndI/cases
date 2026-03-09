@@ -5,15 +5,20 @@ description = "Add your description here"
 readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
+    "aiohttp>=3.13.3",
     "beanie>=2.0.1",
+    "boto3>=1.42.63",
     "dishka>=1.8.0",
     "fastapi>=0.135.0",
     "fastapi-sso>=0.21.0",
     "faststream>=0.6.7",
+    "loguru>=0.7.3",
     "motor>=3.7.1",
+    "msgspec>=0.20.0",
     "pydantic-settings>=2.13.1",
     "pydantic[email,settings]>=2.12.5",
     "redis>=7.2.1",
+    "robyn>=0.80.0",
     "shortuuid>=1.0.13",
     "uvicorn>=0.41.0",
 ]
