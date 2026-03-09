@@ -1,21 +1,20 @@
 # services/providers.py
 
 from typing import AsyncIterator
+
 from dishka import Provider, Scope, make_async_container, provide
-from services.redis_manager import RedisManager
-from redis.asyncio import Redis
-from faststream.redis import RedisBroker
-
-from settings import Settings
-
-from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
-
 from dishka.integrations.fastapi import (
     FastapiProvider,
 )
-from services.session import SessionService
+from faststream.redis import RedisBroker
+from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
+from pymongo.asynchronous.database import AsyncDatabase
+from redis.asyncio import Redis
 from services.redis import RedisService
+from services.redis_manager import RedisManager
+from services.session import SessionService
 from services.user import UserService
+from settings import Settings
 
 
 class ConfigProvider(Provider):
@@ -43,7 +42,7 @@ class ServiceProvider(Provider):
     @provide(scope=Scope.APP)
     async def get_mongo_db(
         self, settings: Settings, client: AsyncIOMotorClient
-    ) -> AsyncIOMotorDatabase:
+    ) -> AsyncDatabase:
 
         return client[settings.mongodb_db_name]
 
