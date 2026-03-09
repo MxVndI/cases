@@ -1,7 +1,7 @@
 from beanie import init_beanie
 from ioc import container
-from pymongo.asynchronous.database import AsyncDatabase
 from models.session import Session
+from pymongo.asynchronous.database import AsyncDatabase
 
 
 async def connect_db():

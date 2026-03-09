@@ -1,24 +1,25 @@
 # services/providers.py
 
 from typing import AsyncIterator
+
 from dishka import Provider, Scope, make_async_container, provide
-from services import AuthService, SessionService, RedisManager
-from redis.asyncio import Redis
-from faststream.redis import RedisBroker
-
-from settings import Settings
-from fastapi_sso.sso.yandex import YandexSSO
-from fastapi_sso.sso.discord import DiscordSSO
-from fastapi_sso import SSOBase
-
-from motor.motor_asyncio import AsyncIOMotorClient
-from pymongo.asynchronous.database import AsyncDatabase
 from dishka.integrations.fastapi import (
     FastapiProvider,
 )
+from fastapi_sso import SSOBase
+from fastapi_sso.sso.discord import DiscordSSO
+from fastapi_sso.sso.yandex import YandexSSO
+from faststream.redis import RedisBroker
+from motor.motor_asyncio import AsyncIOMotorClient
+from pymongo.asynchronous.database import AsyncDatabase
+from redis.asyncio import Redis
+from repos.session import SessionRepo
+from services.auth import AuthService
 from services.mail import MailSender
 from services.redis import RedisService
-from repos.session import SessionRepo
+from services.redis_manager import RedisManager
+from services.session import SessionService
+from settings import Settings
 
 
 class SSOProvider(Provider):

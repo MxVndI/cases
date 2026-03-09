@@ -34,4 +34,5 @@ class Settings(BaseSettings):
     email_address: str = ""
     email_password: str = ""
     secret_key: str = ""
+    api_tokens: list[str]
     # user_service_url: str = ""

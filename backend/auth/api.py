@@ -1,11 +1,12 @@
-from contextlib import asynccontextmanager
 import logging
+from contextlib import asynccontextmanager
+
+import uvicorn
+from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-import uvicorn
-from routes.api import router
-from dishka.integrations.fastapi import setup_dishka
 from ioc import container
+from routes.api import router
 from services.database import connect_db
 
 logger = logging.getLogger(__name__)
