@@ -8,14 +8,13 @@
 
 ## Описание
 
-Обеспечить валидацию входных данных: email формат, nickname не пустой, trade_link формат.
+Обеспечить валидацию входных данных: email формат, nickname не пустой.
 
 ## Детали реализации
 
 - Pydantic-схема SimpleUpdateRequest
 - email: EmailStr | None
 - nickname: str | None (min_length=1)
-- trade_link: str | None
 - ConfigDict(extra="ignore")
 
 ## Критерии приёмки

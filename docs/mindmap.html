@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>CaseHub — Карта требований</title>
+  <script src="https://cdn.jsdelivr.net/npm/markmap-autoloader@0.16"></script>
+  <script>
+    // Make all markmap links open in the top frame (for iframe embedding)
+    new MutationObserver(() => {
+      document.querySelectorAll('a[href]').forEach(a => { a.target = '_top'; });
+    }).observe(document.documentElement, { childList: true, subtree: true });
+  </script>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      background: #ffffff;
+      overflow: hidden;
+    }
+
+    /* ── Toolbar ── */
+    #toolbar {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      height: 50px;
+      background: #f6f8fa;
+      border-bottom: 1px solid #d0d7de;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 0 16px;
+      z-index: 1000;
+    }
+
+    #toolbar-title {
+      font-size: 14px;
+      font-weight: 600;
+      color: #1f2328;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      white-space: nowrap;
+      margin-right: 4px;
+    }
+
+    .chip {
+      padding: 2px 8px;
+      border-radius: 12px;
+      font-size: 11px;
+      font-weight: 500;
+      background: #f6f8fa;
+      color: #656d76;
+      border: 1px solid #d0d7de;
+      white-space: nowrap;
+    }
+    .chip.be { background: #ddf4ff; color: #0969da; border-color: #54aeff; }
+    .chip.fe { background: #fff8c5; color: #9a6700; border-color: #d4a72c; }
+
+    #legend {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+    }
+    .legend-item {
+      display: flex; align-items: center; gap: 5px;
+      font-size: 11px; color: #656d76;
+    }
+    .dot { width: 8px; height: 8px; border-radius: 50%; }
+
+    #hint {
+      font-size: 11px;
+      color: #8c959f;
+      padding-left: 10px;
+      border-left: 1px solid #d0d7de;
+      margin-left: auto;
+      white-space: nowrap;
+    }
+
+    /* ── Map container ── */
+    #map-wrap {
+      position: fixed;
+      top: 50px; left: 0; right: 0; bottom: 0;
+    }
+
+    #map-wrap > div {
+      width: 100%;
+      height: 100%;
+    }
+
+    svg.markmap {
+      width: 100% !important;
+      height: 100% !important;
+      background: #ffffff;
+    }
+  </style>
+</head>
+<body>
+
+  <div id="toolbar">
+    <div id="toolbar-title">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="#d4a72c">
+        <path d="M8 0L10.2 5.6L16 6.1L11.7 10L13 16L8 13L3 16L4.3 10L0 6.1L5.8 5.6Z"/>
+      </svg>
+      CaseHub — Карта требований
+    </div>
+    <span class="chip be">Backend: 7 эпиков</span>
+    <span class="chip fe">Frontend: 7 эпиков</span>
+    <span class="chip">37 user stories</span>
+    <span class="chip">~220 задач</span>
+    <div id="legend">
+      <div class="legend-item">
+        <div class="dot" style="background:#0969da"></div>Backend (B1–B7)
+      </div>
+      <div class="legend-item">
+        <div class="dot" style="background:#9a6700"></div>Frontend (F1–F7)
+      </div>
+    </div>
+    <div id="hint">Клик по кругу → свернуть/развернуть&nbsp; · &nbsp;Клик по тексту → открыть документ&nbsp; · &nbsp;Колёсико → масштаб&nbsp; · &nbsp;Drag → перемещение</div>
+  </div>
+
+  <div id="map-wrap">
+    <div class="markmap" data-options='{"initialExpandDepth":2,"duration":200}'>
+      <script type="text/template">
+
+# CaseHub
+
+## 🔵 Backend
+
+### [B1: Аутентификация и авторизация](backend-requirements/epics/epic-b01-auth/)
+
+#### [B-US-1.1 OAuth авторизация (Discord, Яндекс)](backend-requirements/user-stories/b-us-1.1/)
+- [B1.1.01 Настроить OAuth провайдеры (fastapi-sso)](backend-requirements/tasks/task-b1.1.01/)
+- [B1.1.02 Эндпоинт GET /{provider}/login](backend-requirements/tasks/task-b1.1.02/)
+- [B1.1.03 Callback /auth/{provider}/callback](backend-requirements/tasks/task-b1.1.03/)
+- [B1.1.04 Создать сессию после OAuth](backend-requirements/tasks/task-b1.1.04/)
+- [B1.1.05 Установить подписанный cookie (sid)](backend-requirements/tasks/task-b1.1.05/)
+
+#### [B-US-1.2 Авторизация по email (код подтверждения)](backend-requirements/user-stories/b-us-1.2/)
+- [B1.2.01 Эндпоинт POST /email/login/start](backend-requirements/tasks/task-b1.2.01/)
+- [B1.2.02 Генерировать код верификации → Redis](backend-requirements/tasks/task-b1.2.02/)
+- [B1.2.03 Отправить код на email (SMTP)](backend-requirements/tasks/task-b1.2.03/)
+- [B1.2.04 Эндпоинт POST /email/login/finish](backend-requirements/tasks/task-b1.2.04/)
+- [B1.2.05 Валидировать код из cookie (cvid)](backend-requirements/tasks/task-b1.2.05/)
+
+#### [B-US-1.3 Управление сессиями](backend-requirements/user-stories/b-us-1.3/)
+- [B1.3.01 Модель Session (Beanie Document)](backend-requirements/tasks/task-b1.3.01/)
+- [B1.3.02 SessionRepo с кешированием Redis](backend-requirements/tasks/task-b1.3.02/)
+- [B1.3.03 SessionService](backend-requirements/tasks/task-b1.3.03/)
+- [B1.3.04 Подпись HMAC-SHA256](backend-requirements/tasks/task-b1.3.04/)
+- [B1.3.05 Верификация подписанной сессии](backend-requirements/tasks/task-b1.3.05/)
+
+#### [B-US-1.4 Межсервисная валидация сессий](backend-requirements/user-stories/b-us-1.4/)
+- [B1.4.01 Redis Stream subscriber (auth.rpc)](backend-requirements/tasks/task-b1.4.01/)
+- [B1.4.02 Обработка RPC-запросов валидации sid](backend-requirements/tasks/task-b1.4.02/)
+- [B1.4.03 Ответ данными сессии через Redis Streams](backend-requirements/tasks/task-b1.4.03/)
+
+### [B2: Управление пользователями](backend-requirements/epics/epic-b02-user/)
+
+#### [B-US-2.1 Создание и получение пользователя](backend-requirements/user-stories/b-us-2.1/)
+- [B2.1.01 Модель User (Beanie Document)](backend-requirements/tasks/task-b2.1.01/)
+- [B2.1.02 get_user_by_email с автосозданием](backend-requirements/tasks/task-b2.1.02/)
+- [B2.1.03 get_user_by_id](backend-requirements/tasks/task-b2.1.03/)
+- [B2.1.04 Эндпоинт GET /v1/users/me](backend-requirements/tasks/task-b2.1.04/)
+
+#### [B-US-2.2 Обновление профиля пользователя](backend-requirements/user-stories/b-us-2.2/)
+- [B2.2.01 Эндпоинт PATCH /v1/users/me](backend-requirements/tasks/task-b2.2.01/)
+- [B2.2.02 Валидация SimpleUpdateRequest](backend-requirements/tasks/task-b2.2.02/)
+- [B2.2.03 Обновить в MongoDB и обновить сессию](backend-requirements/tasks/task-b2.2.03/)
+
+#### [B-US-2.3 Межсервисная коммуникация (User RPC)](backend-requirements/user-stories/b-us-2.3/)
+- [B2.3.01 Redis Stream subscriber (user.rpc)](backend-requirements/tasks/task-b2.3.01/)
+- [B2.3.02 RPC-запрос get (по email)](backend-requirements/tasks/task-b2.3.02/)
+- [B2.3.03 SessionService для валидации через auth.rpc](backend-requirements/tasks/task-b2.3.03/)
+
+### [B3: Управление кейсами](backend-requirements/epics/epic-b03-cases/)
+
+#### [B-US-3.1 CRUD кейсов](backend-requirements/user-stories/b-us-3.1/)
+- [B3.1.01 Модель Case (Beanie Document)](backend-requirements/tasks/task-b3.1.01/)
+- [B3.1.02 GET /cases](backend-requirements/tasks/task-b3.1.02/)
+- [B3.1.03 POST /cases (admin)](backend-requirements/tasks/task-b3.1.03/)
+- [B3.1.04 PATCH /cases/{id} (admin)](backend-requirements/tasks/task-b3.1.04/)
+- [B3.1.05 DELETE /cases/{id} (admin)](backend-requirements/tasks/task-b3.1.05/)
+
+#### [B-US-3.2 Содержимое кейса (предметы)](backend-requirements/user-stories/b-us-3.2/)
+- [B3.2.01 Модель Item (Beanie Document)](backend-requirements/tasks/task-b3.2.01/)
+- [B3.2.02 GET /items/ и GET /items/{id}](backend-requirements/tasks/task-b3.2.02/)
+- [B3.2.03 Связь кейс-предметы с drop_chance](backend-requirements/tasks/task-b3.2.03/)
+
+#### [B-US-3.3 Открытие кейса (игровая логика)](backend-requirements/user-stories/b-us-3.3/)
+- [B3.3.01 GET /cases/open/{id}](backend-requirements/tasks/task-b3.3.01/)
+- [B3.3.02 Алгоритм выпадения по вероятностям](backend-requirements/tasks/task-b3.3.02/)
+- [B3.3.03 Проверить баланс перед открытием](backend-requirements/tasks/task-b3.3.03/)
+- [B3.3.04 Списать стоимость кейса](backend-requirements/tasks/task-b3.3.04/)
+- [B3.3.05 Добавить предмет в инвентарь](backend-requirements/tasks/task-b3.3.05/)
+- [B3.3.06 Записать открытие в историю](backend-requirements/tasks/task-b3.3.06/)
+
+#### [B-US-3.4 Последние открытия](backend-requirements/user-stories/b-us-3.4/)
+- [B3.4.01 GET /cases/recently_opened](backend-requirements/tasks/task-b3.4.01/)
+- [B3.4.02 Сохранять в Redis List (maxlen)](backend-requirements/tasks/task-b3.4.02/)
+- [B3.4.03 Возвращать: пользователь, предмет, кейс, дата](backend-requirements/tasks/task-b3.4.03/)
+
+### [B4: Инвентарь и баланс](backend-requirements/epics/epic-b04-inventory/)
+
+#### [B-US-4.1 Управление балансом](backend-requirements/user-stories/b-us-4.1/)
+- [B4.1.01 Поле balance в User](backend-requirements/tasks/task-b4.1.01/)
+- [B4.1.02 GET /users/me/balance](backend-requirements/tasks/task-b4.1.02/)
+- [B4.1.03 Сервис начисления/списания](backend-requirements/tasks/task-b4.1.03/)
+- [B4.1.04 Атомарность операций (MongoDB)](backend-requirements/tasks/task-b4.1.04/)
+
+#### [B-US-4.2 Управление инвентарём](backend-requirements/user-stories/b-us-4.2/)
+- [B4.2.01 Модель InventoryItem (Beanie Document)](backend-requirements/tasks/task-b4.2.01/)
+- [B4.2.02 GET /user_inventory/{userId}](backend-requirements/tasks/task-b4.2.02/)
+- [B4.2.03 Суммарная стоимость инвентаря](backend-requirements/tasks/task-b4.2.03/)
+
+#### [B-US-4.3 Продажа предметов](backend-requirements/user-stories/b-us-4.3/)
+- [B4.3.01 POST /user_inventory/{itemId}/sell](backend-requirements/tasks/task-b4.3.01/)
+- [B4.3.02 Начислять стоимость при продаже](backend-requirements/tasks/task-b4.3.02/)
+- [B4.3.03 Удалять/помечать как sold](backend-requirements/tasks/task-b4.3.03/)
+
+### [B5: Администрирование (API)](backend-requirements/epics/epic-b05-admin/)
+
+#### [B-US-5.1 Просмотр пользователей (admin)](backend-requirements/user-stories/b-us-5.1/)
+- [B5.1.01 GET /admin/users с пагинацией](backend-requirements/tasks/task-b5.1.01/)
+- [B5.1.02 Фильтрация по статусу и роли](backend-requirements/tasks/task-b5.1.02/)
+- [B5.1.03 Поиск по email и nickname](backend-requirements/tasks/task-b5.1.03/)
+- [B5.1.04 GET /admin/users/{userId}](backend-requirements/tasks/task-b5.1.04/)
+
+#### [B-US-5.2 Блокировка и разблокировка (admin)](backend-requirements/user-stories/b-us-5.2/)
+- [B5.2.01 POST /admin/users/{userId}](backend-requirements/tasks/task-b5.2.01/)
+- [B5.2.02 Проверка: цель не admin](backend-requirements/tasks/task-b5.2.02/)
+- [B5.2.03 Инвалидировать сессии заблокированного](backend-requirements/tasks/task-b5.2.03/)
+
+#### [B-US-5.3 Проверка прав администратора](backend-requirements/user-stories/b-us-5.3/)
+- [B5.3.01 Middleware проверки роли admin](backend-requirements/tasks/task-b5.3.01/)
+- [B5.3.02 403 Forbidden для не-администраторов](backend-requirements/tasks/task-b5.3.02/)
+- [B5.3.03 Логировать неавторизованный доступ](backend-requirements/tasks/task-b5.3.03/)
+
+### [B6: Инфраструктура](backend-requirements/epics/epic-b06-infra/)
+
+#### [B-US-6.1 Docker и контейнеризация](backend-requirements/user-stories/b-us-6.1/)
+- [B6.1.01 Dockerfile auth API](backend-requirements/tasks/task-b6.1.01/)
+- [B6.1.02 Dockerfile auth AMQP worker](backend-requirements/tasks/task-b6.1.02/)
+- [B6.1.03 Dockerfile user API](backend-requirements/tasks/task-b6.1.03/)
+- [B6.1.04 Dockerfile user AMQP worker](backend-requirements/tasks/task-b6.1.04/)
+- [B6.1.05 docker-compose.yml](backend-requirements/tasks/task-b6.1.05/)
+
+#### [B-US-6.2 Traefik и API Gateway](backend-requirements/user-stories/b-us-6.2/)
+- [B6.2.01 traefik.yml](backend-requirements/tasks/task-b6.2.01/)
+- [B6.2.02 Маршрут /api/auth → auth service](backend-requirements/tasks/task-b6.2.02/)
+- [B6.2.03 Маршрут /api/user → user service](backend-requirements/tasks/task-b6.2.03/)
+- [B6.2.04 CORS middleware](backend-requirements/tasks/task-b6.2.04/)
+
+#### [B-US-6.3 Базы данных (MongoDB, Redis)](backend-requirements/user-stories/b-us-6.3/)
+- [B6.3.01 MongoDB (Beanie) для auth service](backend-requirements/tasks/task-b6.3.01/)
+- [B6.3.02 MongoDB (Beanie) для user service](backend-requirements/tasks/task-b6.3.02/)
+- [B6.3.03 Redis для кеширования](backend-requirements/tasks/task-b6.3.03/)
+- [B6.3.04 Redis Connection Pool (RedisManager)](backend-requirements/tasks/task-b6.3.04/)
+
+#### [B-US-6.4 Межсервисная коммуникация (Redis Streams)](backend-requirements/user-stories/b-us-6.4/)
+- [B6.4.01 Redis Streams для RPC](backend-requirements/tasks/task-b6.4.01/)
+- [B6.4.02 Request-reply (FastStream)](backend-requirements/tasks/task-b6.4.02/)
+- [B6.4.03 DI Dishka для auth service](backend-requirements/tasks/task-b6.4.03/)
+- [B6.4.04 DI Dishka для user service](backend-requirements/tasks/task-b6.4.04/)
+
+### [B7: Ферма — бэкенд](backend-requirements/epics/epic-b07-farm/)
+
+#### [B-US-7.1 Сохранение и загрузка прогресса фермы](backend-requirements/user-stories/b-us-7.1/)
+- [B7.1.01 Модель FarmState (Beanie Document)](backend-requirements/tasks/task-b7.1.01/)
+- [B7.1.02 GET /farm/state](backend-requirements/tasks/task-b7.1.02/)
+- [B7.1.03 POST /farm/state](backend-requirements/tasks/task-b7.1.03/)
+- [B7.1.04 Валидация целостности (античит)](backend-requirements/tasks/task-b7.1.04/)
+
+#### [B-US-7.2 Начисление монет на баланс](backend-requirements/user-stories/b-us-7.2/)
+- [B7.2.01 POST /farm/collect](backend-requirements/tasks/task-b7.2.01/)
+- [B7.2.02 Перевод монет в основной баланс](backend-requirements/tasks/task-b7.2.02/)
+- [B7.2.03 Логирование транзакций](backend-requirements/tasks/task-b7.2.03/)
+
+## 🟠 Frontend
+
+### [F1: Просмотр контента](frontend-requirements/epics/epic-01-browsing/)
+
+#### [US-1.1 Просмотр главной страницы](frontend-requirements/user-stories/us-1.1/)
+- [1.1.01 Конвейер выигрышей с автопрокруткой](frontend-requirements/tasks/task-1.1.01/)
+- [1.1.02 Панель фильтров (цена, сортировка, категория, редкость)](frontend-requirements/tasks/task-1.1.02/)
+- [1.1.03 Сетка карточек кейсов](frontend-requirements/tasks/task-1.1.03/)
+- [1.1.04 Анимация появления и hover-эффекты](frontend-requirements/tasks/task-1.1.04/)
+- [1.1.05 Кнопка «Сбросить фильтры»](frontend-requirements/tasks/task-1.1.05/)
+
+#### [US-1.3 Просмотр деталей кейса](frontend-requirements/user-stories/us-1.3/)
+- [1.3.01 Страница с информацией о кейсе](frontend-requirements/tasks/task-1.3.01/)
+- [1.3.02 Список предметов с цветовой маркировкой](frontend-requirements/tasks/task-1.3.02/)
+- [1.3.03 Стоимость каждого предмета](frontend-requirements/tasks/task-1.3.03/)
+- [1.3.04 Блокировать открытие для гостя](frontend-requirements/tasks/task-1.3.04/)
+
+#### [US-1.4 Просмотр профиля другого игрока](frontend-requirements/user-stories/us-1.4/)
+- [1.4.01 Карточка профиля (аватар, никнейм, дата)](frontend-requirements/tasks/task-1.4.01/)
+- [1.4.02 Статистика: баланс, кол-во кейсов](frontend-requirements/tasks/task-1.4.02/)
+- [1.4.03 Список последних выигрышей](frontend-requirements/tasks/task-1.4.03/)
+- [1.4.04 Обработать «пользователь не найден»](frontend-requirements/tasks/task-1.4.04/)
+- [1.4.05 Заглушка с пояснением](frontend-requirements/tasks/task-1.4.05/)
+
+#### [US-1.5 Дополнительная информация для администратора](frontend-requirements/user-stories/us-1.5/)
+- [1.5.01 Бейдж статуса (только admin)](frontend-requirements/tasks/task-1.5.01/)
+- [1.5.02 Карточка роли в статистику (только admin)](frontend-requirements/tasks/task-1.5.02/)
+
+### [F2: Регистрация и авторизация](frontend-requirements/epics/epic-02-auth/)
+
+#### [US-2.1 Регистрация нового пользователя](frontend-requirements/user-stories/us-2.1/)
+- [2.1.01 Форма (никнейм, email, пароль, подтверждение)](frontend-requirements/tasks/task-2.1.01/)
+- [2.1.02 Валидация: обязательные поля, пароли совпадают](frontend-requirements/tasks/task-2.1.02/)
+- [2.1.03 Отправка данных на сервер](frontend-requirements/tasks/task-2.1.03/)
+- [2.1.04 Навигационные ссылки](frontend-requirements/tasks/task-2.1.04/)
+- [2.1.05 Редирект для авторизованных](frontend-requirements/tasks/task-2.1.05/)
+
+#### [US-2.2 Авторизация по email и паролю](frontend-requirements/user-stories/us-2.2/)
+- [2.2.01 Форма входа (email, пароль)](frontend-requirements/tasks/task-2.2.01/)
+- [2.2.02 Валидация обязательных полей](frontend-requirements/tasks/task-2.2.02/)
+- [2.2.03 Отправка и обработка ответа](frontend-requirements/tasks/task-2.2.03/)
+- [2.2.04 Перенаправление после входа](frontend-requirements/tasks/task-2.2.04/)
+- [2.2.05 Навигационные ссылки](frontend-requirements/tasks/task-2.2.05/)
+- [2.2.06 Редирект для авторизованных](frontend-requirements/tasks/task-2.2.06/)
+
+#### [US-2.3 Авторизация через OAuth](frontend-requirements/user-stories/us-2.3/)
+- [2.3.01 Кнопки OAuth (Discord, Яндекс)](frontend-requirements/tasks/task-2.3.01/)
+- [2.3.02 Перенаправление на OAuth-провайдер](frontend-requirements/tasks/task-2.3.02/)
+- [2.3.03 Обработка callback](frontend-requirements/tasks/task-2.3.03/)
+
+#### [US-2.4 Выход из системы](frontend-requirements/user-stories/us-2.4/)
+- [2.4.01 Функция выхода (очистка сессии)](frontend-requirements/tasks/task-2.4.01/)
+- [2.4.02 Перенаправление на главную](frontend-requirements/tasks/task-2.4.02/)
+- [2.4.03 Обновить хедер (гостевой вид)](frontend-requirements/tasks/task-2.4.03/)
+
+### [F3: Открытие кейсов](frontend-requirements/epics/epic-03-case-opening/)
+
+#### [US-3.1 Одиночное открытие кейса](frontend-requirements/user-stories/us-3.1/)
+- [3.1.01 Генерация рила из 60 слотов](frontend-requirements/tasks/task-3.1.01/)
+- [3.1.02 Анимация с замедлением (5 секунд)](frontend-requirements/tasks/task-3.1.02/)
+- [3.1.03 Остановка на позиции 50](frontend-requirements/tasks/task-3.1.03/)
+- [3.1.04 Указатель по центру рила](frontend-requirements/tasks/task-3.1.04/)
+- [3.1.05 Полноэкранный оверлей с результатом](frontend-requirements/tasks/task-3.1.05/)
+- [3.1.06 Кнопки «Забрать» и «Продать»](frontend-requirements/tasks/task-3.1.06/)
+- [3.1.07 Списать стоимость кейса](frontend-requirements/tasks/task-3.1.07/)
+
+#### [US-3.2 Пропуск анимации](frontend-requirements/user-stories/us-3.2/)
+- [3.2.01 Кнопка «Пропустить»](frontend-requirements/tasks/task-3.2.01/)
+- [3.2.02 Мгновенное завершение с корректной позицией](frontend-requirements/tasks/task-3.2.02/)
+
+#### [US-3.3 Мульти-открытие кейсов](frontend-requirements/user-stories/us-3.3/)
+- [3.3.01 Кнопки x3, x5](frontend-requirements/tasks/task-3.3.01/)
+- [3.3.02 Одновременная генерация нескольких результатов](frontend-requirements/tasks/task-3.3.02/)
+- [3.3.03 Экран результатов: список предметов](frontend-requirements/tasks/task-3.3.03/)
+- [3.3.04 Продажа отдельных предметов](frontend-requirements/tasks/task-3.3.04/)
+- [3.3.05 Блокировать при нехватке баланса](frontend-requirements/tasks/task-3.3.05/)
+
+#### [US-3.4 Продажа предмета из результата](frontend-requirements/user-stories/us-3.4/)
+- [3.4.01 Продажа из экрана результата](frontend-requirements/tasks/task-3.4.01/)
+- [3.4.02 Обновить баланс после продажи](frontend-requirements/tasks/task-3.4.02/)
+- [3.4.03 Функция «Забрать» (добавить в инвентарь)](frontend-requirements/tasks/task-3.4.03/)
+
+### [F4: Инвентарь и баланс](frontend-requirements/epics/epic-04-inventory-balance/)
+
+#### [US-4.1 Просмотр баланса и статистики](frontend-requirements/user-stories/us-4.1/)
+- [4.1.01 Карточка баланса](frontend-requirements/tasks/task-4.1.01/)
+- [4.1.02 Блок статистики (4 показателя)](frontend-requirements/tasks/task-4.1.02/)
+- [4.1.03 Блок «Действия»](frontend-requirements/tasks/task-4.1.03/)
+- [4.1.04 Последние операции](frontend-requirements/tasks/task-4.1.04/)
+- [4.1.05 Навигация «На главную»](frontend-requirements/tasks/task-4.1.05/)
+
+#### [US-4.2 Просмотр инвентаря](frontend-requirements/user-stories/us-4.2/)
+- [4.2.01 Сетка карточек предметов](frontend-requirements/tasks/task-4.2.01/)
+- [4.2.02 Информация: название, редкость, источник, цена, дата](frontend-requirements/tasks/task-4.2.02/)
+- [4.2.03 Суммарная стоимость инвентаря](frontend-requirements/tasks/task-4.2.03/)
+
+#### [US-4.3 Фильтрация и сортировка инвентаря](frontend-requirements/user-stories/us-4.3/)
+- [4.3.01 Раскрывающаяся панель фильтров](frontend-requirements/tasks/task-4.3.01/)
+- [4.3.02 Сортировка (по умолчанию, цена ↑↓)](frontend-requirements/tasks/task-4.3.02/)
+- [4.3.03 Фильтр по редкости (мультивыбор)](frontend-requirements/tasks/task-4.3.03/)
+- [4.3.04 Счётчик активных фильтров](frontend-requirements/tasks/task-4.3.04/)
+- [4.3.05 Кнопка «Сбросить»](frontend-requirements/tasks/task-4.3.05/)
+- [4.3.06 Пустое состояние после фильтрации](frontend-requirements/tasks/task-4.3.06/)
+
+#### [US-4.4 Продажа предмета из инвентаря](frontend-requirements/user-stories/us-4.4/)
+- [4.4.01 Двухшаговый процесс продажи](frontend-requirements/tasks/task-4.4.01/)
+- [4.4.02 Кнопка отмены](frontend-requirements/tasks/task-4.4.02/)
+- [4.4.03 Анимация исчезновения предмета](frontend-requirements/tasks/task-4.4.03/)
+- [4.4.04 Обновить баланс](frontend-requirements/tasks/task-4.4.04/)
+- [4.4.05 Пустой инвентарь](frontend-requirements/tasks/task-4.4.05/)
+
+### [F5: Профиль пользователя](frontend-requirements/epics/epic-05-profile/)
+
+#### [US-5.1 Просмотр обзора профиля](frontend-requirements/user-stories/us-5.1/)
+- [5.1.01 Карточка профиля (аватар, никнейм, email, дата)](frontend-requirements/tasks/task-5.1.01/)
+- [5.1.02 Бейдж «Администратор»](frontend-requirements/tasks/task-5.1.02/)
+- [5.1.03 Панель вкладок (Обзор, История, Инвентарь, Настройки)](frontend-requirements/tasks/task-5.1.03/)
+- [5.1.04 Статистика: инвентарь и кейсы](frontend-requirements/tasks/task-5.1.04/)
+- [5.1.05 Последние выигрыши (3 записи)](frontend-requirements/tasks/task-5.1.05/)
+
+#### [US-5.2 Просмотр истории открытий](frontend-requirements/user-stories/us-5.2/)
+- [5.2.01 Список истории открытий](frontend-requirements/tasks/task-5.2.01/)
+- [5.2.02 Предмет, кейс, дата, доход, расход](frontend-requirements/tasks/task-5.2.02/)
+- [5.2.03 Цветовая маркировка по редкости](frontend-requirements/tasks/task-5.2.03/)
+- [5.2.04 Пустое: «Пока нет открытий»](frontend-requirements/tasks/task-5.2.04/)
+
+#### [US-5.3 Редактирование профиля](frontend-requirements/user-stories/us-5.3/)
+- [5.3.01 Форма (никнейм, email)](frontend-requirements/tasks/task-5.3.01/)
+- [5.3.02 Предзаполнить текущими данными](frontend-requirements/tasks/task-5.3.02/)
+- [5.3.03 Отправка на сервер](frontend-requirements/tasks/task-5.3.03/)
+- [5.3.04 «Сохранено!» (2 сек)](frontend-requirements/tasks/task-5.3.04/)
+- [5.3.05 Блокировать во время сохранения](frontend-requirements/tasks/task-5.3.05/)
+
+#### [US-5.4 Смена пароля](frontend-requirements/user-stories/us-5.4/)
+- [5.4.01 Форма (текущий, новый, подтверждение)](frontend-requirements/tasks/task-5.4.01/)
+- [5.4.02 Валидация совпадения паролей](frontend-requirements/tasks/task-5.4.02/)
+- [5.4.03 Блокировать при невалидных данных](frontend-requirements/tasks/task-5.4.03/)
+- [5.4.04 Очищать поля после смены](frontend-requirements/tasks/task-5.4.04/)
+- [5.4.05 «Пароль изменён!» (2 сек)](frontend-requirements/tasks/task-5.4.05/)
+
+### [F6: Ферма (кликер)](frontend-requirements/epics/epic-06-farm/)
+
+#### [US-6.1 Заработок монет кликами](frontend-requirements/user-stories/us-6.1/)
+- [6.1.01 Центральная кнопка кликера](frontend-requirements/tasks/task-6.1.01/)
+- [6.1.02 Монеты за каждый клик](frontend-requirements/tasks/task-6.1.02/)
+- [6.1.03 Баланс фермы и доход в секунду](frontend-requirements/tasks/task-6.1.03/)
+- [6.1.04 Анимация «+N» при клике](frontend-requirements/tasks/task-6.1.04/)
+- [6.1.05 Навигация «На главную»](frontend-requirements/tasks/task-6.1.05/)
+
+#### [US-6.2 Покупка улучшений](frontend-requirements/user-stories/us-6.2/)
+- [6.2.01 Панель улучшений с карточками](frontend-requirements/tasks/task-6.2.01/)
+- [6.2.02 Уровень, стоимость, эффект](frontend-requirements/tasks/task-6.2.02/)
+- [6.2.03 Покупка: списание, повышение уровня](frontend-requirements/tasks/task-6.2.03/)
+- [6.2.04 Блокировать при нехватке баланса](frontend-requirements/tasks/task-6.2.04/)
+- [6.2.05 Пересчёт стоимости после покупки](frontend-requirements/tasks/task-6.2.05/)
+
+#### [US-6.3 Автоматический заработок](frontend-requirements/user-stories/us-6.3/)
+- [6.3.01 Таймер автоначисления](frontend-requirements/tasks/task-6.3.01/)
+- [6.3.02 Учитывать уровни (автокликер, множитель, скорость)](frontend-requirements/tasks/task-6.3.02/)
+- [6.3.03 Обновлять доход в секунду](frontend-requirements/tasks/task-6.3.03/)
+
+#### [US-6.4 Сохранение прогресса](frontend-requirements/user-stories/us-6.4/)
+- [6.4.01 Сохранять в localStorage](frontend-requirements/tasks/task-6.4.01/)
+- [6.4.02 Восстанавливать при загрузке](frontend-requirements/tasks/task-6.4.02/)
+- [6.4.03 Первый вход (нет сохранённых данных)](frontend-requirements/tasks/task-6.4.03/)
+
+### [F7: Администрирование](frontend-requirements/epics/epic-07-admin/)
+
+#### [US-7.1 Просмотр списка пользователей](frontend-requirements/user-stories/us-7.1/)
+- [7.1.01 Вкладки (Пользователи, Кейсы)](frontend-requirements/tasks/task-7.1.01/)
+- [7.1.02 Поиск по никнейму и email](frontend-requirements/tasks/task-7.1.02/)
+- [7.1.03 Фильтр по статусу](frontend-requirements/tasks/task-7.1.03/)
+- [7.1.04 Фильтр по роли](frontend-requirements/tasks/task-7.1.04/)
+- [7.1.05 Список с информацией о каждом](frontend-requirements/tasks/task-7.1.05/)
+- [7.1.06 Никнейм — ссылка на профиль](frontend-requirements/tasks/task-7.1.06/)
+- [7.1.07 Пустой результат фильтрации](frontend-requirements/tasks/task-7.1.07/)
+
+#### [US-7.2 Блокировка и разблокировка](frontend-requirements/user-stories/us-7.2/)
+- [7.2.01 Кнопка блокировки/разблокировки](frontend-requirements/tasks/task-7.2.01/)
+- [7.2.02 Скрыть кнопку для admin](frontend-requirements/tasks/task-7.2.02/)
+- [7.2.03 Диалог подтверждения блокировки](frontend-requirements/tasks/task-7.2.03/)
+- [7.2.04 Диалог подтверждения разблокировки](frontend-requirements/tasks/task-7.2.04/)
+- [7.2.05 Обновить статус в списке](frontend-requirements/tasks/task-7.2.05/)
+
+#### [US-7.3 Просмотр списка кейсов](frontend-requirements/user-stories/us-7.3/)
+- [7.3.01 Список кейсов](frontend-requirements/tasks/task-7.3.01/)
+- [7.3.02 Кнопка «Добавить кейс»](frontend-requirements/tasks/task-7.3.02/)
+- [7.3.03 Кнопки редактирования и удаления](frontend-requirements/tasks/task-7.3.03/)
+
+#### [US-7.4 Создание нового кейса](frontend-requirements/user-stories/us-7.4/)
+- [7.4.01 Диалог создания](frontend-requirements/tasks/task-7.4.01/)
+- [7.4.02 Форма: название, цена, описание, категория](frontend-requirements/tasks/task-7.4.02/)
+- [7.4.03 Выбор предметов (дерево/галерея)](frontend-requirements/tasks/task-7.4.03/)
+- [7.4.04 Фильтры предметов](frontend-requirements/tasks/task-7.4.04/)
+- [7.4.05 Превью при наведении](frontend-requirements/tasks/task-7.4.05/)
+- [7.4.06 Валидация обязательных полей](frontend-requirements/tasks/task-7.4.06/)
+- [7.4.07 Новый кейс в начало списка](frontend-requirements/tasks/task-7.4.07/)
+
+#### [US-7.5 Редактирование кейса](frontend-requirements/user-stories/us-7.5/)
+- [7.5.01 Предзаполнение формы данными кейса](frontend-requirements/tasks/task-7.5.01/)
+- [7.5.02 Предвыбрать текущие предметы](frontend-requirements/tasks/task-7.5.02/)
+- [7.5.03 Обновить кейс в списке](frontend-requirements/tasks/task-7.5.03/)
+
+#### [US-7.6 Удаление кейса](frontend-requirements/user-stories/us-7.6/)
+- [7.6.01 Диалог подтверждения](frontend-requirements/tasks/task-7.6.01/)
+- [7.6.02 Показать название кейса](frontend-requirements/tasks/task-7.6.02/)
+- [7.6.03 Удалить из списка](frontend-requirements/tasks/task-7.6.03/)
+
+#### [US-7.7 Ограничение доступа к панели](frontend-requirements/user-stories/us-7.7/)
+- [7.7.01 Проверка роли при рендеринге](frontend-requirements/tasks/task-7.7.01/)
+- [7.7.02 Экран «Доступ запрещён»](frontend-requirements/tasks/task-7.7.02/)
+
+      </script>
+    </div>
+  </div>
+
+</body>
+</html>

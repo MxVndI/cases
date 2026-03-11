@@ -13,15 +13,13 @@ import { Route as UserRouteImport } from './routes/user'
 import { Route as RegisterRouteImport } from './routes/register'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as FarmRouteImport } from './routes/farm'
-import { Route as CasesRouteImport } from './routes/cases'
 import { Route as BalanceRouteImport } from './routes/balance'
 import { Route as ProtectedRouteImport } from './routes/_protected'
 import { Route as IndexRouteImport } from './routes/index'
-import { Route as UserUserIdRouteImport } from './routes/user/$userId'
+import { Route as UserUserNameRouteImport } from './routes/user/$userName'
 import { Route as CasesCaseIdRouteImport } from './routes/cases/$caseId'
 import { Route as ProtectedProfileRouteImport } from './routes/_protected/profile'
 import { Route as ProtectedAdminRouteImport } from './routes/_protected/admin'
-import { Route as CasesCaseIdOpenRouteImport } from './routes/cases/$caseId/open'
 
 const UserRoute = UserRouteImport.update({
   id: '/user',
@@ -43,11 +41,6 @@ const FarmRoute = FarmRouteImport.update({
   path: '/farm',
   getParentRoute: () => rootRouteImport,
 } as any)
-const CasesRoute = CasesRouteImport.update({
-  id: '/cases',
-  path: '/cases',
-  getParentRoute: () => rootRouteImport,
-} as any)
 const BalanceRoute = BalanceRouteImport.update({
   id: '/balance',
   path: '/balance',
@@ -62,15 +55,15 @@ const IndexRoute = IndexRouteImport.update({
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
-const UserUserIdRoute = UserUserIdRouteImport.update({
-  id: '/$userId',
-  path: '/$userId',
+const UserUserNameRoute = UserUserNameRouteImport.update({
+  id: '/$userName',
+  path: '/$userName',
   getParentRoute: () => UserRoute,
 } as any)
 const CasesCaseIdRoute = CasesCaseIdRouteImport.update({
-  id: '/$caseId',
-  path: '/$caseId',
-  getParentRoute: () => CasesRoute,
+  id: '/cases/$caseId',
+  path: '/cases/$caseId',
+  getParentRoute: () => rootRouteImport,
 } as any)
 const ProtectedProfileRoute = ProtectedProfileRouteImport.update({
   id: '/profile',
@@ -82,62 +75,50 @@ const ProtectedAdminRoute = ProtectedAdminRouteImport.update({
   path: '/admin',
   getParentRoute: () => ProtectedRoute,
 } as any)
-const CasesCaseIdOpenRoute = CasesCaseIdOpenRouteImport.update({
-  id: '/open',
-  path: '/open',
-  getParentRoute: () => CasesCaseIdRoute,
-} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/balance': typeof BalanceRoute
-  '/cases': typeof CasesRouteWithChildren
   '/farm': typeof FarmRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/user': typeof UserRouteWithChildren
   '/admin': typeof ProtectedAdminRoute
   '/profile': typeof ProtectedProfileRoute
-  '/cases/$caseId': typeof CasesCaseIdRouteWithChildren
-  '/user/$userId': typeof UserUserIdRoute
-  '/cases/$caseId/open': typeof CasesCaseIdOpenRoute
+  '/cases/$caseId': typeof CasesCaseIdRoute
+  '/user/$userName': typeof UserUserNameRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/balance': typeof BalanceRoute
-  '/cases': typeof CasesRouteWithChildren
   '/farm': typeof FarmRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/user': typeof UserRouteWithChildren
   '/admin': typeof ProtectedAdminRoute
   '/profile': typeof ProtectedProfileRoute
-  '/cases/$caseId': typeof CasesCaseIdRouteWithChildren
-  '/user/$userId': typeof UserUserIdRoute
-  '/cases/$caseId/open': typeof CasesCaseIdOpenRoute
+  '/cases/$caseId': typeof CasesCaseIdRoute
+  '/user/$userName': typeof UserUserNameRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_protected': typeof ProtectedRouteWithChildren
   '/balance': typeof BalanceRoute
-  '/cases': typeof CasesRouteWithChildren
   '/farm': typeof FarmRoute
   '/login': typeof LoginRoute
   '/register': typeof RegisterRoute
   '/user': typeof UserRouteWithChildren
   '/_protected/admin': typeof ProtectedAdminRoute
   '/_protected/profile': typeof ProtectedProfileRoute
-  '/cases/$caseId': typeof CasesCaseIdRouteWithChildren
-  '/user/$userId': typeof UserUserIdRoute
-  '/cases/$caseId/open': typeof CasesCaseIdOpenRoute
+  '/cases/$caseId': typeof CasesCaseIdRoute
+  '/user/$userName': typeof UserUserNameRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
     | '/balance'
-    | '/cases'
     | '/farm'
     | '/login'
     | '/register'
@@ -145,13 +126,11 @@ export interface FileRouteTypes {
     | '/admin'
     | '/profile'
     | '/cases/$caseId'
-    | '/user/$userId'
-    | '/cases/$caseId/open'
+    | '/user/$userName'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/balance'
-    | '/cases'
     | '/farm'
     | '/login'
     | '/register'
@@ -159,14 +138,12 @@ export interface FileRouteTypes {
     | '/admin'
     | '/profile'
     | '/cases/$caseId'
-    | '/user/$userId'
-    | '/cases/$caseId/open'
+    | '/user/$userName'
   id:
     | '__root__'
     | '/'
     | '/_protected'
     | '/balance'
-    | '/cases'
     | '/farm'
     | '/login'
     | '/register'
@@ -174,15 +151,14 @@ export interface FileRouteTypes {
     | '/_protected/admin'
     | '/_protected/profile'
     | '/cases/$caseId'
-    | '/user/$userId'
-    | '/cases/$caseId/open'
+    | '/user/$userName'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ProtectedRoute: typeof ProtectedRouteWithChildren
   BalanceRoute: typeof BalanceRoute
-  CasesRoute: typeof CasesRouteWithChildren
+  CasesCaseIdRoute: typeof CasesCaseIdRoute
   FarmRoute: typeof FarmRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
@@ -197,6 +173,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/user'
       preLoaderRoute: typeof UserRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/user/$userName': {
+      id: '/user/$userName'
+      path: '/$userName'
+      fullPath: '/user/$userName'
+      preLoaderRoute: typeof UserUserNameRouteImport
+      parentRoute: typeof UserRoute
     }
     '/register': {
       id: '/register'
@@ -217,13 +200,6 @@ declare module '@tanstack/react-router' {
       path: '/farm'
       fullPath: '/farm'
       preLoaderRoute: typeof FarmRouteImport
-      parentRoute: typeof rootRouteImport
-    }
-    '/cases': {
-      id: '/cases'
-      path: '/cases'
-      fullPath: '/cases'
-      preLoaderRoute: typeof CasesRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/balance': {
@@ -247,19 +223,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/user/$userId': {
-      id: '/user/$userId'
-      path: '/$userId'
-      fullPath: '/user/$userId'
-      preLoaderRoute: typeof UserUserIdRouteImport
-      parentRoute: typeof UserRoute
-    }
     '/cases/$caseId': {
       id: '/cases/$caseId'
-      path: '/$caseId'
+      path: '/cases/$caseId'
       fullPath: '/cases/$caseId'
       preLoaderRoute: typeof CasesCaseIdRouteImport
-      parentRoute: typeof CasesRoute
+      parentRoute: typeof rootRouteImport
     }
     '/_protected/profile': {
       id: '/_protected/profile'
@@ -274,13 +243,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/admin'
       preLoaderRoute: typeof ProtectedAdminRouteImport
       parentRoute: typeof ProtectedRoute
-    }
-    '/cases/$caseId/open': {
-      id: '/cases/$caseId/open'
-      path: '/open'
-      fullPath: '/cases/$caseId/open'
-      preLoaderRoute: typeof CasesCaseIdOpenRouteImport
-      parentRoute: typeof CasesCaseIdRoute
     }
   }
 }
@@ -299,34 +261,12 @@ const ProtectedRouteWithChildren = ProtectedRoute._addFileChildren(
   ProtectedRouteChildren,
 )
 
-interface CasesCaseIdRouteChildren {
-  CasesCaseIdOpenRoute: typeof CasesCaseIdOpenRoute
-}
-
-const CasesCaseIdRouteChildren: CasesCaseIdRouteChildren = {
-  CasesCaseIdOpenRoute: CasesCaseIdOpenRoute,
-}
-
-const CasesCaseIdRouteWithChildren = CasesCaseIdRoute._addFileChildren(
-  CasesCaseIdRouteChildren,
-)
-
-interface CasesRouteChildren {
-  CasesCaseIdRoute: typeof CasesCaseIdRouteWithChildren
-}
-
-const CasesRouteChildren: CasesRouteChildren = {
-  CasesCaseIdRoute: CasesCaseIdRouteWithChildren,
-}
-
-const CasesRouteWithChildren = CasesRoute._addFileChildren(CasesRouteChildren)
-
 interface UserRouteChildren {
-  UserUserIdRoute: typeof UserUserIdRoute
+  UserUserNameRoute: typeof UserUserNameRoute
 }
 
 const UserRouteChildren: UserRouteChildren = {
-  UserUserIdRoute: UserUserIdRoute,
+  UserUserNameRoute: UserUserNameRoute,
 }
 
 const UserRouteWithChildren = UserRoute._addFileChildren(UserRouteChildren)
@@ -335,7 +275,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ProtectedRoute: ProtectedRouteWithChildren,
   BalanceRoute: BalanceRoute,
-  CasesRoute: CasesRouteWithChildren,
+  CasesCaseIdRoute: CasesCaseIdRoute,
   FarmRoute: FarmRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,

@@ -13,7 +13,7 @@ REST API эндпоинт для частичного обновления пр�
 ## Детали реализации
 
 - Создать роут PATCH /v1/users/me
-- Принять SimpleUpdateRequest(email, nickname, trade_link)
+- Принять SimpleUpdateRequest(email, nickname)
 - Dependency get_current_user_id
 - Обновить только переданные (не None) поля
 - Сохранить в MongoDB

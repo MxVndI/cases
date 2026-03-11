@@ -33,5 +33,6 @@ nav:
   - Главная: index.md
   - Глоссарий: glossary.md
   - Команда: team.md
+  - Карта требований: mindmap.md
   - Требования к фронтенду: frontend-requirements/index.md
   - Требования к бэкенду: backend-requirements/index.md

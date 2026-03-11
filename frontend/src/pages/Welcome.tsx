@@ -205,8 +205,8 @@ export function Welcome() {
                             {conveyorItems.map((win, index) => (
                                 <Link
                                     key={`${win.player}-${win.item}-${index}`}
-                                    to="/user/$userId"
-                                    params={{ userId: win.userId }}
+                                    to="/user/$userName"
+                                    params={{ userName: win.player }}
                                     className="block"
                                 >
                                     <motion.div

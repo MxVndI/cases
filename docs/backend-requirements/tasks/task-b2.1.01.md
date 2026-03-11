@@ -8,11 +8,11 @@
 
 ## Описание
 
-Создать Beanie Document для хранения пользователей в MongoDB: id, email, nickname, trade_link, status, timestamps.
+Создать Beanie Document для хранения пользователей в MongoDB: id, email, nickname, status, timestamps.
 
 ## Детали реализации
 
-- Поля: id (UUID), email (EmailStr), nickname (default_factory), trade_link (None), status (Literal active/blocked, default active), created_at, last_updated
+- Поля: id (UUID), email (EmailStr), nickname (default_factory), status (Literal active/blocked, default active), created_at, last_updated
 - Default nickname: f"user{timestamp}"
 - Field serializers для UUID и datetime
 - Settings: bson_encoders, keep_nulls=False

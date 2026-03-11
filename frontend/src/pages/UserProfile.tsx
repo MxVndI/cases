@@ -6,11 +6,11 @@ import { useAuth } from "@/AuthContext";
 
 export function UserProfile() {
     const shouldReduceMotion = useReducedMotion();
-    const { userId } = useParams({ strict: false });
+    const { userName } = useParams({ strict: false });
     const { user: currentUser } = useAuth();
     const isAdmin = currentUser?.role === "admin";
-    const profileUser = dummyUsers.find((u) => u.id === userId);
-    const userWins = dummyRecentWins.filter((w) => w.userId === userId);
+    const profileUser = dummyUsers.find((u) => u.nickname === userName);
+    const userWins = dummyRecentWins.filter((w) => w.player === userName);
 
     if (!profileUser) {
         return (

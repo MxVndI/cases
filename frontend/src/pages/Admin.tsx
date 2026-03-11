@@ -733,8 +733,8 @@ export function Admin() {
                                                 <div className="min-w-0">
                                                     <div className="flex items-center gap-2 flex-wrap">
                                                         <Link
-                                                            to="/user/$userId"
-                                                            params={{ userId: u.id }}
+                                                            to="/user/$userName"
+                                                            params={{ userName: u.nickname }}
                                                             className="font-medium text-foreground hover:text-orange-400 transition-colors"
                                                         >
                                                             {u.nickname}
