@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import { dummyUsers, dummyCases, type DummyUser, type Case, type CaseItem } from "@/data/dummy-data";
 import { Link } from "@tanstack/react-router";
+import { NotFound } from "@/pages/NotFound";
 
 type AdminTab = "cases" | "users";
 type UserStatusFilter = "all" | "active" | "blocked";
@@ -450,20 +451,7 @@ export function Admin() {
 
     // ── Access control ──
     if (user?.role !== "admin") {
-        return (
-            <div className="min-h-screen bg-background">
-                <div className="flex items-center justify-center h-96">
-                    <div className="text-center">
-                        <Shield className="h-16 w-16 text-red-500 mx-auto mb-4" />
-                        <h2 className="text-2xl font-bold text-foreground mb-2">Доступ запрещён</h2>
-                        <p className="text-muted-foreground mb-4">У вас нет прав администратора</p>
-                        <Link to="/" className="text-orange-500 hover:text-orange-400 transition-colors">
-                            На главную
-                        </Link>
-                    </div>
-                </div>
-            </div>
-        );
+        return <NotFound />;
     }
 
     // ── Filtered users ──

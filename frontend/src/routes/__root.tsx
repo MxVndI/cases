@@ -1,12 +1,14 @@
 import { Outlet, createRootRoute, Link } from '@tanstack/react-router'
 import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
+import { NotFound } from '@/pages/NotFound'
 import { useAuth } from '@/AuthContext'
 import { Shield } from 'lucide-react'
 import { motion } from 'framer-motion'
 
 export const Route = createRootRoute({
     component: RootComponent,
+    notFoundComponent: NotFound,
 })
 
 function RootComponent() {

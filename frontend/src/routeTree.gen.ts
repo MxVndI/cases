@@ -158,11 +158,11 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   ProtectedRoute: typeof ProtectedRouteWithChildren
   BalanceRoute: typeof BalanceRoute
-  CasesCaseIdRoute: typeof CasesCaseIdRoute
   FarmRoute: typeof FarmRoute
   LoginRoute: typeof LoginRoute
   RegisterRoute: typeof RegisterRoute
   UserRoute: typeof UserRouteWithChildren
+  CasesCaseIdRoute: typeof CasesCaseIdRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -173,13 +173,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/user'
       preLoaderRoute: typeof UserRouteImport
       parentRoute: typeof rootRouteImport
-    }
-    '/user/$userName': {
-      id: '/user/$userName'
-      path: '/$userName'
-      fullPath: '/user/$userName'
-      preLoaderRoute: typeof UserUserNameRouteImport
-      parentRoute: typeof UserRoute
     }
     '/register': {
       id: '/register'
@@ -222,6 +215,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/user/$userName': {
+      id: '/user/$userName'
+      path: '/$userName'
+      fullPath: '/user/$userName'
+      preLoaderRoute: typeof UserUserNameRouteImport
+      parentRoute: typeof UserRoute
     }
     '/cases/$caseId': {
       id: '/cases/$caseId'
@@ -275,11 +275,11 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   ProtectedRoute: ProtectedRouteWithChildren,
   BalanceRoute: BalanceRoute,
-  CasesCaseIdRoute: CasesCaseIdRoute,
   FarmRoute: FarmRoute,
   LoginRoute: LoginRoute,
   RegisterRoute: RegisterRoute,
   UserRoute: UserRouteWithChildren,
+  CasesCaseIdRoute: CasesCaseIdRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
