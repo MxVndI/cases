@@ -2,20 +2,22 @@ import hashlib
 import hmac
 import json
 import logging
+from typing import Literal
+from uuid import UUID, uuid4
 
-from settings import Settings
+import shortuuid
 from fastapi import Request
 from fastapi.responses import RedirectResponse
 from fastapi_sso import SSOBase
-from pydantic import EmailStr
-from shortuuid import encode as short_encode, decode as short_decode
-from uuid import UUID, uuid4
-import shortuuid
-from typing import Literal
 from faststream.redis import RedisBroker
+from pydantic import EmailStr
+from settings import Settings
+from shortuuid import decode as short_decode
+from shortuuid import encode as short_encode
+
+from services.mail import MailSender
 from services.redis import RedisService
 from services.session import SessionService
-from services.mail import MailSender
 
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.INFO)
@@ -34,6 +36,7 @@ class AuthService:
         self.broker = broker
         self.session_service = ss
         self.SECRET_KEY = settings.secret_key
+        self.allowed_tokens = settings.api_tokens
         self.sso_dict = sso_dict
         self.redis = redis_service
         self.mail_serive = mail_service
@@ -66,6 +69,9 @@ class AuthService:
         except (ValueError, AttributeError, KeyError) as e:
             print(f"Verification error: {e}")
             return None
+
+    def verify_token(self, token: str) -> bool:
+        return token in self.allowed_tokens
 
     def get_sso(self, sso: Literal["yandex", "discord"]):
         if sso != "email":

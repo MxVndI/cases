@@ -1,17 +1,27 @@
 import json
 
-from faststream.redis import RedisBroker
+import aiohttp
+from settings import Settings
 
 
 class SessionService:
-    def __init__(self, redis_broker: RedisBroker):
-        self.redis = redis_broker
-
-    async def get_user_id_by_sid(self, sid: str):
-        data = await self.redis.request(
-            stream="auth.rpc", message={"sid": sid}, timeout=5
+    def __init__(self, settings: Settings):
+        self.settings = settings
+        self.auth_service_url = (
+            settings.auth_service_url
+            if hasattr(settings, "auth_service_url")
+            else "http://localhost:8000"
         )
 
-        if data and data.body:
-            data = json.loads(data.body)
-            return data.get("custom_data").get("user").get("id")
+    async def get_user_id_by_sid(self, sid: str):
+        """Получает user_id по session id через запрос к auth сервису"""
+        async with aiohttp.ClientSession() as session:
+            async with session.get(
+                f"{self.auth_service_url}/verify_user/{sid}",
+                params={"token": self.settings.token},
+                timeout=aiohttp.ClientTimeout(total=5),
+            ) as response:
+                if response.status == 200:
+                    data = await response.json()
+                    return data.get("uid")
+                return None

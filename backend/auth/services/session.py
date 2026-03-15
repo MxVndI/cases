@@ -1,11 +1,8 @@
 from datetime import UTC, datetime
-
-
 from uuid import UUID
 
-from pydantic import EmailStr
-
 from models.session import Session
+from pydantic import EmailStr
 from repos.session import SessionRepo
 
 
@@ -31,7 +28,7 @@ class SessionService:
 
         return data
 
-    async def get_session_user(self, session_id: UUID) -> Session | None:
+    async def get_session_user(self, session_id: UUID) -> dict[str, str] | None:
 
         data = await self.repo.get(session_id)
         if data:

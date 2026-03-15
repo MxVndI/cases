@@ -1,24 +1,16 @@
-from faststream.redis import RedisBroker
-from pydantic import EmailStr
-from models.user import User
 from uuid import UUID
+
+from models.user import User
+from pydantic import EmailStr
+from services.redis_manager import RedisManager
 
 
 class UserService:
-    def __init__(self, redis_broker: RedisBroker):
-        self.redis = redis_broker
-
-    async def handle_rpc(self, msg: dict):
-        if msg.get("action") == "get":
-            if mail := msg.get("email"):
-                us = await self.get_user_by_email(mail)
-                return us.model_dump()
-        raise
+    def __init__(self, redis_manager: RedisManager):
+        self.redis_manager = redis_manager
 
     async def get_user_by_id(self, id: str | UUID):
-
         data = await User.get(id)
-
         return data
 
     async def get_user_by_email(self, email: EmailStr):

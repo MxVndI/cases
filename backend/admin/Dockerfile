@@ -4,10 +4,10 @@ WORKDIR /app
 
 # Установка зависимостей
 COPY pyproject.toml .
-RUN pip install --no-cache-dir -e .
+RUN pip install --no-cache-dir .
 
 
-COPY auth/ ./auth/
+COPY admin/ ./admin/
 
 # Переменные окружения по умолчанию
 ENV PYTHONUNBUFFERED=1
@@ -15,5 +15,5 @@ ENV LOG_LEVEL=INFO
 ENV PYTHONPATH=/app
 
 # Запуск приложения
-WORKDIR /app/auth
-CMD ["python", "worker.py"]
+WORKDIR /app/admin
+CMD ["python", "main.py"]

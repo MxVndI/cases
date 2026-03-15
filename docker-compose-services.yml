@@ -1,0 +1,91 @@
+include:
+    - docker-compose-infra.yml
+
+services:
+    authservice:
+        build:
+            context: ./backend
+            dockerfile: auth/Dockerfile_api
+        container_name: auth.api-ch
+        ports:
+            - "8000:8000"
+        env_file:
+            - .env
+        environment:
+            MONGODB_DB_NAME: auth_db
+            APP_NAME: auth.api
+            LOG_LEVEL: INFO
+        depends_on:
+            - redis
+            - mongodb
+
+        restart: unless-stopped
+
+    caseservice:
+        build:
+            context: ./backend
+            dockerfile: cases/Dockerfile
+        container_name: cases.api-ch
+        ports:
+            - "8001:8000"
+        env_file:
+            - .env
+        environment:
+            MONGODB_DB_NAME: cases_db
+            APP_NAME: cases.api
+            LOG_LEVEL: INFO
+        depends_on:
+            - redis
+            - mongodb
+        restart: unless-stopped
+    admin:
+        build:
+            context: ./backend
+            dockerfile: admin/Dockerfile
+        container_name: admin.api-ch
+        ports:
+            - "7777:8000"
+        env_file:
+            - .env
+        environment:
+            APP_NAME: admin.api
+            LOG_LEVEL: INFO
+
+        restart: unless-stopped
+    userservice:
+        build:
+            context: ./backend
+            dockerfile: user/Dockerfile_api
+        container_name: community.api-ch
+        ports:
+            - "8002:8000"
+        env_file:
+            - .env
+        environment:
+            MONGODB_DB_NAME: user_db
+            APP_NAME: user.service
+            LOG_LEVEL: INFO
+        depends_on:
+            - redis
+            - mongodb
+
+        restart: unless-stopped
+    payment:
+        build:
+            context: ./backend/payment
+            dockerfile: Dockerfile
+        container_name: payment.api-ch
+        ports:
+            - "8003:8000"
+        env_file:
+            - .env
+        environment:
+            MONGODB_DB_NAME: payment_db
+            MONGODB_URL: mongodb://mongodb:27017
+            APP_NAME: payment_service
+            LOG_LEVEL: INFO
+        depends_on:
+            - redis
+            - mongodb
+
+        restart: unless-stopped

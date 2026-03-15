@@ -17,7 +17,7 @@ class User(Document):
     id: UUID = Field(default_factory=uuid4)
     email: EmailStr
     nickname: str = Field(default_factory=default_name)
-    trade_link: str = Field(None)
+    trade_link: str|None = Field(None)
     status: Literal["active", "blocked"] = "active"
     created_at: datetime = Field(default_factory=time_now)
     last_updated: datetime = Field(default_factory=time_now)

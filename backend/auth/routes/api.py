@@ -1,15 +1,18 @@
-from typing import Literal, Annotated
-from fastapi import APIRouter, Request, Cookie, HTTPException
+from typing import Annotated, Literal
 
-from dishka.integrations.fastapi import FromDishka, DishkaRoute
-from services import AuthService, SessionService
+from dishka.integrations.fastapi import DishkaRoute, FromDishka
+from fastapi import APIRouter, Cookie, HTTPException, Request
+from fastapi.params import Query
 from schemas.api import (
-    Cookie as CookieSchema,
+    AuthResponse,
     LoginFInishRequest,
     LoginInitRequest,
-    AuthResponse,
 )
-
+from schemas.api import (
+    Cookie as CookieSchema,
+)
+from services.auth import AuthService
+from services.session import SessionService
 
 router = APIRouter(route_class=DishkaRoute)
 
@@ -65,3 +68,25 @@ async def enter_email_code(
     return await auth_service.finish_verify_user_email(
         cookie.email, cookie.cvid, req_body.code
     )
+
+
+@router.get("/verify_user/{ssid}")
+async def verify_user(
+    ssid: str,
+    token: Annotated[str, Query()],
+    auth_service: FromDishka[AuthService],
+    ses_service: FromDishka[SessionService],
+):
+    ok = auth_service.verify_token(token)
+    if not ok:
+        raise HTTPException(403)
+    sid = auth_service.verify_session(ssid)
+    if not sid:
+        raise HTTPException(400)
+    ses = await ses_service.get_session_user(sid)
+    if not ses:
+        raise HTTPException(404)
+    uid = ses.get("id", None)
+    if uid:
+        return {"uid": uid}
+    raise HTTPException(400)
