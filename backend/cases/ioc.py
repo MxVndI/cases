@@ -10,6 +10,7 @@ from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from pymongo.asynchronous.database import AsyncDatabase
 from services.auth import AuthService
 from services.case import CaseService
+from services.inventory import InventoryService
 from services.item import ItemService
 from services.local_auth import LocalAuth
 from settings import Settings
@@ -71,8 +72,10 @@ class ServiceProvider(Provider):
         return ItemService()
 
     @provide(scope=Scope.REQUEST)
-    def get_case_service(self, is_s: ItemService) -> CaseService:
-        return CaseService(item_service=is_s)
+    def get_case_service(
+        self, is_s: ItemService, inv_s: InventoryService
+    ) -> CaseService:
+        return CaseService(item_service=is_s, inventory_service=inv_s)
 
     @provide(scope=Scope.REQUEST)
     def get_local_auth_service(self, st: Settings) -> LocalAuth:
@@ -81,6 +84,10 @@ class ServiceProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def get_auth_service(self, st: Settings, ses: ClientSession) -> AuthService:
         return AuthService(st, ses)
+
+    @provide(scope=Scope.REQUEST)
+    def get_inventory_service(self) -> InventoryService:
+        return InventoryService()
 
 
 container = make_async_container(

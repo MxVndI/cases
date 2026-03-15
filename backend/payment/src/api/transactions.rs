@@ -10,6 +10,15 @@ use crate::{
     shared::requests::CreateTransaction,
 };
 
+/// Get all transactions
+#[utoipa::path(
+    get,
+    path = "/transactions",
+    tag = "payment",
+    responses(
+        (status = 200, description = "List of all transactions", body = [Transaction]),
+    ),
+)]
 pub async fn get_transactions(State(state): State<AppState>) -> Json<Vec<Transaction>> {
     let db = state.client.database(&state.db);
     match TransactionManager::get_all(&db).await {
@@ -18,6 +27,18 @@ pub async fn get_transactions(State(state): State<AppState>) -> Json<Vec<Transac
     }
 }
 
+/// Get transactions for a specific user
+#[utoipa::path(
+    get,
+    path = "/transaction/{user_id}",
+    tag = "payment",
+    params(
+        ("user_id" = Uuid, Path, description = "User ID"),
+    ),
+    responses(
+        (status = 200, description = "List of user transactions", body = [Transaction]),
+    ),
+)]
 pub async fn get_user_transactions(
     Path(user_id): Path<Uuid>,
     State(state): State<AppState>,
@@ -37,6 +58,20 @@ pub async fn create_random(State(state): State<AppState>) -> Json<String> {
     }
 }
 
+/// Create a transaction for a specific user
+#[utoipa::path(
+    post,
+    path = "/transaction/{user_id}",
+    tag = "payment",
+    params(
+        ("user_id" = Uuid, Path, description = "User ID"),
+    ),
+    request_body = CreateTransaction,
+    responses(
+        (status = 200, description = "Transaction created successfully", body = String),
+        (status = 400, description = "Bad request"),
+    ),
+)]
 pub async fn create(
     Path(user_id): Path<Uuid>,
     State(state): State<AppState>,

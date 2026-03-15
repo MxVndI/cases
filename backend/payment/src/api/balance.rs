@@ -6,6 +6,18 @@ use axum::{
 };
 use uuid::Uuid;
 
+/// Get user balance
+#[utoipa::path(
+    get,
+    path = "/balance/{user_id}",
+    tag = "payment",
+    params(
+        ("user_id" = Uuid, Path, description = "User ID"),
+    ),
+    responses(
+        (status = 200, description = "User balance", body = GetBalance),
+    ),
+)]
 pub async fn get_balance(
     Path(user_id): Path<Uuid>,
     State(state): State<AppState>,

@@ -15,7 +15,7 @@ class Weapon(BaseModel):
 
 class CreateItem(BaseModel):
     img_url: str | None = None
-    price: float = Field(ge=100)
+    price: float = Field(ge=0)
     name: str | None = None
     weapon: Weapon
     rarity: Rarity
@@ -48,3 +48,8 @@ class UpdateCase(BaseModel):
     price: float | None = None
     name: str | None = None
     case_content: list[CaseContent] | None = None
+
+
+class AdminLogin(BaseModel):
+    login: str
+    password: str

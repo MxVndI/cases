@@ -32,3 +32,21 @@ class CaseResponse(BaseModel):
     name: str
     created_at: datetime
     case_content: list[Tuple[ItemResponse, float]]
+
+
+class InventoryItemResponse(BaseModel):
+    item_id: UUID
+    obtained_at: datetime
+
+
+class InventoryResponse(BaseModel):
+    id: UUID
+    user_id: UUID
+    items: list[InventoryItemResponse]
+    created_at: datetime
+    last_updated: datetime
+
+
+class OpenCaseResponse(BaseModel):
+    won_item: ItemResponse
+    inventory: InventoryResponse | None

@@ -1,24 +1,32 @@
+import logging
 from contextlib import asynccontextmanager
+
+import uvicorn
+from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-from routes import v1_router
-import uvicorn
-import logging
-from services.database import connect_db
+from fastapi.openapi.docs import get_swagger_ui_html
 from ioc import container
-from dishka.integrations.fastapi import setup_dishka
+from routes import v1_router
+from services.database import connect_db
 
 logger = logging.getLogger(__name__)
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-
     await connect_db()
     yield
 
 
-app = FastAPI(lifespan=lifespan)
+app = FastAPI(
+    title="User API",
+    description="API для управления пользователями",
+    version="0.1",
+    lifespan=lifespan,
+    docs_url=None,
+    redoc_url=None,
+)
 setup_dishka(container, app)
 origins = ["*"]
 app.add_middleware(
@@ -34,6 +42,15 @@ app.include_router(v1_router)
 @app.get("/health")
 def health():
     return "alive"
+
+
+@app.get("/docs", include_in_schema=False)
+async def get_docs():
+    """Swagger UI для User API"""
+    return get_swagger_ui_html(
+        openapi_url="/openapi.json",
+        title="User API - Swagger UI",
+    )
 
 
 if __name__ == "__main__":

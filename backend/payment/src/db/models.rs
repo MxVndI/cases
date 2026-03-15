@@ -2,6 +2,7 @@ use crate::shared::schemas::Currency;
 use crate::shared::{requests::CreateTransaction, schemas::Wallet};
 use chrono::Utc;
 use mongodb::bson::doc;
+use utoipa::ToSchema;
 
 use mongodb::{
     Database,
@@ -12,18 +13,24 @@ use mongodb_ro::Model;
 use mongodb_ro::event::Boot;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-#[derive(Serialize, Deserialize, Debug, Default, Model)]
+
+#[derive(Serialize, Deserialize, Debug, Default, Model, ToSchema)]
 #[model(collection = "transaction")]
 pub struct Transaction {
+    #[serde(skip_serializing)]
     _id: Option<ObjectId>,
     #[model(unique)]
-    id: Uuid,
-    amount: f64,
-    currency: Currency,
-    status: String,
-    from: Uuid,
-    to: Uuid,
-    timestamp: Option<DateTime>,
+    #[schema(value_type = String, format = "Uuid")]
+    pub id: Uuid,
+    pub amount: f64,
+    pub currency: Currency,
+    pub status: String,
+    #[schema(value_type = String, format = "Uuid")]
+    pub from: Uuid,
+    #[schema(value_type = String, format = "Uuid")]
+    pub to: Uuid,
+    #[schema(value_type = String)]
+    pub timestamp: Option<DateTime>,
 }
 
 impl Boot for Transaction {
@@ -59,7 +66,7 @@ impl TransactionManager {
 
                 let update_key = format!("wallet.balances.{}", cur_name);
 
-                let mut balance_model = Balance::new_model(db);
+                let balance_model = Balance::new_model(db);
                 let sender_balance = balance_model
                     .r#where(doc! {"user_id": initiator_id.to_string()})
                     .first()
@@ -77,7 +84,7 @@ impl TransactionManager {
 
                 if sender_amount < tr.amount && initiator_id.to_string() != Uuid::nil().to_string()
                 {
-                    let mut transaction_update_model = Transaction::new_model(db);
+                    let transaction_update_model = Transaction::new_model(db);
                     transaction_update_model
                         .r#where(doc! {"_id": inserted_id.clone()})
                         .update(doc! {"$set": {"status": "failed"}})
@@ -91,7 +98,7 @@ impl TransactionManager {
                     .into());
                 }
 
-                let mut balance_model = Balance::new_model(db);
+                let balance_model = Balance::new_model(db);
                 balance_model
                     .r#where(doc! {"user_id": initiator_id.to_string()})
                     .upsert()
@@ -99,7 +106,7 @@ impl TransactionManager {
                     .await
                     .map_err(|e| format!("Failed to debit sender: {}", e))?;
 
-                let mut balance_model = Balance::new_model(db);
+                let balance_model = Balance::new_model(db);
                 balance_model
                     .reset()
                     .r#where(doc! {"user_id": transaction_model.to.to_string()})
@@ -108,7 +115,7 @@ impl TransactionManager {
                     .await
                     .map_err(|e| format!("Failed to credit receiver: {}", e))?;
 
-                let mut transaction_update_model = Transaction::new_model(db);
+                let transaction_update_model = Transaction::new_model(db);
                 transaction_update_model
                     .r#where(doc! {"_id": inserted_id.clone()})
                     .update(doc! {"$set": {"status": "completed"}})
@@ -174,12 +181,14 @@ impl TransactionManager {
         }
     }
 }
-#[derive(Serialize, Deserialize, Debug, Default, Model)]
+#[derive(Serialize, Deserialize, Debug, Default, Model, ToSchema)]
 #[model(collection = "balance")]
 pub struct Balance {
+    #[serde(skip_serializing)]
     _id: Option<ObjectId>,
     #[model(unique)]
-    user_id: Uuid,
+    #[schema(value_type = String, format = "Uuid")]
+    pub user_id: Uuid,
     pub wallet: Wallet,
 }
 
@@ -190,7 +199,7 @@ impl Boot for Balance {
 pub struct BalanceManager {}
 impl BalanceManager {
     pub async fn get_balance(db: &Database, user_id: Uuid) -> Option<Balance> {
-        let mut bm = Balance::new_model(db);
+        let bm = Balance::new_model(db);
         match bm
             .r#where(doc! {"user_id":user_id.to_string()})
             .first()
@@ -201,7 +210,7 @@ impl BalanceManager {
                 _ => None,
             },
 
-            Err(er) => None,
+            Err(_er) => None,
         }
     }
 }

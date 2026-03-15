@@ -21,10 +21,13 @@ class Settings(BaseSettings):
     case_service_url: str = ""
     payment_service_url: str = ""
     user_service_url: str = ""
+    auth_service_url: str = ""
     env_type: str = "dev"
     secret: str = ""
     login: str = ""
     password: str = ""
+    token: str = ""
+    allowed_tokens: list[str] = []
 
 
 settings = Settings()

@@ -5,9 +5,10 @@ from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, Cookie
 from fastapi.exceptions import HTTPException
 from schemas.requests import CreateCase, UpdateCase
-from schemas.responses import CaseResponse
+from schemas.responses import CaseResponse, OpenCaseResponse
 from services.auth import AuthService
 from services.case import CaseService
+from services.inventory import InventoryService
 from services.local_auth import LocalAuth
 
 router = APIRouter(prefix="/cases", route_class=DishkaRoute)
@@ -64,14 +65,24 @@ async def delete(
     return await cs.delete(id)
 
 
-@router.get("/open/{id}")
-async def open(
+@router.post("/open/{id}")
+async def open_case(
     id: UUID,
     sid: Annotated[str | None, Cookie()],
     cs: FromDishka[CaseService],
     auth: FromDishka[AuthService],
-):
-    print(auth.__class__.__name__)
-    print(sid)
+    inv_s: FromDishka[InventoryService],
+) -> OpenCaseResponse:
     uid = await auth.get_uid(sid)
-    return uid
+    if not uid:
+        raise HTTPException(401, detail="Не авторизован")
+
+    user_id = UUID(uid.get("uid")) if isinstance(uid, dict) else UUID(uid)
+
+    won_item = await cs.open(id, user_id)
+    if not won_item:
+        raise HTTPException(404, detail="Кейс не найден или пуст")
+
+    inventory = await inv_s.get_by_user_id(user_id)
+
+    return OpenCaseResponse(won_item=won_item, inventory=inventory)

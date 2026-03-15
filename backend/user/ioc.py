@@ -6,7 +6,6 @@ from dishka import Provider, Scope, make_async_container, provide
 from dishka.integrations.fastapi import (
     FastapiProvider,
 )
-from faststream.redis import RedisBroker
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from pymongo.asynchronous.database import AsyncDatabase
 from redis.asyncio import Redis
@@ -25,15 +24,6 @@ class ConfigProvider(Provider):
 
 class ServiceProvider(Provider):
     scope = Scope.APP
-
-    @provide(scope=Scope.APP)
-    async def get_redis_broker(self, settings: Settings) -> RedisBroker:
-        broker = RedisBroker(
-            url=settings.redis_url,
-            max_connections=20,
-        )
-        await broker.connect()
-        return broker
 
     @provide(scope=Scope.APP)
     async def get_mongo_client(self, settings: Settings) -> AsyncIOMotorClient:
@@ -60,12 +50,12 @@ class ServiceProvider(Provider):
         return RedisService(redis_client)
 
     @provide(scope=Scope.REQUEST)
-    def get_session_service(self, redis_broker: RedisBroker) -> SessionService:
-        return SessionService(redis_broker)
+    def get_session_service(self, rm: RedisManager) -> SessionService:
+        return SessionService(rm)
 
     @provide(scope=Scope.REQUEST)
-    def get_user_service(self, redis_broker: RedisBroker) -> UserService:
-        return UserService(redis_broker)
+    def get_user_service(self, rm: RedisManager) -> UserService:
+        return UserService(rm)
 
 
 container = make_async_container(

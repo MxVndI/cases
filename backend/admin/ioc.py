@@ -5,7 +5,9 @@ from aiohttp import ClientSession, ClientTimeout, TCPConnector
 from dishka import Provider, Scope, make_async_container, provide
 from dishka.integrations.fastapi import FastapiProvider
 from services.case import CaseService
+from services.item import ItemService
 from services.local_auth import LocalAuth
+from services.user import UserService
 from settings import Settings
 
 
@@ -47,7 +49,7 @@ class ConfigProvider(Provider):
 
 
 class ServiceProvider(Provider):
-    scope = Scope.APP
+    scope = Scope.REQUEST
 
     @provide(scope=Scope.REQUEST)
     def get_local_auth(self, st: Settings) -> LocalAuth:
@@ -56,6 +58,14 @@ class ServiceProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def get_case_service(self, st: Settings, cs: ClientSession) -> CaseService:
         return CaseService(settings=st, session=cs)
+
+    @provide(scope=Scope.REQUEST)
+    def get_item_service(self, st: Settings, cs: ClientSession) -> ItemService:
+        return ItemService(settings=st, session=cs)
+
+    @provide(scope=Scope.REQUEST)
+    def get_user_service(self, st: Settings, cs: ClientSession) -> UserService:
+        return UserService(settings=st, session=cs)
 
 
 container = make_async_container(

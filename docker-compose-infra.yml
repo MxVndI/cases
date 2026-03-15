@@ -1,20 +1,20 @@
 services:
-    traefik:
-        image: traefik:v3.0
-        container_name: traefik-ch
-        ports:
-            - "80:80"
-            - "8080:8080"
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock:ro
-            - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
-            - ./traefik/dynamic:/etc/traefik/dynamic:ro
-        networks:
-            - backend
-        depends_on:
-            - authservice
-            - userservice
-        restart: unless-stopped
+    # traefik:
+    #     image: traefik:v3.0
+    #     container_name: traefik-ch
+    #     ports:
+    #         - "80:80"
+    #         - "8080:8080"
+    #     volumes:
+    #         - /var/run/docker.sock:/var/run/docker.sock:ro
+    #         - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+    #         - ./traefik/dynamic:/etc/traefik/dynamic:ro
+    #     networks:
+    #         - backend
+    #     depends_on:
+    #         - authservice
+    #         - userservice
+    #     restart: unless-stopped
 
     rustfs-server:
         image: rustfs/rustfs:latest
