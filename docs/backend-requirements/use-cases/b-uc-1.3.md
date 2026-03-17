@@ -1,39 +1,54 @@
-# B-UC-1.3: Валидация сессии через RPC
+# B-UC-1.3: Получение текущего пользователя (GET /me)
 
 **Эпик:** [Epic B1: Аутентификация и авторизация](../epics/epic-b01-auth.md)
 
 ## Описание
 
-Валидация сессии через RPC
+Получение данных текущего авторизованного пользователя по cookie `sid`. Auth Service предоставляет эндпоинт `GET /me`, а также HTTP-эндпоинт `GET /verify_user/{ssid}` для межсервисной валидации сессий.
 
 ## Акторы
 
-- **Первичный:** User Service (клиент)
-- **Система:** Auth Service (сервер)
+- **Первичный:** Пользователь (через фронтенд) / Другой сервис (межсервисный вызов)
+- **Система:** Auth Service
 
 ## Предусловия
 
-User Service получает HTTP-запрос с cookie sid
+- Пользователь авторизован (cookie `sid` установлен)
+- Сессия существует в MongoDB
 
-## Основной сценарий
+## Основной сценарий — GET /me
 
-1. User Service извлекает sid из cookie
-2. User Service отправляет RPC-запрос через Redis Stream auth.rpc: {sid: "..."}
-3. Auth Service получает сообщение в subscriber
-4. Auth Service верифицирует подпись HMAC-SHA256
-5. Auth Service получает сессию из Redis (или MongoDB fallback)
-6. Auth Service возвращает данные сессии (custom_data с user)
-7. User Service получает user_id из ответа
+1. Фронтенд отправляет `GET /me` с cookie `sid`
+2. Auth Service извлекает `sid` из cookie
+3. Auth Service верифицирует подпись HMAC-SHA256
+4. Auth Service ищет сессию в MongoDB (Session collection)
+5. Из сессии извлекаются данные пользователя
+6. Возвращается объект User:
+   - `id` (UUID)
+   - `email`
+   - `nickname`
+   - `role` (`user` / `admin`)
+   - `status` (`active` / `blocked`)
+   - `created_at`
+
+## Межсервисная валидация — GET /verify_user/{ssid}
+
+1. Сервис-клиент (User Service, Cases Service, Admin Service) отправляет `GET /verify_user/{ssid}?token=...`
+2. Auth Service верифицирует подпись `ssid` и межсервисный токен
+3. Auth Service ищет сессию в MongoDB
+4. Возвращает `{uid: "..."}` — идентификатор пользователя
 
 ## Постусловия
 
-Запрос пользователя аутентифицирован, user_id известен
+- Клиент получает данные пользователя или uid
+- Запрос аутентифицирован
 
 ## Альтернативные сценарии
 
-1. Невалидная подпись → Auth Service возвращает null
-2. Сессия не найдена → Auth Service возвращает null
-3. Таймаут RPC (5 сек) → User Service возвращает 401
+1. **Cookie `sid` отсутствует** → 401
+2. **Невалидная подпись HMAC** → 401
+3. **Сессия не найдена в MongoDB** → 401
+4. **Межсервисный токен невалиден** (для `/verify_user`) → 403
 
 ## Связанные User Stories
 

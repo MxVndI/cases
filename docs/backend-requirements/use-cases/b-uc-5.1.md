@@ -1,41 +1,50 @@
-# B-UC-5.1: Управление пользователями (admin)
+# B-UC-5.1: Аутентификация администратора (Admin BFF)
 
 **Эпик:** [Epic B5: Администрирование (API)](../epics/epic-b05-admin.md)
 
 ## Описание
 
-Управление пользователями через Admin Service
+Аутентификация администратора в Admin Service (BFF). Статических паролей нет — используется cookie-based auth через общую систему аутентификации. Admin Service проксирует запросы к Cases Service, User Service и Auth Service.
 
 ## Акторы
 
 - **Первичный:** Администратор
-- **Система:** Admin Service
+- **Система:** Admin Service, Auth Service, User Service
 
 ## Предусловия
 
-Администратор авторизован (получил `secret`-токен через `POST /login/`)
+- Администратор авторизован через OAuth / email (cookie `sid` установлен)
+- Пользователь имеет роль `admin` в User Service
 
-## Основной сценарий (планируемый)
+## Механизм аутентификации — `require_admin` dependency
 
-1. Фронтенд отправляет `GET /api/admin/users` c токеном авторизации
-2. Admin Service передаёт запрос к User Service с фильтрами (status, role, search)
-3. Применяется пагинация (offset/limit)
-4. Возвращается список пользователей
-5. Для блокировки: `POST /api/admin/users/{userId}` с `{block: true}`
-6. Admin Service проверяет, что целевой пользователь не admin
-7. Обновляется статус пользователя в User Service
-8. Инвалидируются сессии заблокированного
+1. Admin Service извлекает `sid` из cookie (`AdminCookies` Pydantic model)
+2. Если `sid` отсутствует → 401 (Authentication required)
+3. Admin Service вызывает `AdminAuth.get_admin_user_id(sid)`:
+   - **Шаг 1:** HTTP `GET {auth_service_url}/verify_user/{sid}?token=...` → получает `{uid: "..."}`
+   - Если Auth Service возвращает ошибку → 401 (Invalid session)
+   - **Шаг 2:** HTTP `GET {user_service_url}/v1/users/{uid}` с `Authorization: Bearer <token>` → получает данные пользователя
+   - Если `role != "admin"` → 403 (Admin access required)
+4. При успехе — возвращается `uid` администратора
 
-## Текущее состояние
+## Проксирование запросов
 
-- `POST /login/` — **реализован** (локальная аутентификация, возвращает `secret`)
-- `GET /cases/`, `GET /cases/{id}`, `POST /cases/`, `PATCH /cases/`, `DELETE /cases/{id}` — **реализованы** (проксирование к Cases Service с токеном)
-- `/users` — роутер зарегистрирован, но маршруты **не реализованы**
+Admin Service (BFF) проксирует запросы к другим сервисам, добавляя межсервисный токен:
+- Cases Service: CRUD кейсов, предметов, тегов, редкостей, оружия, типов оружия
+- User Service: управление пользователями
+- Storage: загрузка изображений
+
+## Постусловия
+
+- Администратор аутентифицирован, запросы проксируются с межсервисным токеном
 
 ## Альтернативные сценарии
 
-1. Нет прав admin (неверный токен) → ошибка аутентификации
-2. Попытка заблокировать admin → 400
+1. **Cookie `sid` отсутствует** → 401
+2. **Сессия невалидна** (Auth Service возвращает ошибку) → 401
+3. **Пользователь не admin** (`role != admin`) → 403
+4. **Auth Service недоступен** → 503
+5. **User Service недоступен** → 503
 
 ## Связанные User Stories
 
