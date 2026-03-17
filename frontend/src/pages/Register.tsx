@@ -140,7 +140,7 @@ export function Register() {
                             <Button
                                 type="submit"
                                 disabled={loading}
-                                className="mt-4 w-full cursor-pointer bg-orange-500 hover:bg-white text-white hover:text-black font-semibold py-6 rounded-xl transition-all duration-300 ease-out"
+                                className="cursor-target mt-4 w-full cursor-pointer bg-orange-500 hover:bg-white text-white hover:text-black font-semibold py-6 rounded-xl transition-all duration-300 ease-out"
                             >
                                 {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Получить код"}
                             </Button>
@@ -196,7 +196,7 @@ export function Register() {
                             <Button
                                 type="submit"
                                 disabled={loading}
-                                className="mt-4 w-full cursor-pointer bg-orange-500 hover:bg-white text-white hover:text-black font-semibold py-6 rounded-xl transition-all duration-300 ease-out"
+                                className="cursor-target mt-4 w-full cursor-pointer bg-orange-500 hover:bg-white text-white hover:text-black font-semibold py-6 rounded-xl transition-all duration-300 ease-out"
                             >
                                 {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Зарегистрироваться"}
                             </Button>

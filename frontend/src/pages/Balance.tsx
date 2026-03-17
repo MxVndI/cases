@@ -217,7 +217,7 @@ export function Balance() {
                             <motion.div
                                 whileHover={{ scale: 1.02 }}
                                 whileTap={{ scale: 0.98 }}
-                                className="rounded-2xl border border-border/60 bg-card/80 p-6 text-left hover:border-orange-500/50 transition-colors cursor-pointer"
+                                className="cursor-target rounded-2xl border border-border/60 bg-card/80 p-6 text-left hover:border-orange-500/50 transition-colors cursor-pointer"
                             >
                                 <div className="flex items-center gap-4">
                                     <div className="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center">
@@ -236,7 +236,7 @@ export function Balance() {
                             whileTap={bonusClaimedToday ? undefined : { scale: 0.98 }}
                             onClick={handleDailyBonus}
                             disabled={bonusClaiming || bonusClaimedToday}
-                            className={`rounded-2xl border p-6 text-left transition-colors ${
+                            className={`cursor-target rounded-2xl border p-6 text-left transition-colors ${
                                 bonusClaimedToday
                                     ? "border-border/60 bg-card/70 cursor-not-allowed opacity-70"
                                     : "border-yellow-400/60 bg-gradient-to-br from-yellow-300/25 to-amber-400/20 hover:border-yellow-300 shadow-lg shadow-yellow-500/10 cursor-pointer"

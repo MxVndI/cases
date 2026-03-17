@@ -155,7 +155,7 @@ export function Login() {
                                 <Button
                                     type="submit"
                                     disabled={loading || !email}
-                                    className="w-full cursor-pointer bg-orange-500 hover:bg-white text-white hover:text-black font-semibold py-6 rounded-xl transition-all duration-300 ease-out disabled:opacity-50"
+                                    className="cursor-target w-full cursor-pointer bg-orange-500 hover:bg-white text-white hover:text-black font-semibold py-6 rounded-xl transition-all duration-300 ease-out disabled:opacity-50"
                                 >
                                     {loading ? (
                                         <Loader2 className="h-5 w-5 animate-spin" />
@@ -207,7 +207,7 @@ export function Login() {
                                 <Button
                                     type="submit"
                                     disabled={loading || code.length !== 6}
-                                    className="w-full cursor-pointer bg-orange-500 hover:bg-white text-white hover:text-black font-semibold py-6 rounded-xl transition-all duration-300 ease-out disabled:opacity-50"
+                                    className="cursor-target w-full cursor-pointer bg-orange-500 hover:bg-white text-white hover:text-black font-semibold py-6 rounded-xl transition-all duration-300 ease-out disabled:opacity-50"
                                 >
                                     {loading ? (
                                         <Loader2 className="h-5 w-5 animate-spin" />
@@ -248,7 +248,7 @@ export function Login() {
                             key={provider.name}
                             variant="outline"
                             onClick={() => login(provider.id)}
-                            className="flex cursor-pointer items-center justify-center gap-2 rounded-xl border-border/60 bg-card/70 text-sm text-foreground transition-all duration-300 hover:-translate-y-1 hover:border-orange-500/50 hover:text-orange-500"
+                            className="cursor-target flex cursor-pointer items-center justify-center gap-2 rounded-xl border-border/60 bg-card/70 text-sm text-foreground transition-all duration-300 hover:-translate-y-1 hover:border-orange-500/50 hover:text-orange-500"
                             aria-label={`Войти через ${provider.name}`}
                         >
                             <provider.icon className="h-4 w-4" aria-hidden />

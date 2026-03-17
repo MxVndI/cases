@@ -6,6 +6,7 @@ import { useAuth } from '@/AuthContext'
 import { Shield } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Toaster } from 'sonner'
+import TargetCursor from '@/components/TargetCursor'
 
 export const Route = createRootRoute({
     component: RootComponent,
@@ -17,6 +18,7 @@ function RootComponent() {
 
     return (
         <div className="min-h-screen flex flex-col bg-background text-foreground dark">
+            <TargetCursor spinDuration={5} hideDefaultCursor parallaxOn hoverDuration={1} />
             <Toaster position="bottom-right" theme="dark" richColors toastOptions={{ style: { background: '#1c1c1e', border: '1px solid rgba(255,255,255,0.1)' } }} />
             {/* Floating sticky navbar wrapper */}
             <div className="sticky top-0 z-50 pt-4">
@@ -32,7 +34,7 @@ function RootComponent() {
                         >
                             <Link
                                 to="/admin"
-                                className="flex items-center gap-1.5 rounded-xl border border-red-500/30 bg-card/80 backdrop-blur-xl px-4 h-16 text-sm font-medium text-red-400 hover:text-red-300 hover:border-red-500/50 transition-all shadow-lg"
+                                className="cursor-target flex items-center gap-1.5 rounded-xl border border-red-500/30 bg-card/80 backdrop-blur-xl px-4 h-16 text-sm font-medium text-red-400 hover:text-red-300 hover:border-red-500/50 transition-all shadow-lg"
                             >
                                 <Shield className="h-4 w-4" />
                                 Панель администратора

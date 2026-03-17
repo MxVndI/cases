@@ -343,7 +343,7 @@ export function Farm() {
                                 onMouseUp={() => setIsPressed(false)}
                                 onMouseLeave={() => setIsPressed(false)}
                                 whileTap={{ scale: 0.92 }}
-                                className={`relative w-48 h-48 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 shadow-2xl shadow-orange-500/40 flex items-center justify-center cursor-pointer transition-all duration-100 select-none ${
+                                className={`cursor-target relative w-48 h-48 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 shadow-2xl shadow-orange-500/40 flex items-center justify-center cursor-pointer transition-all duration-100 select-none ${
                                     isPressed ? "shadow-orange-500/60" : ""
                                 }`}
                             >

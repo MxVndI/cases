@@ -461,7 +461,7 @@ export function CaseDetail() {
                                 <button
                                     type="button"
                                     onClick={skipAnimation}
-                                    className="w-full max-w-xs cursor-pointer rounded-xl border border-border/60 bg-card/80 py-3 text-base font-semibold text-muted-foreground hover:text-foreground hover:border-orange-500/40 transition-all duration-300 ease-out"
+                                    className="cursor-target w-full max-w-xs cursor-pointer rounded-xl border border-border/60 bg-card/80 py-3 text-base font-semibold text-muted-foreground hover:text-foreground hover:border-orange-500/40 transition-all duration-300 ease-out"
                                 >
                                     Пропустить
                                 </button>
@@ -471,7 +471,7 @@ export function CaseDetail() {
                                         type="button"
                                         onClick={openCase}
                                         disabled={!isAuthenticated}
-                                        className={`group/button w-full max-w-xs rounded-xl py-3 text-base font-semibold transition-all duration-300 ease-out ${
+                                        className={`cursor-target group/button w-full max-w-xs rounded-xl py-3 text-base font-semibold transition-all duration-300 ease-out ${
                                             isAuthenticated
                                                 ? "cursor-pointer bg-orange-500 text-white hover:bg-white hover:text-black"
                                                 : "cursor-not-allowed bg-muted text-muted-foreground"
@@ -491,7 +491,7 @@ export function CaseDetail() {
                                             type="button"
                                             onClick={() => openMultiCase(3)}
                                             disabled={!isAuthenticated}
-                                            className={`group/btn3 flex-1 rounded-xl border py-2.5 text-sm font-semibold transition-all duration-300 ease-out ${
+                                            className={`cursor-target group/btn3 flex-1 rounded-xl border py-2.5 text-sm font-semibold transition-all duration-300 ease-out ${
                                                 isAuthenticated
                                                     ? "cursor-pointer border-border/60 bg-card/80 text-muted-foreground hover:text-foreground hover:border-orange-500/40"
                                                     : "cursor-not-allowed border-border/40 bg-card/40 text-muted-foreground/70"
@@ -510,7 +510,7 @@ export function CaseDetail() {
                                             type="button"
                                             onClick={() => openMultiCase(5)}
                                             disabled={!isAuthenticated}
-                                            className={`group/btn5 flex-1 rounded-xl border py-2.5 text-sm font-semibold transition-all duration-300 ease-out ${
+                                            className={`cursor-target group/btn5 flex-1 rounded-xl border py-2.5 text-sm font-semibold transition-all duration-300 ease-out ${
                                                 isAuthenticated
                                                     ? "cursor-pointer border-border/60 bg-card/80 text-muted-foreground hover:text-foreground hover:border-orange-500/40"
                                                     : "cursor-not-allowed border-border/40 bg-card/40 text-muted-foreground/70"

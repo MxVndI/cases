@@ -371,7 +371,7 @@ export function Welcome() {
                                         layout: { duration: shouldReduceMotion ? 0 : 0.55, ease: [0.16, 1, 0.3, 1] },
                                         duration: shouldReduceMotion ? 0 : 0.45,
                                     }}
-                                    className="card-hover group relative min-w-0 flex-1 basis-0 rounded-2xl border border-border/60 bg-card/80 p-3 sm:p-4 overflow-hidden backdrop-blur-xl hover:border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/10 text-left"
+                                    className="cursor-target card-hover group relative min-w-0 flex-1 basis-0 rounded-2xl border border-border/60 bg-card/80 p-3 sm:p-4 overflow-hidden backdrop-blur-xl hover:border-orange-500/50 hover:shadow-lg hover:shadow-orange-500/10 text-left"
                                 >
                                     {win.user_nickname && !win.isClone ? (
                                         <Link
@@ -483,7 +483,7 @@ export function Welcome() {
                                     animate={{ opacity: 1, y: 0 }}
                                     transition={{ duration: 0.4, delay: index * 0.05, ease: shouldReduceMotion ? "linear" : [0.16, 1, 0.3, 1] }}
                                     whileHover={undefined}
-                                    className="card-hover group h-full rounded-2xl border border-border/60 bg-card/80 overflow-hidden backdrop-blur-xl hover:border-orange-500/50 hover:shadow-xl hover:shadow-orange-500/10 flex flex-col cursor-pointer"
+                                    className="cursor-target card-hover group h-full rounded-2xl border border-border/60 bg-card/80 overflow-hidden backdrop-blur-xl hover:border-orange-500/50 hover:shadow-xl hover:shadow-orange-500/10 flex flex-col cursor-pointer"
                                 >
                                     <div className="relative h-48 bg-gradient-to-br from-orange-500/20 via-transparent to-transparent p-6">
                                         {caseItem.tag && (
