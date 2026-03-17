@@ -21,7 +21,7 @@ class SessionRepo:
                     value=data.model_dump(),
                     ttl=int(
                         (
-                            data.exipres_at.astimezone(tz=UTC) - datetime.now(tz=UTC)
+                            data.expires_at.astimezone(tz=UTC) - datetime.now(tz=UTC)
                         ).total_seconds()
                     ),
                 )
@@ -36,7 +36,7 @@ class SessionRepo:
             value=data.model_dump(),
             ttl=int(
                 (
-                    data.exipres_at.astimezone(tz=UTC) - datetime.now(tz=UTC)
+                    data.expires_at.astimezone(tz=UTC) - datetime.now(tz=UTC)
                 ).total_seconds()
             ),
         )

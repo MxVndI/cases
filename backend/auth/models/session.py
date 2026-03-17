@@ -18,7 +18,7 @@ class Session(Document):
     email: EmailStr
     created_at: datetime = Field(default_factory=time_now)
     last_activity: datetime = Field(default_factory=time_now)
-    exipres_at: datetime = Field(default_factory=session_expires_at)
+    expires_at: datetime = Field(default_factory=session_expires_at)
     auth_source: str
     custom_data: dict = Field(default_factory=dict)
 
@@ -34,7 +34,7 @@ class Session(Document):
     def serialize_la(self, dt: datetime):
         return dt.isoformat()
 
-    @field_serializer("exipres_at")
+    @field_serializer("expires_at")
     def serialize_ea(self, dt: datetime):
         return dt.isoformat()
 

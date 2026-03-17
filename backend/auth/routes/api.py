@@ -66,8 +66,56 @@ async def enter_email_code(
 ):
 
     return await auth_service.finish_verify_user_email(
-        cookie.email, cookie.cvid, req_body.code
+        cookie.email, cookie.cvid, req_body.code, req_body.nickname
     )
+
+
+@router.post("/logout")
+async def logout(
+    cookie: Annotated[CookieSchema, Cookie()],
+    auth_service: FromDishka[AuthService],
+    session_service: FromDishka[SessionService],
+):
+    if cookie.sid:
+        sid = auth_service.verify_session(cookie.sid)
+        if sid:
+            await session_service.delete_session(sid)
+    from fastapi.responses import JSONResponse
+    response = JSONResponse(content={"ok": True})
+    response.delete_cookie("sid", path="/")
+    response.delete_cookie("sid", path="/", domain=auth_service.settings.cookie_domain)
+    return response
+
+
+@router.post("/profile/update/start")
+async def profile_update_start(
+    cookie: Annotated[CookieSchema, Cookie()],
+    auth_service: FromDishka[AuthService],
+    session_service: FromDishka[SessionService],
+):
+    if not cookie.sid:
+        raise HTTPException(status_code=401)
+    sid = auth_service.verify_session(cookie.sid)
+    user = await session_service.get_session_user(sid)
+    if not user:
+        raise HTTPException(status_code=401)
+    return await auth_service.init_profile_update_code(user["email"])
+
+
+@router.post("/profile/update/finish")
+async def profile_update_finish(
+    req_body: LoginFInishRequest,
+    cookie: Annotated[CookieSchema, Cookie()],
+    auth_service: FromDishka[AuthService],
+    session_service: FromDishka[SessionService],
+):
+    if not cookie.sid:
+        raise HTTPException(status_code=401)
+    sid = auth_service.verify_session(cookie.sid)
+    user = await session_service.get_session_user(sid)
+    if not user:
+        raise HTTPException(status_code=401)
+    return await auth_service.finish_profile_update(cookie.cvid, req_body.code)
 
 
 @router.get("/verify_user/{ssid}")

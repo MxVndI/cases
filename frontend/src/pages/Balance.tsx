@@ -1,13 +1,16 @@
 import { Link } from "@tanstack/react-router";
 import { motion, useReducedMotion } from "framer-motion";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useEffect, useState } from "react";
+import { useAuth } from "@/AuthContext";
+import { paymentApi } from "@/services/api";
 import { Coins, TrendingUp, TrendingDown, Gift, Pickaxe } from "lucide-react";
-import { dummyBalance, dummySpinHistory } from "@/data/dummy-data";
 
 function loadFarmEarned(): number {
     try {
         const stored = localStorage.getItem("farmState");
         if (!stored) return 0;
-        return JSON.parse(stored).earnedHC ?? 0;
+        return Math.floor(JSON.parse(stored).earnedHC ?? 0);
     } catch {
         return 0;
     }
@@ -15,14 +18,86 @@ function loadFarmEarned(): number {
 
 export function Balance() {
     const shouldReduceMotion = useReducedMotion();
-    const balance = dummyBalance.hubCoins;
-    const history = dummySpinHistory;
+    const { user } = useAuth();
+    const queryClient = useQueryClient();
     const earnedHC = loadFarmEarned();
+    const [bonusMsg, setBonusMsg] = useState<string | null>(null);
+    const [bonusClaiming, setBonusClaiming] = useState(false);
+    const [bonusClaimedToday, setBonusClaimedToday] = useState(false);
 
-    // Подсчет статистики
-    const totalSpent = history.reduce((sum, h) => sum + h.cost, 0);
-    const totalWon = history.reduce((sum, h) => sum + h.wonItem.price, 0);
-    const profit = totalWon - totalSpent;
+    const { data: balance = 0, isLoading: balanceLoading } = useQuery({
+        queryKey: ['balance', user?.id],
+        queryFn: () => paymentApi.getBalance(user!.id),
+        enabled: !!user,
+        staleTime: 30_000,
+        refetchOnMount: 'always',
+    });
+
+    const { data: transactions = [] } = useQuery({
+        queryKey: ['transactions', user?.id],
+        queryFn: () => paymentApi.getTransactions(user!.id),
+        enabled: !!user,
+        staleTime: 30_000,
+        refetchOnMount: 'always',
+    });
+
+    // Подсчет статистики из транзакций
+    const totalSpent = Math.floor(transactions
+        .filter(t => t.from === user?.id)
+        .reduce((sum, t) => sum + Math.abs(t.amount), 0));
+    const allReceived = Math.floor(transactions
+        .filter(t => t.to === user?.id)
+        .reduce((sum, t) => sum + t.amount, 0));
+    // Exclude farm earnings — they have a separate tile ("Заработано")
+    const totalReceived = Math.max(0, allReceived - earnedHC);
+    const profit = totalReceived - totalSpent;
+
+    const sortedTransactions = [...transactions]
+        .filter(tx => Boolean(tx.created_at))
+        .sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+
+    const today = new Date().toDateString();
+    const claimedFromTransactions = sortedTransactions.some((tx) =>
+        tx.to === user?.id &&
+        tx.from === "00000000-0000-0000-0000-000000000000" &&
+        tx.amount === 100 &&
+        new Date(tx.created_at).toDateString() === today
+    );
+
+    useEffect(() => {
+        if (!user?.id) {
+            setBonusClaimedToday(false);
+            return;
+        }
+
+        const storedDate = localStorage.getItem(`daily_bonus_claimed:${user.id}`);
+        const claimedFromStorage = storedDate === today;
+        setBonusClaimedToday(claimedFromStorage || claimedFromTransactions);
+    }, [user?.id, today, claimedFromTransactions]);
+
+    const handleDailyBonus = async () => {
+        if (bonusClaiming || bonusClaimedToday) return;
+        setBonusClaiming(true);
+        setBonusMsg(null);
+        try {
+            const result = await paymentApi.claimDailyBonus();
+            setBonusMsg(result.message);
+            if (result.success) {
+                if (user?.id) {
+                    localStorage.setItem(`daily_bonus_claimed:${user.id}`, today);
+                }
+                setBonusClaimedToday(true);
+                queryClient.invalidateQueries({ queryKey: ['balance'] });
+                queryClient.invalidateQueries({ queryKey: ['transactions'] });
+            } else {
+                setBonusClaimedToday(true);
+            }
+        } catch {
+            setBonusMsg("Ошибка при получении бонуса");
+        } finally {
+            setBonusClaiming(false);
+        }
+    };
 
     return (
         <div className="relative min-h-screen bg-background">
@@ -74,7 +149,7 @@ export function Balance() {
                                         Текущий баланс
                                     </p>
                                     <p className="text-3xl sm:text-4xl font-bold text-white">
-                                        {balance.toLocaleString()}
+                                        {balanceLoading ? "..." : balance.toLocaleString()}
                                     </p>
 
                                 </div>
@@ -92,7 +167,7 @@ export function Balance() {
                                 </div>
                                 <span className="text-xs sm:text-sm text-muted-foreground truncate">Потрачено</span>
                             </div>
-                            <p className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-1">{totalSpent} <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-red-500" /></p>
+                            <p className="text-xl sm:text-2xl font-bold text-foreground">{totalSpent.toLocaleString()}</p>
                         </div>
 
                         <div className="rounded-2xl border border-border/60 bg-card/80 p-3 sm:p-6 backdrop-blur-xl">
@@ -100,19 +175,9 @@ export function Balance() {
                                 <div className="w-8 h-8 sm:w-10 sm:h-10 bg-green-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
                                     <TrendingUp className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" />
                                 </div>
-                                <span className="text-xs sm:text-sm text-muted-foreground truncate">Выиграно</span>
+                                <span className="text-xs sm:text-sm text-muted-foreground truncate">Получено</span>
                             </div>
-                            <p className="text-xl sm:text-2xl font-bold text-foreground flex items-center gap-1">{totalWon} <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-green-500" /></p>
-                        </div>
-
-                        <div className="rounded-2xl border border-border/60 bg-card/80 p-3 sm:p-6 backdrop-blur-xl">
-                            <div className="flex items-center gap-2 sm:gap-3 mb-2">
-                                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                                    <Coins className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
-                                </div>
-                                <span className="text-xs sm:text-sm text-muted-foreground truncate">Заработано</span>
-                            </div>
-                            <p className="text-xl sm:text-2xl font-bold text-orange-500 flex items-center gap-1">{earnedHC.toLocaleString()} <Coins className="h-4 w-4 sm:h-5 sm:w-5" /></p>
+                            <p className="text-xl sm:text-2xl font-bold text-foreground">{totalReceived.toLocaleString()}</p>
                         </div>
 
                         <div className="rounded-2xl border border-border/60 bg-card/80 p-3 sm:p-6 backdrop-blur-xl">
@@ -131,8 +196,18 @@ export function Balance() {
                             <p className={`text-xl sm:text-2xl font-bold ${
                                 profit >= 0 ? "text-green-500" : "text-red-500"
                             }`}>
-                                {profit >= 0 ? "+" : ""}{profit} <Coins className="h-4 w-4 sm:h-5 sm:w-5 ml-1" />
+                                {profit >= 0 ? "+" : ""}{profit.toLocaleString()}
                             </p>
+                        </div>
+
+                        <div className="rounded-2xl border border-border/60 bg-card/80 p-3 sm:p-6 backdrop-blur-xl">
+                            <div className="flex items-center gap-2 sm:gap-3 mb-2">
+                                <div className="w-8 h-8 sm:w-10 sm:h-10 bg-orange-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                    <Pickaxe className="h-4 w-4 sm:h-5 sm:w-5 text-orange-500" />
+                                </div>
+                                <span className="text-xs sm:text-sm text-muted-foreground truncate">Заработано</span>
+                            </div>
+                            <p className="text-xl sm:text-2xl font-bold text-orange-500">{earnedHC.toLocaleString()}</p>
                         </div>
                     </div>
 
@@ -157,17 +232,33 @@ export function Balance() {
                         </Link>
 
                         <motion.button
-                            whileHover={{ scale: 1.02 }}
-                            whileTap={{ scale: 0.98 }}
-                            className="rounded-2xl border border-border/60 bg-card/80 p-6 text-left hover:border-orange-500/50 transition-colors cursor-pointer"
+                            whileHover={bonusClaimedToday ? undefined : { scale: 1.02 }}
+                            whileTap={bonusClaimedToday ? undefined : { scale: 0.98 }}
+                            onClick={handleDailyBonus}
+                            disabled={bonusClaiming || bonusClaimedToday}
+                            className={`rounded-2xl border p-6 text-left transition-colors ${
+                                bonusClaimedToday
+                                    ? "border-border/60 bg-card/70 cursor-not-allowed opacity-70"
+                                    : "border-yellow-400/60 bg-gradient-to-br from-yellow-300/25 to-amber-400/20 hover:border-yellow-300 shadow-lg shadow-yellow-500/10 cursor-pointer"
+                            }`}
                         >
                             <div className="flex items-center gap-4">
-                                <div className="w-12 h-12 bg-orange-500/10 rounded-xl flex items-center justify-center">
-                                    <Gift className="h-6 w-6 text-orange-500" />
+                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center ${
+                                    bonusClaimedToday ? "bg-orange-500/10" : "bg-yellow-400/20"
+                                }`}>
+                                    <Gift className={`h-6 w-6 ${bonusClaimedToday ? "text-orange-500" : "text-yellow-300"}`} />
                                 </div>
                                 <div>
-                                    <p className="font-semibold text-foreground">Получить бонус</p>
-                                    <p className="text-sm text-muted-foreground">Ежедневная награда</p>
+                                    <p className="font-semibold text-foreground">
+                                        {bonusClaiming
+                                            ? "Получение..."
+                                            : bonusClaimedToday
+                                                ? "Бонус уже забран"
+                                                : "Получить бонус"}
+                                    </p>
+                                    <p className="text-sm text-muted-foreground">
+                                        {bonusMsg ?? (bonusClaimedToday ? "Приходите завтра за новым бонусом" : "Ежедневная награда — 100 CHC")}
+                                    </p>
                                 </div>
                             </div>
                         </motion.button>
@@ -176,41 +267,69 @@ export function Balance() {
                     {/* История транзакций */}
                     <div className="rounded-2xl border border-border/60 bg-card/80 p-5 sm:p-6 backdrop-blur-xl">
                         <h2 className="text-lg sm:text-xl font-semibold text-foreground mb-4">
-                            История открытий
+                            История транзакций
                         </h2>
                         <div className="space-y-3">
-                            {history.map((item) => (
-                                <div
-                                    key={item.id}
-                                    className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-background/50"
-                                >
-                                    <div className="flex items-center gap-4">
-                                        <div className={`w-10 h-10 rounded-lg flex items-center justify-center border-2 ${
-                                            item.wonItem.rarity === "legendary" ? "border-orange-500 bg-orange-500/10" :
-                                            item.wonItem.rarity === "epic" ? "border-purple-500 bg-purple-500/10" :
-                                            item.wonItem.rarity === "rare" ? "border-blue-500 bg-blue-500/10" :
-                                            "border-gray-500 bg-gray-500/10"
-                                        }`}>
-                                            <Gift className={`h-5 w-5 ${
-                                                item.wonItem.rarity === "legendary" ? "text-orange-500" :
-                                                item.wonItem.rarity === "epic" ? "text-purple-500" :
-                                                item.wonItem.rarity === "rare" ? "text-blue-500" :
-                                                "text-gray-500"
-                                            }`} />
+                            {sortedTransactions.slice(0, 10).map((tx) => {
+                                const isIncoming = tx.to === user?.id;
+                                const label = tx.description || (isIncoming ? "Получено" : "Списано");
+                                const txDate = tx.created_at ? new Date(tx.created_at) : null;
+                                const isFarm = tx.description?.startsWith("Фарм");
+                                const isBonus = tx.description?.startsWith("Ежедневный бонус");
+
+                                let iconBg: string;
+                                let iconBorder: string;
+                                let icon: React.ReactNode;
+
+                                if (isFarm) {
+                                    iconBg = "bg-orange-500/10";
+                                    iconBorder = "border-orange-500";
+                                    icon = <Pickaxe className="h-5 w-5 text-orange-500" />;
+                                } else if (isBonus) {
+                                    iconBg = "bg-purple-500/10";
+                                    iconBorder = "border-purple-500";
+                                    icon = <Gift className="h-5 w-5 text-purple-500" />;
+                                } else if (isIncoming) {
+                                    iconBg = "bg-green-500/10";
+                                    iconBorder = "border-green-500";
+                                    icon = <TrendingUp className="h-5 w-5 text-green-500" />;
+                                } else {
+                                    iconBg = "bg-red-500/10";
+                                    iconBorder = "border-red-500";
+                                    icon = <TrendingDown className="h-5 w-5 text-red-500" />;
+                                }
+
+                                const amountColor = isIncoming ? "text-green-500" : "text-red-500";
+
+                                return (
+                                    <div
+                                        key={tx.id}
+                                        className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-background/50"
+                                    >
+                                        <div className="flex items-center gap-4">
+                                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center border-2 ${iconBorder} ${iconBg}`}>
+                                                {icon}
+                                            </div>
+                                            <div>
+                                                <p className="font-medium text-foreground">
+                                                    {label}
+                                                </p>
+                                                {txDate && (
+                                                    <p className="text-sm text-muted-foreground">
+                                                        {txDate.toLocaleDateString("ru-RU")} {txDate.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })}
+                                                    </p>
+                                                )}
+                                            </div>
                                         </div>
-                                        <div>
-                                            <p className="font-medium text-foreground">{item.wonItem.name}</p>
-                                            <p className="text-sm text-muted-foreground">
-                                                {item.caseName} • {new Date(item.spinDate).toLocaleDateString()}
-                                            </p>
-                                        </div>
+                                        <p className={`font-semibold flex items-center gap-1 ${amountColor}`}>
+                                            {isIncoming ? "+" : "-"}{Math.floor(Math.abs(tx.amount)).toLocaleString()}
+                                        </p>
                                     </div>
-                                    <div className="text-right">
-                                        <p className="font-semibold text-orange-500 flex items-center gap-1">+{item.wonItem.price} <Coins className="h-3.5 w-3.5" /></p>
-                                        <p className="text-xs text-muted-foreground flex items-center gap-1">-{item.cost} <Coins className="h-3 w-3" /></p>
-                                    </div>
-                                </div>
-                            ))}
+                                );
+                            })}
+                            {sortedTransactions.length === 0 && (
+                                <p className="text-center text-muted-foreground py-8">Нет транзакций</p>
+                            )}
                         </div>
                     </div>
                 </motion.div>

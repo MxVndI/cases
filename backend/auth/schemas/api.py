@@ -16,6 +16,7 @@ class LoginInitRequest(BaseModel):
 
 class LoginFInishRequest(BaseModel):
     code: str = Field(..., max_length=6, min_length=6)
+    nickname: str | None = None
 
 
 SocialKey = Literal["vk", "tg", "ds", "yt", "tw", "sc"]
@@ -31,7 +32,6 @@ class User(BaseModel):
     id: UUID
     email: EmailStr
     nickname: str
-    trade_link: str | None = None
     status: Literal["active", "blocked"]
     model_config = ConfigDict(extra="ignore")
 

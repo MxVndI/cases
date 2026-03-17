@@ -1,7 +1,8 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
 import { useAuth } from "@/AuthContext";
-import { mockAuth } from "@/services/api";
+import { paymentApi, farmApi } from "@/services/api";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { Coins, Zap, MousePointerClick, TrendingUp, ShoppingCart, Layers, Timer } from "lucide-react";
 
 interface FarmState {
@@ -55,16 +56,97 @@ interface ClickParticle {
 export function Farm() {
     const shouldReduceMotion = useReducedMotion();
     const { user } = useAuth();
+    const queryClient = useQueryClient();
     const [farm, setFarm] = useState<FarmState>(loadFarmState);
     const [isPressed, setIsPressed] = useState(false);
     const [particles, setParticles] = useState<ClickParticle[]>([]);
     const particleIdRef = useRef(0);
+
+    const { data: realBalance = 0 } = useQuery({
+        queryKey: ['balance', user?.id],
+        queryFn: () => paymentApi.getBalance(user!.id),
+        enabled: !!user,
+        refetchInterval: 5000,
+    });
     const buttonRef = useRef<HTMLButtonElement>(null);
+
+    // Batching: accumulate tap amounts and send periodically
+    const pendingTapRef = useRef(0);
+    const tapTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+    const flushTap = useCallback(() => {
+        const amount = pendingTapRef.current;
+        if (amount <= 0 || !user) return;
+        pendingTapRef.current = 0;
+        paymentApi.tap(amount).then(() => {
+            queryClient.invalidateQueries({ queryKey: ['balance'] });
+        }).catch(() => {
+            // rate limited or error — silently ignore
+        });
+    }, [user, queryClient]);
+
+    const scheduleTap = useCallback((amount: number) => {
+        pendingTapRef.current += amount;
+        // Optimistic balance update
+        if (user) {
+            queryClient.setQueryData(['balance', user.id], (old: number | undefined) => (old ?? 0) + amount);
+        }
+        if (tapTimerRef.current) return; // already scheduled
+        tapTimerRef.current = setTimeout(() => {
+            tapTimerRef.current = null;
+            flushTap();
+        }, 1500);
+    }, [flushTap, user, queryClient]);
+
+    // Flush pending taps on unmount
+    useEffect(() => {
+        return () => {
+            if (tapTimerRef.current) {
+                clearTimeout(tapTimerRef.current);
+                tapTimerRef.current = null;
+            }
+            flushTap();
+        };
+    }, [flushTap]);
 
     // Save farm state on change
     useEffect(() => {
         saveFarmState(farm);
     }, [farm]);
+
+    // Sync farm state with server on mount — get offline earnings
+    const hasSyncedRef = useRef(false);
+    useEffect(() => {
+        if (!user || hasSyncedRef.current) return;
+        hasSyncedRef.current = true;
+        farmApi.sync(farm.autoClickerLevel, farm.autoClickerSpeedLevel).then(res => {
+            if (res.pending > 0) {
+                setFarm(prev => ({ ...prev, pendingHC: Math.floor(res.pending) }));
+            }
+        }).catch(() => {});
+    }, [user]);
+
+    // Sync levels to server when they change
+    const prevLevelsRef = useRef({ level: farm.autoClickerLevel, speed: farm.autoClickerSpeedLevel });
+    useEffect(() => {
+        if (!user) return;
+        if (
+            prevLevelsRef.current.level !== farm.autoClickerLevel ||
+            prevLevelsRef.current.speed !== farm.autoClickerSpeedLevel
+        ) {
+            prevLevelsRef.current = { level: farm.autoClickerLevel, speed: farm.autoClickerSpeedLevel };
+            farmApi.sync(farm.autoClickerLevel, farm.autoClickerSpeedLevel).catch(() => {});
+        }
+    }, [farm.autoClickerLevel, farm.autoClickerSpeedLevel, user]);
+
+    // Periodically sync pending to server (every 30s)
+    useEffect(() => {
+        if (!user) return;
+        const id = setInterval(() => {
+            farmApi.sync(farm.autoClickerLevel, farm.autoClickerSpeedLevel).catch(() => {});
+        }, 30_000);
+        return () => clearInterval(id);
+    }, [user, farm.autoClickerLevel, farm.autoClickerSpeedLevel]);
 
     // Auto-clicker
     useEffect(() => {
@@ -74,7 +156,7 @@ export function Farm() {
             const gain = farm.autoClickerLevel;
             setFarm(prev => ({
                 ...prev,
-                pendingHC: prev.pendingHC + gain,
+                pendingHC: Math.min(Math.floor(prev.pendingHC + gain), 1000),
             }));
         }, interval_ms);
         return () => clearInterval(interval);
@@ -107,70 +189,74 @@ export function Farm() {
         }));
 
         if (user) {
-            mockAuth.updateBalance(gain);
+            scheduleTap(gain);
         }
-    }, [farm.clickPower, farm.clickMultiplierLevel, user]);
+    }, [farm.clickPower, farm.clickMultiplierLevel, user, scheduleTap]);
 
     const upgradeClickPower = () => {
         const cost = CLICK_POWER_COSTS[farm.clickPowerLevel] || 999999;
-        if (farm.earnedHC < cost) return;
+        if (realBalance < cost) return;
+        // Optimistic balance deduction
+        queryClient.setQueryData(['balance', user?.id], (old: number | undefined) => (old ?? 0) - cost);
+        paymentApi.tap(-cost).catch(() => {
+            queryClient.invalidateQueries({ queryKey: ['balance'] });
+        });
         setFarm(prev => ({
             ...prev,
-            earnedHC: prev.earnedHC - cost,
             clickPower: prev.clickPower + 1,
             clickPowerLevel: prev.clickPowerLevel + 1,
         }));
-        if (user) {
-            mockAuth.updateBalance(-cost);
-        }
     };
 
     const upgradeAutoClicker = () => {
         const cost = AUTO_CLICKER_COSTS[farm.autoClickerLevel] || 999999;
-        if (farm.earnedHC < cost) return;
+        if (realBalance < cost) return;
+        queryClient.setQueryData(['balance', user?.id], (old: number | undefined) => (old ?? 0) - cost);
+        paymentApi.tap(-cost).catch(() => {
+            queryClient.invalidateQueries({ queryKey: ['balance'] });
+        });
         setFarm(prev => ({
             ...prev,
-            earnedHC: prev.earnedHC - cost,
             autoClickerLevel: prev.autoClickerLevel + 1,
         }));
-        if (user) {
-            mockAuth.updateBalance(-cost);
-        }
     };
 
     const upgradeClickMultiplier = () => {
         const cost = CLICK_MULTIPLIER_COSTS[farm.clickMultiplierLevel];
-        if (!cost || farm.earnedHC < cost) return;
+        if (!cost || realBalance < cost) return;
+        queryClient.setQueryData(['balance', user?.id], (old: number | undefined) => (old ?? 0) - cost);
+        paymentApi.tap(-cost).catch(() => {
+            queryClient.invalidateQueries({ queryKey: ['balance'] });
+        });
         setFarm(prev => ({
             ...prev,
-            earnedHC: prev.earnedHC - cost,
             clickMultiplierLevel: prev.clickMultiplierLevel + 1,
         }));
-        if (user) {
-            mockAuth.updateBalance(-cost);
-        }
     };
 
     const upgradeAutoSpeed = () => {
         const cost = AUTO_SPEED_COSTS[farm.autoClickerSpeedLevel];
-        if (!cost || farm.earnedHC < cost) return;
+        if (!cost || realBalance < cost) return;
+        queryClient.setQueryData(['balance', user?.id], (old: number | undefined) => (old ?? 0) - cost);
+        paymentApi.tap(-cost).catch(() => {
+            queryClient.invalidateQueries({ queryKey: ['balance'] });
+        });
         setFarm(prev => ({
             ...prev,
-            earnedHC: prev.earnedHC - cost,
             autoClickerSpeedLevel: prev.autoClickerSpeedLevel + 1,
         }));
-        if (user) {
-            mockAuth.updateBalance(-cost);
-        }
     };
 
     const claimPending = () => {
-        if (farm.pendingHC <= 0) return;
+        if (farm.pendingHC <= 0 || !user) return;
         const amount = farm.pendingHC;
-        setFarm(prev => ({ ...prev, earnedHC: prev.earnedHC + amount, pendingHC: 0 }));
-        if (user) {
-            mockAuth.updateBalance(amount);
-        }
+        setFarm(prev => ({ ...prev, pendingHC: 0, earnedHC: Math.floor(prev.earnedHC + amount) }));
+        queryClient.setQueryData(['balance', user.id], (old: number | undefined) => (old ?? 0) + amount);
+        farmApi.claim().then(() => {
+            queryClient.invalidateQueries({ queryKey: ['balance'] });
+        }).catch(() => {
+            queryClient.invalidateQueries({ queryKey: ['balance'] });
+        });
     };
 
     const clickPowerCost = CLICK_POWER_COSTS[farm.clickPowerLevel] ?? null;
@@ -201,18 +287,12 @@ export function Farm() {
                         </p>
                     </div>
 
-                    {/* Earned total */}
-                    <div className="rounded-2xl border border-orange-500/30 bg-gradient-to-br from-orange-500/15 via-card/90 to-card/90 p-6 backdrop-blur-xl mb-4 text-center">
-                        <p className="text-sm text-muted-foreground mb-1">Заработано за всё время</p>
-                        <p className="text-3xl font-bold text-orange-500 flex items-center justify-center gap-1.5">{farm.earnedHC.toLocaleString()} <Coins className="h-6 w-6" /></p>
-                    </div>
-
                     {/* Pending pool */}
                     <div className="rounded-2xl border border-yellow-500/30 bg-gradient-to-br from-yellow-500/10 via-card/90 to-card/90 p-5 backdrop-blur-xl mb-8 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4">
                         <div className="min-w-0">
                             <p className="text-sm text-muted-foreground mb-0.5">Банк авто-кликера</p>
                             <p className="text-2xl font-bold text-yellow-400 flex items-center gap-1.5">{farm.pendingHC.toLocaleString()} <Coins className="h-5 w-5" /></p>
-                            <p className="text-xs text-muted-foreground mt-0.5">Накапливается автоматически — заберите вручную</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">Накапливается автоматически (макс. 1 000)</p>
                         </div>
                         <motion.button
                             whileHover={{ scale: 1.04 }}
@@ -302,9 +382,9 @@ export function Farm() {
                                 whileHover={{ scale: 1.01 }}
                                 whileTap={{ scale: 0.99 }}
                                 onClick={upgradeClickPower}
-                                disabled={farm.earnedHC < clickPowerCost}
+                                disabled={realBalance < clickPowerCost}
                                 className={`w-full rounded-2xl border p-5 text-left transition-all duration-200 ${
-                                    farm.earnedHC >= clickPowerCost
+                                    realBalance >= clickPowerCost
                                         ? "border-orange-500/40 bg-card/80 hover:border-orange-500/60 cursor-pointer"
                                         : "border-border/40 bg-card/50 opacity-50 cursor-not-allowed"
                                 }`}
@@ -344,9 +424,9 @@ export function Farm() {
                                 whileHover={{ scale: 1.01 }}
                                 whileTap={{ scale: 0.99 }}
                                 onClick={upgradeClickMultiplier}
-                                disabled={farm.earnedHC < clickMultiplierCost}
+                                disabled={realBalance < clickMultiplierCost}
                                 className={`w-full rounded-2xl border p-5 text-left transition-all duration-200 ${
-                                    farm.earnedHC >= clickMultiplierCost
+                                    realBalance >= clickMultiplierCost
                                         ? "border-purple-500/40 bg-card/80 hover:border-purple-500/60 cursor-pointer"
                                         : "border-border/40 bg-card/50 opacity-50 cursor-not-allowed"
                                 }`}
@@ -386,9 +466,9 @@ export function Farm() {
                                 whileHover={{ scale: 1.01 }}
                                 whileTap={{ scale: 0.99 }}
                                 onClick={upgradeAutoClicker}
-                                disabled={farm.earnedHC < autoClickerCost}
+                                disabled={realBalance < autoClickerCost}
                                 className={`w-full rounded-2xl border p-5 text-left transition-all duration-200 ${
-                                    farm.earnedHC >= autoClickerCost
+                                    realBalance >= autoClickerCost
                                         ? "border-orange-500/40 bg-card/80 hover:border-orange-500/60 cursor-pointer"
                                         : "border-border/40 bg-card/50 opacity-50 cursor-not-allowed"
                                 }`}
@@ -428,9 +508,9 @@ export function Farm() {
                                 whileHover={{ scale: 1.01 }}
                                 whileTap={{ scale: 0.99 }}
                                 onClick={upgradeAutoSpeed}
-                                disabled={farm.earnedHC < autoSpeedCost}
+                                disabled={realBalance < autoSpeedCost}
                                 className={`w-full rounded-2xl border p-5 text-left transition-all duration-200 ${
-                                    farm.earnedHC >= autoSpeedCost
+                                    realBalance >= autoSpeedCost
                                         ? "border-blue-500/40 bg-card/80 hover:border-blue-500/60 cursor-pointer"
                                         : "border-border/40 bg-card/50 opacity-50 cursor-not-allowed"
                                 }`}

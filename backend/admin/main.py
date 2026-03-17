@@ -7,10 +7,14 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_swagger_ui_html
 from ioc import container
 from routes import router
+from settings import Settings
+from services.storage import StorageService
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
+    settings = Settings()
+    StorageService(settings=settings)
     yield
 
 

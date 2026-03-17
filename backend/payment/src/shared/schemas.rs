@@ -7,9 +7,7 @@ use utoipa::ToSchema;
 #[serde(rename_all = "UPPERCASE")]
 pub enum Currency {
     #[default]
-    RUB,
-    USD,
-    EUR,
+    CHC,
 }
 
 #[derive(Serialize, Deserialize, Debug, Default, Clone, ToSchema)]

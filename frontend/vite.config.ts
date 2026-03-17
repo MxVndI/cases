@@ -5,7 +5,7 @@ import { tanstackRouter } from '@tanstack/router-plugin/vite'
 import path from "path"
 // https://vite.dev/config/
 export default defineConfig({
-  base: '/cases/',
+  base: '/',
   plugins: [ tanstackRouter({
       target: 'react',
       autoCodeSplitting: true,

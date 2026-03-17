@@ -15,6 +15,9 @@ services:
     depends_on:
       - authservice
       - userservice
+      - casesservice
+      - adminservice
+      - paymentservice
     restart: unless-stopped
 
   redis:
@@ -74,6 +77,36 @@ services:
       - backend
 
  
+  rustfs-server:
+    image: rustfs/rustfs:latest
+    container_name: rustfs_casehub
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - casehub_rustfs_data:/data
+    command: /data
+    environment:
+      RUSTFS_ACCESS_KEY: rustfsadmin
+      RUSTFS_SECRET_KEY: rustfsadmin
+      RUSTFS_LOG_LEVEL: info
+    networks:
+      - backend
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend-ch
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_BASE_URL: http://localhost/api
+    networks:
+      - backend
+    restart: unless-stopped
+
   authservice:
     build:
       context: ./backend
@@ -88,24 +121,6 @@ services:
       APP_NAME: auth.api
       LOG_LEVEL: INFO
     depends_on:   
-      - redis    
-      - mongodb 
-    networks:
-      - backend
-    restart: unless-stopped
-
-  authconsumer:
-    build:
-      context: ./backend
-      dockerfile: auth/Dockerfile_amqp
-    container_name: auth.consumer-ch   
-    env_file:
-      - .env
-    environment:   
-      MONGODB_DB_NAME: auth_db      
-      APP_NAME: auth.consumer
-      LOG_LEVEL: INFO
-    depends_on: 
       - redis    
       - mongodb 
     networks:
@@ -132,30 +147,85 @@ services:
       - backend
     restart: unless-stopped
 
-  userconsumer:
+  casesservice:
     build:
       context: ./backend
-      dockerfile: user/Dockerfile_amqp
-    container_name: community.consumer-ch
- 
+      dockerfile: cases/Dockerfile
+    container_name: cases.api-ch
+    ports:
+      - "8002:8000"
     env_file:
       - .env
-    environment:   
-      MONGODB_DB_NAME: user_db      
-      APP_NAME: user.consumer
+    environment:
+      MONGODB_DB_NAME: cases_db
+      APP_NAME: cases.service
       LOG_LEVEL: INFO
+      AUTH_SERVICE_URL: http://authservice:8000
+      PAYMENT_SERVICE_URL: http://paymentservice:8000
+      USER_SERVICE_URL: http://userservice:8000
     depends_on:
       - redis
-      - mongodb    
+      - mongodb
     networks:
       - backend
     restart: unless-stopped
 
+  adminservice:
+    build:
+      context: ./backend
+      dockerfile: admin/Dockerfile
+    container_name: admin.api-ch
+    ports:
+      - "8012:8012"
+    env_file:
+      - .env
+    environment:
+      APP_NAME: admin.service
+      LOG_LEVEL: INFO
+      CASE_SERVICE_URL: http://casesservice:8000
+      PAYMENT_SERVICE_URL: http://paymentservice:8000
+      USER_SERVICE_URL: http://userservice:8000
+      AUTH_SERVICE_URL: http://authservice:8000
+      S3_ENDPOINT: http://rustfs-server:9000
+      S3_ACCESS_KEY: rustfsadmin
+      S3_SECRET_KEY: rustfsadmin
+      S3_BUCKET: casehub
+      S3_PUBLIC_URL: http://localhost:9000
+    depends_on:
+      - casesservice
+      - userservice
+      - authservice
+      - rustfs-server
+    networks:
+      - backend
+    restart: unless-stopped
+
+  paymentservice:
+    build:
+      context: ./backend/payment
+      dockerfile: Dockerfile
+    container_name: payment.api-ch
+    ports:
+      - "8003:8000"
+    env_file:
+      - .env
+    environment:
+      MONGODB_URL: mongodb://mongodb:27017
+      MONGODB_DB_NAME: payment_db
+      AUTH_SERVICE_URL: http://authservice:8000
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - backend
+    restart: unless-stopped
 
  
 volumes:
   casehub_db_data:
   casehub_redis_data:
+  casehub_rustfs_data:
 
 networks:
   backend:

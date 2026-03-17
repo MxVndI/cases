@@ -1,6 +1,8 @@
 import { Link } from "@tanstack/react-router";
 import { motion } from "framer-motion";
 import { useAuth } from "@/AuthContext";
+import { useQuery } from "@tanstack/react-query";
+import { paymentApi } from "@/services/api";
 import { Coins, ChevronDown, LogOut, User } from "lucide-react";
 import caseHubLogo from "@/assets/casehub-logo.svg";
 import {
@@ -13,6 +15,14 @@ import {
 
 export function Navbar() {
     const { user, logout } = useAuth();
+
+    const { data: balance } = useQuery({
+        queryKey: ['balance', user?.id],
+        queryFn: () => paymentApi.getBalance(user!.id),
+        enabled: !!user,
+        staleTime: 5_000,
+        refetchInterval: 10_000,
+    });
 
     return (
         <motion.nav
@@ -36,7 +46,7 @@ export function Navbar() {
                                     className="hidden sm:flex items-center gap-1.5 text-lg text-orange-500 font-bold hover:text-orange-400 transition-colors"
                                 >
                                     <Coins className="h-4 w-4" />
-                                    {(user.balance ?? 0).toLocaleString()}
+                                    {(balance ?? 0).toLocaleString()}
                                 </Link>
 
                                 {/* Username dropdown */}
@@ -52,7 +62,7 @@ export function Navbar() {
                                         <DropdownMenuItem asChild className="sm:hidden">
                                             <Link to="/balance" className="flex items-center gap-2 cursor-pointer">
                                                 <Coins className="h-4 w-4 text-orange-500" />
-                                                <span className="text-orange-500 font-semibold">{(user.balance ?? 0).toLocaleString()}</span>
+                                                <span className="text-orange-500 font-semibold">{(balance ?? 0).toLocaleString()}</span>
                                             </Link>
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator className="sm:hidden" />

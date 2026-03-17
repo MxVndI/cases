@@ -23,6 +23,9 @@ class Case(Document):
     img_url: str | None = None
     price: float = 100
     name: str = Field(default_factory=default_name)
+    system_name: str | None = None
+    tag: str | None = None
+    status: str = "active"
     created_at: datetime = Field(default_factory=time_now)
     case_content: list[CaseContent] = Field(default_factory=list)
 

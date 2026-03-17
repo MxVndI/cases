@@ -27,7 +27,6 @@
           "email": { "type": "string" },
           "is_blocked": { "type": "boolean" },
           "is_admin": { "type": "boolean" },
-          "trade_link": { "type": "string", "nullable": true },
           "registration_date": { "type": "string", "format": "date-time" }
         }
       },

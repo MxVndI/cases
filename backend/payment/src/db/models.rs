@@ -31,6 +31,7 @@ pub struct Transaction {
     pub to: Uuid,
     #[schema(value_type = String)]
     pub timestamp: Option<DateTime>,
+    pub description: Option<String>,
 }
 
 impl Boot for Transaction {
@@ -53,16 +54,12 @@ impl TransactionManager {
         transaction_model.to = tr.to;
         transaction_model.status = "started".to_string();
         transaction_model.timestamp = Some(DateTime::from_millis(Utc::now().timestamp_millis()));
+        transaction_model.description = tr.description.clone();
         match transaction_model.create().await {
             Ok(InsertOneResult { inserted_id, .. }) => {
                 println!("Transaction created with ID: {:?}", inserted_id);
 
-                let cur = tr.currency.clone();
-                let cur_name = match cur {
-                    Currency::EUR => "EUR",
-                    Currency::RUB => "RUB",
-                    Currency::USD => "USD",
-                };
+                let cur_name = "CHC";
 
                 let update_key = format!("wallet.balances.{}", cur_name);
 
@@ -74,11 +71,7 @@ impl TransactionManager {
                     .map_err(|e| format!("Failed to check sender balance: {}", e))?;
 
                 let sender_amount = match &sender_balance {
-                    Some(balance) => match cur {
-                        Currency::EUR => balance.wallet.balances["EUR"],
-                        Currency::RUB => balance.wallet.balances["RUB"],
-                        Currency::USD => balance.wallet.balances["USD"],
-                    },
+                    Some(balance) => *balance.wallet.balances.get("CHC").unwrap_or(&0.0),
                     None => 0.0,
                 };
 
@@ -134,7 +127,7 @@ impl TransactionManager {
         transaction_model.id = Uuid::new_v4();
         transaction_model.from = Uuid::new_v4();
         transaction_model.amount = 555.0;
-        transaction_model.currency = Currency::EUR;
+        transaction_model.currency = Currency::CHC;
         transaction_model.to = Uuid::new_v4();
         transaction_model.timestamp = Some(DateTime::from_millis(Utc::now().timestamp_millis()));
         match transaction_model.create().await {

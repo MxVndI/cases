@@ -32,7 +32,8 @@ async def get_by_id(id: UUID, cs: FromDishka[ItemService]) -> ItemResponse | Non
 async def create(
     cs: FromDishka[ItemService], la: FromDishka[LocalAuth], cd: CreateItem
 ) -> UUID:
-    
+    if not la.verify_token(cd.token):
+        raise HTTPException(403)
     try:
         return await cs.create(cd)
     except:
@@ -40,14 +41,17 @@ async def create(
 
 
 @router.patch("/")
-async def update(cs: FromDishka[ItemService], cd: UpdateItem) -> UUID | None:
-
+async def update(cs: FromDishka[ItemService], la: FromDishka[LocalAuth], cd: UpdateItem) -> UUID | None:
+    if not la.verify_token(cd.token):
+        raise HTTPException(403)
     try:
         return await cs.update(cd)
-    except:
-        raise HTTPException(400)
+    except ValueError as e:
+        raise HTTPException(400, detail=str(e))
 
 
 @router.delete("/{id}")
-async def delete(id: UUID, cs: FromDishka[ItemService]):
+async def delete(id: UUID, token: str, cs: FromDishka[ItemService], la: FromDishka[LocalAuth]):
+    if not la.verify_token(token):
+        raise HTTPException(403)
     return await cs.delete(id)

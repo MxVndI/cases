@@ -17,6 +17,7 @@ dependencies = [
     "msgspec>=0.20.0",
     "pydantic-settings>=2.13.1",
     "pydantic[email,settings]>=2.12.5",
+    "python-multipart>=0.0.20",
     "redis>=7.2.1",
     "robyn>=0.80.0",
     "shortuuid>=1.0.13",

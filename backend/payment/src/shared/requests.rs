@@ -8,4 +8,6 @@ pub struct CreateTransaction {
     pub currency: Currency,
     pub amount: f64,
     pub to: Uuid,
+    #[serde(default)]
+    pub description: Option<String>,
 }

@@ -14,6 +14,8 @@ class Settings(BaseSettings):
     mongodb_db_name: str = "cases_db"
     redis_url: str = "redis://localhost:6379/0"
     auth_service_url: str = "http://localhost:6666"
+    payment_service_url: str = "http://localhost:8003"
+    user_service_url: str = "http://localhost:8001"
     app_name: str = "CaseService"
     app_version: str = "0.1"
     log_level: str = "INFO"

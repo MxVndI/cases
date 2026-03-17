@@ -8,6 +8,7 @@ use axum::{
 };
 use db::utils::get_db;
 use mongodb::Client;
+use redis::aio::MultiplexedConnection;
 use utoipa::OpenApi;
 use utoipa_swagger_ui::SwaggerUi;
 
@@ -15,6 +16,7 @@ use utoipa_swagger_ui::SwaggerUi;
 struct AppState {
     client: Client,
     db: String,
+    redis: MultiplexedConnection,
 }
 
 #[derive(OpenApi)]
@@ -44,15 +46,25 @@ struct ApiDoc;
 #[tokio::main]
 async fn main() {
     let (client, db) = get_db().await;
-    let app_state = AppState { client, db };
+
+    let redis_url = std::env::var("REDIS_URL").unwrap_or_else(|_| "redis://localhost:6379".to_string());
+    let redis_client = redis::Client::open(redis_url).expect("Failed to create Redis client");
+    let redis_conn = redis_client
+        .get_multiplexed_async_connection()
+        .await
+        .expect("Failed to connect to Redis");
+
+    let app_state = AppState { client, db, redis: redis_conn };
     let app = Router::new()
         .route("/", get(|| async { "alive".to_string() }))
+        .route("/health", get(|| async { "alive".to_string() }))
         .route(
             "/transaction/{user_id}",
             post(api::transactions::create).get(api::transactions::get_user_transactions),
         )
         .route("/balance/{user_id}", get(api::balance::get_balance))
         .route("/tap", post(api::tap::tap))
+        .route("/bonus/daily", post(api::bonus::daily_bonus))
         .merge(SwaggerUi::new("/docs").url("/api-docs/openapi.json", ApiDoc::openapi()))
         .with_state(app_state);
 

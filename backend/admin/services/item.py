@@ -39,8 +39,10 @@ class ItemService:
 
     async def create(self, data: CreateItem):
         try:
+            payload = data.model_dump(mode="json")
+            payload["token"] = self.settings.token
             async with self.session.post(
-                f"{self.base_url}/items/", json=data.model_dump()
+                f"{self.base_url}/items/", json=payload
             ) as response:
                 if response.status == 200:
                     return await response.json()
@@ -54,8 +56,10 @@ class ItemService:
 
     async def update(self, data: UpdateItem):
         try:
+            payload = data.model_dump(mode="json")
+            payload["token"] = self.settings.token
             async with self.session.patch(
-                f"{self.base_url}/items/", json=data.model_dump()
+                f"{self.base_url}/items/", json=payload
             ) as response:
                 if response.status == 200:
                     return await response.json()
@@ -69,7 +73,10 @@ class ItemService:
 
     async def delete(self, id: str):
         try:
-            async with self.session.delete(f"{self.base_url}/items/{id}") as response:
+            async with self.session.delete(
+                f"{self.base_url}/items/{id}",
+                params={"token": self.settings.token}
+            ) as response:
                 if response.status == 200:
                     return await response.json()
                 elif response.status == 404:

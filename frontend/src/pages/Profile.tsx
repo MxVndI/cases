@@ -2,51 +2,194 @@ import { useState, useMemo } from "react";
 import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
 import { Link } from "@tanstack/react-router";
 import { useAuth } from "@/AuthContext";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { inventoryApi, casesApi, authApi, type CaseItem, type WinHistoryEntry } from "@/services/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { useRarities } from "@/hooks/useRarities";
+import { FilterPanel, PriceRangeInputs, RarityFilterButtons, SortButtons } from "@/components/filters";
 import {
-    User, Mail, KeyRound, Save, Check, Coins, Package, History,
-    Settings, Box, Shield, ArrowUpDown, SlidersHorizontal, X
+    User, Mail, Save, Check, Coins, Package,
+    Settings, Box, Shield, X,
+    Loader2, ArrowLeft, Crosshair, Clock, History
 } from "lucide-react";
-import { dummySpinHistory, dummyInventory, rarityColors } from "@/data/dummy-data";
 
-type Tab = "overview" | "history" | "inventory" | "settings";
-type Rarity = "common" | "rare" | "epic" | "legendary" | "exotic";
-type InvSortMode = "default" | "price-asc" | "price-desc";
+type Tab = "overview" | "inventory" | "history" | "settings";
+type InvSortMode = "default" | "price-asc" | "price-desc" | "date-asc" | "date-desc";
 
-const rarityFilters: { id: Rarity; label: string; color: string; active: string }[] = [
-    { id: "common",    label: "Обычное",      color: "border-gray-400   text-gray-400",   active: "bg-gray-400/15   border-gray-400   text-gray-300"   },
-    { id: "rare",      label: "Редкое",       color: "border-blue-400   text-blue-400",   active: "bg-blue-400/15   border-blue-400   text-blue-300"   },
-    { id: "epic",      label: "Эпическое",    color: "border-purple-400 text-purple-400", active: "bg-purple-400/15 border-purple-400 text-purple-300" },
-    { id: "legendary", label: "Легендарное",  color: "border-orange-400 text-orange-400", active: "bg-orange-400/15 border-orange-400 text-orange-300" },
-    { id: "exotic",    label: "Экзотическое", color: "border-red-500    text-red-500",    active: "bg-red-500/15    border-red-500    text-red-400"    },
-];
+const rarityColors: Record<string, string> = {
+    common: "text-gray-400 border-gray-400 bg-gray-400/10",
+    rare: "text-blue-400 border-blue-400 bg-blue-400/10",
+    epic: "text-purple-400 border-purple-400 bg-purple-400/10",
+    legendary: "text-orange-400 border-orange-400 bg-orange-400/10",
+    exotic: "text-red-500 border-red-500 bg-red-500/10",
+};
+
+interface EnrichedInventoryItem {
+    id: string;
+    item_id: string;
+    obtained_at: string;
+    name: string;
+    price: number;
+    rarity: string;
+    rarityColor?: string;
+    img_url?: string | null;
+}
+
+function formatWinTime(timestamp: string): string {
+    const diff = Date.now() - new Date(timestamp).getTime();
+    const sec = Math.floor(diff / 1000);
+    if (sec < 60) return `${sec} сек. назад`;
+    const min = Math.floor(sec / 60);
+    if (min < 60) return `${min} мин. назад`;
+    const hrs = Math.floor(min / 60);
+    if (hrs < 24) return `${hrs} ч. назад`;
+    const days = Math.floor(hrs / 24);
+    return `${days} дн. назад`;
+}
+
+function pluralItems(n: number): string {
+    const abs = Math.abs(n) % 100;
+    const last = abs % 10;
+    if (abs > 10 && abs < 20) return `${n} предметов`;
+    if (last > 1 && last < 5) return `${n} предмета`;
+    if (last === 1) return `${n} предмет`;
+    return `${n} предметов`;
+}
+
+function WinTile({ win }: { win: WinHistoryEntry }) {
+    return (
+        <div className="rounded-2xl border border-border/60 bg-card/80 p-4 backdrop-blur-xl flex flex-col items-center text-center gap-2">
+            <div className="h-14 w-14 rounded-xl flex items-center justify-center overflow-hidden">
+                {win.item_img_url ? (
+                    <img src={win.item_img_url} alt={win.item_name} className="h-14 w-14 object-contain" />
+                ) : (
+                    <Crosshair className="h-6 w-6 text-muted-foreground" />
+                )}
+            </div>
+            <p className="text-sm font-medium text-orange-500 truncate w-full">{win.item_name}</p>
+            <p className="text-xs text-muted-foreground truncate w-full">{win.case_name}</p>
+            <p className="text-xs text-muted-foreground">{formatWinTime(win.timestamp)}</p>
+        </div>
+    );
+}
+
+function WinRow({ win }: { win: WinHistoryEntry }) {
+    return (
+        <div className="flex items-center gap-3 rounded-xl border border-border/40 bg-background/30 px-3 py-2.5">
+            <div className="h-10 w-10 rounded-lg flex items-center justify-center flex-shrink-0 overflow-hidden">
+                {win.item_img_url ? (
+                    <img src={win.item_img_url} alt={win.item_name} className="h-10 w-10 object-contain" />
+                ) : (
+                    <Crosshair className="h-5 w-5 text-muted-foreground" />
+                )}
+            </div>
+            <div className="min-w-0 flex-1">
+                <p className="text-sm font-medium text-orange-500 truncate">{win.item_name}</p>
+                <p className="text-xs text-muted-foreground truncate">{win.case_name}</p>
+            </div>
+            <span className="text-xs text-muted-foreground whitespace-nowrap flex-shrink-0">
+                {new Date(win.timestamp).toLocaleString("ru-RU", { day: "numeric", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+            </span>
+        </div>
+    );
+}
 
 export function Profile() {
     const shouldReduceMotion = useReducedMotion();
     const { user, updateProfile, isLoading } = useAuth();
+    const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState<Tab>("overview");
     const [nickname, setNickname] = useState(user?.nickname || "");
-    const [email, setEmail] = useState(user?.email || "");
-    const [currentPassword, setCurrentPassword] = useState("");
-    const [newPassword, setNewPassword] = useState("");
-    const [confirmNewPassword, setConfirmNewPassword] = useState("");
-    const [isSaving, setIsSaving] = useState(false);
+    const [profileStep, setProfileStep] = useState<'form' | 'code'>('form');
+    const [profileCode, setProfileCode] = useState("");
+    const [profileCodeLoading, setProfileCodeLoading] = useState(false);
+    const [profileError, setProfileError] = useState("");
     const [saved, setSaved] = useState(false);
-    const [passwordSaved, setPasswordSaved] = useState(false);
 
-    const history = dummySpinHistory;
-    const inventory = dummyInventory;
+    // Fetch inventory from API
+    const { data: rawInventory = [] } = useQuery({
+        queryKey: ['inventory'],
+        queryFn: inventoryApi.getMyInventory,
+        enabled: !!user,
+        staleTime: 30_000,
+        refetchOnMount: 'always',
+    });
+
+    // Fetch all cases to build item lookup
+    const { data: allCases = [] } = useQuery({
+        queryKey: ['cases'],
+        queryFn: casesApi.getAll,
+        staleTime: 60_000,
+        refetchOnMount: 'always',
+    });
+
+    // Fetch rarities from API
+    const rarities = useRarities();
+
+    // Build item lookup map from all cases
+    const itemMap = useMemo(() => {
+        const map = new Map<string, CaseItem>();
+        for (const c of allCases) {
+            for (const entry of c.case_content) {
+                const item = entry.item;
+                map.set(item.id, item);
+            }
+        }
+        return map;
+    }, [allCases]);
+
+    // Enrich inventory items with details from item lookup
+    const inventory: EnrichedInventoryItem[] = useMemo(() => {
+        return rawInventory.map(inv => {
+            const item = itemMap.get(inv.item_id);
+            const rarityName = item ? (typeof item.rarity === 'string' ? item.rarity : item.rarity.name) : "common";
+            const rarityObj = item && typeof item.rarity !== 'string' ? item.rarity : null;
+            return {
+                id: inv.id,
+                item_id: inv.item_id,
+                obtained_at: inv.obtained_at,
+                name: item?.name ?? "Неизвестный предмет",
+                price: item?.price ?? 0,
+                rarity: rarityName,
+                rarityColor: rarityObj?.color ?? undefined,
+                img_url: item?.img_url ?? null,
+            };
+        });
+    }, [rawInventory, itemMap]);
+
     const [soldItems, setSoldItems] = useState<Set<string>>(new Set());
     const [confirmingSellId, setConfirmingSellId] = useState<string | null>(null);
+    const [showSellAllConfirm, setShowSellAllConfirm] = useState(false);
+    const [sellAllLoading, setSellAllLoading] = useState(false);
+
+    // Fetch user's win stats (total opened + last 3)
+    const { data: winsStats } = useQuery({
+        queryKey: ['wins-stats'],
+        queryFn: casesApi.getMyWinsStats,
+        enabled: !!user,
+        staleTime: 30_000,
+        refetchOnMount: 'always',
+    });
+
+    // Fetch full win history (for History tab)
+    const { data: winHistory = [], isLoading: historyLoading } = useQuery({
+        queryKey: ['win-history'],
+        queryFn: () => casesApi.getMyWins(200, 0),
+        enabled: !!user && activeTab === 'history',
+        staleTime: 30_000,
+        refetchOnMount: 'always',
+    });
 
     // Inventory filters & sorting
     const [invSortMode, setInvSortMode] = useState<InvSortMode>("default");
-    const [invSelectedRarities, setInvSelectedRarities] = useState<Set<Rarity>>(new Set());
+    const [invSelectedRarities, setInvSelectedRarities] = useState<Set<string>>(new Set());
+    const [invPriceMin, setInvPriceMin] = useState(0);
+    const [invPriceMaxOverride, setInvPriceMaxOverride] = useState<number | null>(null);
     const [showInvFilters, setShowInvFilters] = useState(false);
 
-    const toggleInvRarity = (r: Rarity) => {
+    const toggleInvRarity = (r: string) => {
         setInvSelectedRarities(prev => {
             const next = new Set(prev);
             next.has(r) ? next.delete(r) : next.add(r);
@@ -54,10 +197,24 @@ export function Profile() {
         });
     };
 
-    const invFilterCount = (invSelectedRarities.size > 0 ? invSelectedRarities.size : 0) + (invSortMode !== "default" ? 1 : 0);
+    const maxInventoryPrice = useMemo(
+        () => Math.max(100, inventory.filter(item => !soldItems.has(item.id)).reduce((highest, current) => Math.max(highest, current.price), 0)),
+        [inventory, soldItems],
+    );
+    const invPriceMax = invPriceMaxOverride ?? maxInventoryPrice;
+    const handleInvPriceMaxChange = (value: number) => {
+        setInvPriceMaxOverride(value >= maxInventoryPrice ? null : value);
+    };
+
+    const invFilterCount =
+        (invSelectedRarities.size > 0 ? 1 : 0) +
+        (invPriceMin > 0 || invPriceMaxOverride !== null ? 1 : 0) +
+        (invSortMode !== "default" ? 1 : 0);
 
     const resetInvFilters = () => {
         setInvSelectedRarities(new Set());
+        setInvPriceMin(0);
+        setInvPriceMaxOverride(null);
         setInvSortMode("default");
     };
 
@@ -68,64 +225,98 @@ export function Profile() {
         if (invSelectedRarities.size > 0) {
             items = items.filter(item => invSelectedRarities.has(item.rarity));
         }
+        if (invPriceMin > 0) {
+            items = items.filter(item => item.price >= invPriceMin);
+        }
+        if (invPriceMaxOverride !== null) {
+            items = items.filter(item => item.price <= invPriceMax);
+        }
 
         // Sort
-        if (invSortMode === "price-asc") {
-            items = [...items].sort((a, b) => a.price - b.price);
-        } else if (invSortMode === "price-desc") {
-            items = [...items].sort((a, b) => b.price - a.price);
+        switch (invSortMode) {
+            case "price-asc":
+                items = [...items].sort((a, b) => a.price - b.price);
+                break;
+            case "price-desc":
+                items = [...items].sort((a, b) => b.price - a.price);
+                break;
+            case "date-desc":
+                items = [...items].sort((a, b) => new Date(b.obtained_at).getTime() - new Date(a.obtained_at).getTime());
+                break;
+            case "date-asc":
+                items = [...items].sort((a, b) => new Date(a.obtained_at).getTime() - new Date(b.obtained_at).getTime());
+                break;
         }
 
         return items;
-    }, [inventory, soldItems, invSelectedRarities, invSortMode]);
+    }, [invPriceMax, invPriceMaxOverride, invPriceMin, inventory, soldItems, invSelectedRarities, invSortMode]);
 
     const inventoryTotal = activeInventory.reduce((sum, item) => sum + item.price, 0);
 
-    const handleSell = (itemId: string) => {
-        if (confirmingSellId === itemId) {
-            setSoldItems(prev => new Set([...prev, itemId]));
-            setConfirmingSellId(null);
+    const handleSell = async (entryId: string) => {
+        if (confirmingSellId === entryId) {
+            try {
+                await inventoryApi.sellItem(entryId);
+                setSoldItems(prev => new Set([...prev, entryId]));
+                setConfirmingSellId(null);
+                queryClient.invalidateQueries({ queryKey: ['inventory'] });
+                queryClient.invalidateQueries({ queryKey: ['balance'] });
+            } catch {
+                setConfirmingSellId(null);
+            }
         } else {
-            setConfirmingSellId(itemId);
+            setConfirmingSellId(entryId);
         }
+    };
+
+    const handleSellAll = async () => {
+        setSellAllLoading(true);
+        try {
+            await inventoryApi.sellAll();
+            setSoldItems(new Set(activeInventory.map(i => i.id)));
+            queryClient.invalidateQueries({ queryKey: ['inventory'] });
+            queryClient.invalidateQueries({ queryKey: ['balance'] });
+        } catch { /* ignore */ }
+        setSellAllLoading(false);
+        setShowSellAllConfirm(false);
     };
 
     const handleProfileSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsSaving(true);
+        setProfileError("");
+        setProfileCodeLoading(true);
         try {
-            await updateProfile({ nickname: nickname || undefined, email: email || undefined });
-            setSaved(true);
-            setTimeout(() => setSaved(false), 2000);
-        } catch (error) {
-            console.error("Ошибка обновления профиля:", error);
+            await authApi.requestProfileCode();
+            setProfileStep('code');
+        } catch (error: any) {
+            setProfileError(error?.response?.data?.detail || "Не удалось отправить код");
         } finally {
-            setIsSaving(false);
+            setProfileCodeLoading(false);
         }
     };
 
-    const handlePasswordSubmit = async (e: React.FormEvent) => {
+    const handleProfileCodeSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        if (newPassword !== confirmNewPassword) return;
-        setIsSaving(true);
+        setProfileError("");
+        setProfileCodeLoading(true);
         try {
-            await updateProfile({ password: newPassword });
-            setPasswordSaved(true);
-            setCurrentPassword("");
-            setNewPassword("");
-            setConfirmNewPassword("");
-            setTimeout(() => setPasswordSaved(false), 2000);
-        } catch (error) {
-            console.error("Ошибка смены пароля:", error);
+            await authApi.verifyProfileCode(profileCode);
+            await updateProfile({ nickname: nickname || undefined });
+            setSaved(true);
+            setProfileStep('form');
+            setProfileCode("");
+            setTimeout(() => setSaved(false), 2000);
+        } catch (error: any) {
+            setProfileError(error?.response?.data?.detail || "Неверный код");
         } finally {
-            setIsSaving(false);
+            setProfileCodeLoading(false);
         }
     };
 
     const tabs: { id: Tab; label: string; icon: React.ReactNode }[] = [
         { id: "overview", label: "Обзор", icon: <User className="h-4 w-4" /> },
-        { id: "history", label: "История", icon: <History className="h-4 w-4" /> },
         { id: "inventory", label: "Инвентарь", icon: <Package className="h-4 w-4" /> },
+        { id: "history", label: "История", icon: <History className="h-4 w-4" /> },
         { id: "settings", label: "Настройки", icon: <Settings className="h-4 w-4" /> },
     ];
 
@@ -187,9 +378,9 @@ export function Profile() {
                                 <p className="text-sm text-muted-foreground flex items-center gap-2">
                                     <Mail className="h-3.5 w-3.5" /> {user?.email}
                                 </p>
-                                {user?.registeredAt && (
-                                    <p className="text-xs text-muted-foreground mt-1">
-                                        Дата регистрации: {new Date(user.registeredAt).toLocaleDateString("ru-RU")}
+                                {(user?.created_at || user?.registeredAt) && (
+                                    <p className="text-sm text-muted-foreground flex items-center gap-2 mt-1">
+                                        <Clock className="h-3.5 w-3.5" /> {new Date(user.created_at || user.registeredAt!).toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" })}
                                     </p>
                                 )}
                             </div>
@@ -222,87 +413,44 @@ export function Profile() {
                             className="space-y-6"
                         >
                             {/* Статистика */}
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                 <div className="rounded-2xl border border-border/60 bg-card/80 p-6 backdrop-blur-xl">
-                                    <div className="flex items-center gap-3 mb-3">
+                                    <div className="flex items-center gap-3">
                                         <div className="w-10 h-10 bg-purple-500/10 rounded-xl flex items-center justify-center">
                                             <Package className="h-5 w-5 text-purple-500" />
                                         </div>
                                         <span className="text-sm text-muted-foreground">Инвентарь</span>
                                     </div>
                                     <div className="pl-[52px]">
-                                        <p className="text-2xl font-bold text-foreground">{activeInventory.length} предм.</p>
-                                        <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">≈ {inventoryTotal.toLocaleString()} <Coins className="h-3 w-3" /></p>
+                                        <p className="text-2xl font-bold text-foreground">{pluralItems(activeInventory.length)}</p>
+                                        <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">{inventoryTotal.toLocaleString()} <Coins className="h-3 w-3" /></p>
                                     </div>
                                 </div>
-
                                 <div className="rounded-2xl border border-border/60 bg-card/80 p-6 backdrop-blur-xl">
-                                    <div className="flex items-center gap-3 mb-3">
-                                        <div className="w-10 h-10 bg-blue-500/10 rounded-xl flex items-center justify-center">
-                                            <History className="h-5 w-5 text-blue-500" />
+                                    <div className="flex items-center gap-3">
+                                        <div className="w-10 h-10 bg-orange-500/10 rounded-xl flex items-center justify-center">
+                                            <Box className="h-5 w-5 text-orange-500" />
                                         </div>
                                         <span className="text-sm text-muted-foreground">Открыто кейсов</span>
                                     </div>
                                     <div className="pl-[52px]">
-                                        <p className="text-2xl font-bold text-foreground">{history.length}</p>
-                                        <p className="text-xs text-muted-foreground mt-1">за всё время</p>
+                                        <p className="text-2xl font-bold text-foreground">{winsStats?.total_opened ?? 0}</p>
+                                        <p className="text-xs text-muted-foreground mt-2">за всё время</p>
                                     </div>
                                 </div>
                             </div>
 
                             {/* Последние выигрыши */}
-                            <div className="rounded-2xl border border-border/60 bg-card/80 p-4 sm:p-6 backdrop-blur-xl">
-                                <h2 className="text-lg font-semibold text-foreground mb-4">Последние выигрыши</h2>
-                                <div className="space-y-3">
-                                    {history.slice(0, 3).map((item) => (
-                                        <div key={item.id} className="flex items-center justify-between p-3 rounded-xl border border-border/40 bg-background/50 gap-2">
-                                            <div className="flex items-center gap-3 min-w-0">
-                                                <div className={`w-8 h-8 rounded-lg flex items-center justify-center border flex-shrink-0 ${rarityColors[item.wonItem.rarity]}`}>
-                                                    <Box className="h-4 w-4" />
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <p className="text-sm font-medium text-foreground truncate">{item.wonItem.name}</p>
-                                                    <p className="text-xs text-muted-foreground truncate">{item.caseName}</p>
-                                                </div>
-                                            </div>
-                                            <span className="text-sm font-semibold text-orange-500 flex items-center gap-1 flex-shrink-0">+{item.wonItem.price} <Coins className="h-3.5 w-3.5" /></span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
-
-                    {activeTab === "history" && (
-                        <motion.div
-                            initial={{ opacity: 0 }}
-                            animate={{ opacity: 1 }}
-                        >
-                            <div className="rounded-2xl border border-border/60 bg-card/80 p-4 sm:p-6 backdrop-blur-xl">
-                                <h2 className="text-lg font-semibold text-foreground mb-4">История открытий</h2>
-                                <div className="space-y-3">
-                                    {history.map((item) => (
-                                        <div key={item.id} className="flex items-center justify-between p-3 sm:p-4 rounded-xl border border-border/40 bg-background/50 gap-2">
-                                            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
-                                                <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center border-2 flex-shrink-0 ${rarityColors[item.wonItem.rarity]}`}>
-                                                    <Box className="h-4 w-4 sm:h-5 sm:w-5" />
-                                                </div>
-                                                <div className="min-w-0">
-                                                    <p className="font-medium text-foreground truncate">{item.wonItem.name}</p>
-                                                    <p className="text-xs sm:text-sm text-muted-foreground truncate">
-                                                        {item.caseName} &bull; {new Date(item.spinDate).toLocaleDateString("ru-RU")}
-                                                    </p>
-                                                </div>
-                                            </div>
-                                            <div className="text-right flex-shrink-0">
-                                                <p className="font-semibold text-orange-500 flex items-center gap-1">+{item.wonItem.price} <Coins className="h-3.5 w-3.5" /></p>
-                                                <p className="text-xs text-muted-foreground flex items-center gap-1">-{item.cost} <Coins className="h-3 w-3" /></p>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                                {history.length === 0 && (
-                                    <p className="text-center text-muted-foreground py-8">Пока нет открытий</p>
+                            <div className="rounded-2xl border border-border/60 bg-card/80 p-6 backdrop-blur-xl">
+                                <h3 className="text-sm font-semibold text-foreground mb-4">Последние выигрыши</h3>
+                                {(winsStats?.recent_wins?.length ?? 0) > 0 ? (
+                                    <div className="grid grid-cols-3 gap-3">
+                                        {winsStats!.recent_wins.map((win) => (
+                                            <WinTile key={win.id} win={win} />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <p className="text-sm text-muted-foreground">Пока нет выигрышей</p>
                                 )}
                             </div>
                         </motion.div>
@@ -313,103 +461,51 @@ export function Profile() {
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                         >
-                            {/* Header with total + filter toggle */}
+                            {/* Header with total */}
                             <div className="rounded-2xl border border-border/60 bg-card/80 p-4 sm:p-6 backdrop-blur-xl mb-4">
                                 <div className="flex items-center justify-between gap-3">
+                                    <h2 className="text-lg font-semibold text-foreground">Инвентарь</h2>
                                     <div className="flex items-center gap-3">
-                                        <h2 className="text-lg font-semibold text-foreground">Инвентарь</h2>
-                                        <button
-                                            onClick={() => setShowInvFilters(v => !v)}
-                                            className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-medium transition-all duration-200 ${
-                                                showInvFilters
-                                                    ? "bg-orange-500/15 border-orange-500/40 text-orange-400"
-                                                    : "bg-card/80 border-border/60 text-muted-foreground hover:border-orange-500/30 hover:text-foreground"
-                                            }`}
-                                        >
-                                            <SlidersHorizontal className="h-3.5 w-3.5" />
-                                            Фильтры
-                                            {invFilterCount > 0 && (
-                                                <span className="ml-1 bg-orange-500 text-white text-[10px] font-bold w-4 h-4 rounded-full flex items-center justify-center">
-                                                    {invFilterCount}
-                                                </span>
-                                            )}
-                                        </button>
+                                        <p className="text-sm text-muted-foreground">
+                                            Всего: <span className="text-orange-500 font-semibold inline-flex items-center gap-1">{inventoryTotal.toLocaleString()} <Coins className="h-3.5 w-3.5" /></span>
+                                        </p>
+                                        {activeInventory.length > 0 && (
+                                            <button
+                                                onClick={() => setShowSellAllConfirm(true)}
+                                                className="px-3 py-1.5 rounded-lg border border-red-500/30 bg-red-500/10 text-red-400 hover:bg-red-500/20 text-xs font-medium transition-all duration-200"
+                                            >
+                                                Продать всё
+                                            </button>
+                                        )}
                                     </div>
-                                    <p className="text-sm text-muted-foreground">
-                                        Всего: <span className="text-orange-500 font-semibold inline-flex items-center gap-1">{inventoryTotal.toLocaleString()} <Coins className="h-3.5 w-3.5" /></span>
-                                    </p>
                                 </div>
+                            </div>
 
-                                {/* Filters panel */}
-                                <AnimatePresence>
-                                    {showInvFilters && (
-                                        <motion.div
-                                            initial={{ height: 0, opacity: 0 }}
-                                            animate={{ height: "auto", opacity: 1 }}
-                                            exit={{ height: 0, opacity: 0 }}
-                                            transition={{ duration: 0.2 }}
-                                            className="overflow-hidden"
-                                        >
-                                            <div className="pt-4 mt-4 border-t border-border/40 space-y-4">
-                                                {/* Sorting */}
-                                                <div>
-                                                    <p className="text-xs font-medium text-muted-foreground mb-2 flex items-center gap-1.5">
-                                                        <ArrowUpDown className="h-3 w-3" /> Сортировка
-                                                    </p>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {([
-                                                            { id: "default" as InvSortMode, label: "По умолчанию" },
-                                                            { id: "price-asc" as InvSortMode, label: "Цена ↑" },
-                                                            { id: "price-desc" as InvSortMode, label: "Цена ↓" },
-                                                        ]).map((opt) => (
-                                                            <button
-                                                                key={opt.id}
-                                                                onClick={() => setInvSortMode(opt.id)}
-                                                                className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all duration-200 ${
-                                                                    invSortMode === opt.id
-                                                                        ? "bg-orange-500/15 border-orange-500/40 text-orange-400"
-                                                                        : "border-border/60 text-muted-foreground hover:border-orange-500/30 hover:text-foreground"
-                                                                }`}
-                                                            >
-                                                                {opt.label}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-
-                                                {/* Rarity */}
-                                                <div>
-                                                    <p className="text-xs font-medium text-muted-foreground mb-2">Редкость</p>
-                                                    <div className="flex flex-wrap gap-2">
-                                                        {rarityFilters.map((r) => (
-                                                            <button
-                                                                key={r.id}
-                                                                onClick={() => toggleInvRarity(r.id)}
-                                                                className={`px-3 py-1.5 rounded-lg border text-xs font-medium transition-all duration-200 ${
-                                                                    invSelectedRarities.has(r.id)
-                                                                        ? r.active
-                                                                        : "border-border/60 text-muted-foreground hover:text-foreground"
-                                                                }`}
-                                                            >
-                                                                {r.label}
-                                                            </button>
-                                                        ))}
-                                                    </div>
-                                                </div>
-
-                                                {/* Reset */}
-                                                {invFilterCount > 0 && (
-                                                    <button
-                                                        onClick={resetInvFilters}
-                                                        className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
-                                                    >
-                                                        <X className="h-3 w-3" /> Сбросить фильтры
-                                                    </button>
-                                                )}
-                                            </div>
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
+                            {/* Filters */}
+                            <div className="mb-4">
+                                <FilterPanel
+                                    open={showInvFilters}
+                                    onToggle={() => setShowInvFilters(v => !v)}
+                                    filterCount={invFilterCount}
+                                    onReset={resetInvFilters}
+                                >
+                                    <SortButtons
+                                        options={[
+                                            { id: "default" as InvSortMode, label: "По умолчанию" },
+                                            { descId: "price-desc" as InvSortMode, ascId: "price-asc" as InvSortMode, label: "Цена" },
+                                            { descId: "date-desc" as InvSortMode, ascId: "date-asc" as InvSortMode, label: "Дата" },
+                                        ]}
+                                        current={invSortMode}
+                                        onChange={setInvSortMode}
+                                        label="Сортировка"
+                                        size="sm"
+                                    />
+                                    <PriceRangeInputs min={invPriceMin} max={invPriceMax} onMinChange={setInvPriceMin} onMaxChange={handleInvPriceMaxChange} maxValue={maxInventoryPrice} />
+                                    <div>
+                                        <p className="text-xs font-medium text-muted-foreground mb-2">Редкость</p>
+                                        <RarityFilterButtons rarities={rarities} selected={invSelectedRarities} onToggle={toggleInvRarity} size="sm" />
+                                    </div>
+                                </FilterPanel>
                             </div>
 
                             {/* Inventory grid */}
@@ -424,25 +520,29 @@ export function Profile() {
                                             initial={{ opacity: 0, scale: 0.95 }}
                                             animate={{ opacity: 1, scale: 1 }}
                                             exit={{ opacity: 0, scale: 0.9, transition: { duration: 0.2 } }}
-                                            whileHover={{ y: -6, scale: 1.02 }}
+                                            whileHover={undefined}
                                             transition={{ duration: 0.25, ease: [0.16, 1, 0.3, 1] }}
-                                            className={`group/card rounded-2xl border-2 bg-card/80 overflow-hidden backdrop-blur-xl transition-shadow duration-300 hover:shadow-lg hover:shadow-orange-500/10 ${rarityColors[item.rarity]}`}
+                                            className={`card-hover group/card rounded-2xl border-2 bg-card/80 overflow-hidden backdrop-blur-xl hover:shadow-lg hover:shadow-orange-500/10 ${rarityColors[item.rarity]}`}
                                         >
-                                            <div className="h-32 flex items-center justify-center bg-gradient-to-br from-orange-500/10 via-transparent to-transparent">
-                                                <motion.div
-                                                    whileHover={{ rotate: [0, -5, 5, 0], scale: 1.1 }}
-                                                    transition={{ duration: 0.4 }}
-                                                >
-                                                    <Box className="h-12 w-12 transition-colors duration-200 group-hover/card:text-orange-400" />
-                                                </motion.div>
+                                            <div className="h-44 flex items-center justify-center bg-gradient-to-br from-orange-500/10 via-transparent to-transparent">
+                                                {item.img_url ? (
+                                                    <img
+                                                        src={item.img_url}
+                                                        alt={item.name}
+                                                        className="h-40 w-40 object-contain"
+                                                    />
+                                                ) : (
+                                                    <div>
+                                                        <Box className="h-12 w-12 transition-colors duration-200 group-hover/card:text-orange-400" />
+                                                    </div>
+                                                )}
                                             </div>
                                             <div className="p-4">
                                                 <p className="font-medium text-foreground text-sm mb-1">{item.name}</p>
-                                                <p className="text-xs text-muted-foreground mb-2">из {item.wonFrom}</p>
                                                 <div className="flex items-center justify-between mb-3">
                                                     <span className="text-sm font-bold text-orange-500 flex items-center gap-1">{item.price.toLocaleString()} <Coins className="h-3.5 w-3.5" /></span>
                                                     <span className="text-xs text-muted-foreground">
-                                                        {new Date(item.wonDate).toLocaleDateString("ru-RU")}
+                                                        {new Date(item.obtained_at).toLocaleDateString("ru-RU")}
                                                     </span>
                                                 </div>
                                                 <AnimatePresence mode="wait">
@@ -505,6 +605,35 @@ export function Profile() {
                         </motion.div>
                     )}
 
+                    {activeTab === "history" && (
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                        >
+                            <div className="rounded-2xl border border-border/60 bg-card/80 p-4 sm:p-6 backdrop-blur-xl">
+                                <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                                    <History className="h-5 w-5 text-orange-500" /> История дропов
+                                </h2>
+                                {historyLoading ? (
+                                    <div className="flex items-center justify-center py-12">
+                                        <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+                                    </div>
+                                ) : winHistory.length > 0 ? (
+                                    <div className="space-y-2">
+                                        {winHistory.map((win) => (
+                                            <WinRow key={win.id} win={win} />
+                                        ))}
+                                    </div>
+                                ) : (
+                                    <div className="text-center py-12">
+                                        <History className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                                        <p className="text-muted-foreground">История пуста</p>
+                                    </div>
+                                )}
+                            </div>
+                        </motion.div>
+                    )}
+
                     {activeTab === "settings" && (
                         <motion.div
                             initial={{ opacity: 0 }}
@@ -516,104 +645,137 @@ export function Profile() {
                                 <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
                                     <User className="h-5 w-5 text-orange-500" /> Профиль
                                 </h2>
-                                <form onSubmit={handleProfileSubmit} className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="nickname" className="text-sm font-medium text-foreground">
-                                            Никнейм
-                                        </Label>
-                                        <Input
-                                            id="nickname"
-                                            type="text"
-                                            placeholder="Ваш никнейм"
-                                            value={nickname}
-                                            onChange={(e) => setNickname(e.target.value)}
-                                            className="rounded-xl border-border/60 bg-background/50 text-foreground placeholder:text-muted-foreground focus:border-orange-500/50 focus:ring-orange-500/20"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="email" className="text-sm font-medium text-foreground">
-                                            Электронная почта
-                                        </Label>
-                                        <Input
-                                            id="email"
-                                            type="email"
-                                            placeholder="email@example.com"
-                                            value={email}
-                                            onChange={(e) => setEmail(e.target.value)}
-                                            className="rounded-xl border-border/60 bg-background/50 text-foreground placeholder:text-muted-foreground focus:border-orange-500/50 focus:ring-orange-500/20"
-                                        />
-                                    </div>
-                                    <Button
-                                        type="submit"
-                                        disabled={isSaving}
-                                        className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-5 rounded-xl transition-all duration-300 flex items-center gap-2"
-                                    >
-                                        {saved ? <><Check className="h-4 w-4" /> Сохранено!</> : <><Save className="h-4 w-4" /> Сохранить</>}
-                                    </Button>
-                                </form>
-                            </div>
-
-                            {/* Смена пароля */}
-                            <div className="rounded-2xl border border-border/60 bg-card/80 p-6 backdrop-blur-xl">
-                                <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                                    <KeyRound className="h-5 w-5 text-orange-500" /> Смена пароля
-                                </h2>
-                                <form onSubmit={handlePasswordSubmit} className="space-y-4">
-                                    <div className="space-y-2">
-                                        <Label htmlFor="current-password" className="text-sm font-medium text-foreground">
-                                            Текущий пароль
-                                        </Label>
-                                        <Input
-                                            id="current-password"
-                                            type="password"
-                                            value={currentPassword}
-                                            onChange={(e) => setCurrentPassword(e.target.value)}
-                                            className="rounded-xl border-border/60 bg-background/50 text-foreground focus:border-orange-500/50 focus:ring-orange-500/20"
-                                            required
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="new-password" className="text-sm font-medium text-foreground">
-                                            Новый пароль
-                                        </Label>
-                                        <Input
-                                            id="new-password"
-                                            type="password"
-                                            value={newPassword}
-                                            onChange={(e) => setNewPassword(e.target.value)}
-                                            className="rounded-xl border-border/60 bg-background/50 text-foreground focus:border-orange-500/50 focus:ring-orange-500/20"
-                                            required
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <Label htmlFor="confirm-new-password" className="text-sm font-medium text-foreground">
-                                            Подтвердите новый пароль
-                                        </Label>
-                                        <Input
-                                            id="confirm-new-password"
-                                            type="password"
-                                            value={confirmNewPassword}
-                                            onChange={(e) => setConfirmNewPassword(e.target.value)}
-                                            className="rounded-xl border-border/60 bg-background/50 text-foreground focus:border-orange-500/50 focus:ring-orange-500/20"
-                                            required
-                                        />
-                                        {newPassword && confirmNewPassword && newPassword !== confirmNewPassword && (
-                                            <p className="text-xs text-red-500">Пароли не совпадают</p>
-                                        )}
-                                    </div>
-                                    <Button
-                                        type="submit"
-                                        disabled={isSaving || !newPassword || newPassword !== confirmNewPassword}
-                                        className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-5 rounded-xl transition-all duration-300 flex items-center gap-2 disabled:opacity-50"
-                                    >
-                                        {passwordSaved ? <><Check className="h-4 w-4" /> Пароль изменён!</> : <><KeyRound className="h-4 w-4" /> Изменить пароль</>}
-                                    </Button>
-                                </form>
+                                <AnimatePresence mode="wait">
+                                    {profileStep === 'form' ? (
+                                        <motion.form
+                                            key="profile-form"
+                                            initial={{ opacity: 0, x: -20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: -20 }}
+                                            transition={{ duration: 0.2 }}
+                                            onSubmit={handleProfileSubmit}
+                                            className="space-y-4"
+                                        >
+                                            <div className="space-y-2">
+                                                <Label htmlFor="nickname" className="text-sm font-medium text-foreground">
+                                                    Никнейм
+                                                </Label>
+                                                <Input
+                                                    id="nickname"
+                                                    type="text"
+                                                    placeholder="Ваш никнейм"
+                                                    value={nickname}
+                                                    onChange={(e) => setNickname(e.target.value)}
+                                                    className="rounded-xl border-border/60 bg-background/50 text-foreground placeholder:text-muted-foreground focus:border-orange-500/50 focus:ring-orange-500/20"
+                                                />
+                                            </div>
+                                            {profileError && <p className="text-sm text-red-400">{profileError}</p>}
+                                            <Button
+                                                type="submit"
+                                                disabled={profileCodeLoading}
+                                                className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-5 rounded-xl transition-all duration-300 flex items-center gap-2"
+                                            >
+                                                {profileCodeLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : <><Mail className="h-4 w-4" /> Получить код</>}
+                                            </Button>
+                                        </motion.form>
+                                    ) : (
+                                        <motion.form
+                                            key="profile-code"
+                                            initial={{ opacity: 0, x: 20 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            exit={{ opacity: 0, x: 20 }}
+                                            transition={{ duration: 0.2 }}
+                                            onSubmit={handleProfileCodeSubmit}
+                                            className="space-y-4"
+                                        >
+                                            <p className="text-sm text-muted-foreground">
+                                                Код подтверждения отправлен на <span className="text-orange-500 font-medium">{user?.email}</span>
+                                            </p>
+                                            <div className="space-y-2">
+                                                <Label htmlFor="profile-code" className="text-sm font-medium text-foreground">
+                                                    Код подтверждения
+                                                </Label>
+                                                <Input
+                                                    id="profile-code"
+                                                    type="text"
+                                                    inputMode="text"
+                                                    maxLength={6}
+                                                    value={profileCode}
+                                                    onChange={(e) => { setProfileCode(e.target.value); setProfileError(""); }}
+                                                    placeholder="XXXXXX"
+                                                    className="text-center text-2xl tracking-[0.5em] rounded-xl border-border/60 bg-background/50 text-foreground font-mono focus:border-orange-500/50 focus:ring-orange-500/20"
+                                                    required
+                                                    autoFocus
+                                                />
+                                            </div>
+                                            {profileError && <p className="text-sm text-red-400">{profileError}</p>}
+                                            <Button
+                                                type="submit"
+                                                disabled={profileCodeLoading || profileCode.length !== 6}
+                                                className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-8 py-5 rounded-xl transition-all duration-300 flex items-center gap-2 disabled:opacity-50"
+                                            >
+                                                {profileCodeLoading ? <Loader2 className="h-4 w-4 animate-spin" /> : saved ? <><Check className="h-4 w-4" /> Сохранено!</> : <><Save className="h-4 w-4" /> Подтвердить и сохранить</>}
+                                            </Button>
+                                            <button
+                                                type="button"
+                                                onClick={() => { setProfileStep('form'); setProfileCode(""); setProfileError(""); }}
+                                                className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-white transition-colors cursor-pointer"
+                                            >
+                                                <ArrowLeft className="h-3.5 w-3.5" /> Назад
+                                            </button>
+                                        </motion.form>
+                                    )}
+                                </AnimatePresence>
                             </div>
                         </motion.div>
                     )}
                 </motion.div>
             </main>
+
+            {/* Sell All confirmation overlay */}
+            <AnimatePresence>
+                {showSellAllConfirm && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+                        onClick={() => !sellAllLoading && setShowSellAllConfirm(false)}
+                    >
+                        <motion.div
+                            initial={{ scale: 0.95, opacity: 0 }}
+                            animate={{ scale: 1, opacity: 1 }}
+                            exit={{ scale: 0.95, opacity: 0 }}
+                            onClick={e => e.stopPropagation()}
+                            className="rounded-2xl border border-border/60 bg-card p-6 sm:p-8 max-w-md w-full mx-4 shadow-2xl"
+                        >
+                            <h3 className="text-lg font-semibold text-foreground mb-2">Продать все предметы?</h3>
+                            <p className="text-sm text-muted-foreground mb-1">
+                                Будет продано <span className="text-foreground font-medium">{activeInventory.length}</span> предметов
+                            </p>
+                            <p className="text-sm text-muted-foreground mb-6">
+                                Вы получите <span className="text-orange-500 font-semibold">{inventoryTotal.toLocaleString()}</span> <Coins className="h-3.5 w-3.5 inline" />
+                            </p>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={handleSellAll}
+                                    disabled={sellAllLoading}
+                                    className="flex-1 py-2.5 rounded-xl bg-red-500/15 border border-red-500/40 text-red-400 hover:bg-red-500/25 text-sm font-medium transition-all duration-200 disabled:opacity-50"
+                                >
+                                    {sellAllLoading ? "Продаём..." : "Да, продать всё"}
+                                </button>
+                                <button
+                                    onClick={() => setShowSellAllConfirm(false)}
+                                    disabled={sellAllLoading}
+                                    className="flex-1 py-2.5 rounded-xl bg-card/80 border border-border/60 text-muted-foreground hover:text-foreground text-sm font-medium transition-all duration-200"
+                                >
+                                    Отмена
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

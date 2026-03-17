@@ -28,7 +28,7 @@ class ItemService:
         if not item:
             raise ValueError("Item not found")
         item_data = item.model_dump()
-        for k, v in data.model_dump(exclude_none=True):
+        for k, v in data.model_dump(exclude_none=True).items():
             item_data[k] = v
 
         item = Item(**item_data)
@@ -37,4 +37,8 @@ class ItemService:
         return item.id
 
     async def delete(self, id: UUID):
-        return await Item.delete(Item.id == id)
+        item = await Item.find_one(Item.id == id)
+        if not item:
+            raise ValueError("Item not found")
+        await item.delete()
+        return True

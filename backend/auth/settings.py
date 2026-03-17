@@ -35,4 +35,7 @@ class Settings(BaseSettings):
     email_password: str = ""
     secret_key: str = ""
     api_tokens: list[str]
-    # user_service_url: str = ""
+    frontend_url: str = "http://localhost:5173"
+    cookie_domain: str = "localhost"
+    cookie_secure: bool = False
+    user_service_url: str = "http://localhost:8000"

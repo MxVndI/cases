@@ -8,11 +8,18 @@ from dishka.integrations.fastapi import (
 )
 from motor.motor_asyncio import AsyncIOMotorClient, AsyncIOMotorDatabase
 from pymongo.asynchronous.database import AsyncDatabase
+from redis.asyncio import Redis
 from services.auth import AuthService
 from services.case import CaseService
 from services.inventory import InventoryService
 from services.item import ItemService
 from services.local_auth import LocalAuth
+from services.payment import PaymentService
+from services.rarity import RarityService
+from services.tag import TagService
+from services.user import UserService
+from services.weapon import WeaponService
+from services.weapon_type import WeaponTypeService
 from settings import Settings
 
 
@@ -61,6 +68,12 @@ class ServiceProvider(Provider):
         return AsyncIOMotorClient(settings.mongodb_url)
 
     @provide(scope=Scope.APP)
+    async def get_redis(self, settings: Settings) -> AsyncIterable[Redis]:
+        r = Redis.from_url(settings.redis_url, decode_responses=True)
+        yield r
+        await r.aclose()
+
+    @provide(scope=Scope.APP)
     async def get_mongo_db(
         self, settings: Settings, client: AsyncIOMotorClient
     ) -> AsyncDatabase:
@@ -72,10 +85,27 @@ class ServiceProvider(Provider):
         return ItemService()
 
     @provide(scope=Scope.REQUEST)
+    def get_rarity_service(self) -> RarityService:
+        return RarityService()
+
+    @provide(scope=Scope.REQUEST)
+    def get_tag_service(self) -> TagService:
+        return TagService()
+
+    @provide(scope=Scope.REQUEST)
+    def get_weapon_type_service(self) -> WeaponTypeService:
+        return WeaponTypeService()
+
+    @provide(scope=Scope.REQUEST)
+    def get_weapon_service(self) -> WeaponService:
+        return WeaponService()
+
+    @provide(scope=Scope.REQUEST)
     def get_case_service(
-        self, is_s: ItemService, inv_s: InventoryService
+        self, is_s: ItemService, inv_s: InventoryService, pay_s: PaymentService,
+        redis: Redis,
     ) -> CaseService:
-        return CaseService(item_service=is_s, inventory_service=inv_s)
+        return CaseService(item_service=is_s, inventory_service=inv_s, payment_service=pay_s, redis=redis)
 
     @provide(scope=Scope.REQUEST)
     def get_local_auth_service(self, st: Settings) -> LocalAuth:
@@ -84,6 +114,14 @@ class ServiceProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def get_auth_service(self, st: Settings, ses: ClientSession) -> AuthService:
         return AuthService(st, ses)
+
+    @provide(scope=Scope.REQUEST)
+    def get_payment_service(self, st: Settings, ses: ClientSession) -> PaymentService:
+        return PaymentService(st, ses)
+
+    @provide(scope=Scope.REQUEST)
+    def get_user_service(self, st: Settings, ses: ClientSession) -> UserService:
+        return UserService(st, ses)
 
     @provide(scope=Scope.REQUEST)
     def get_inventory_service(self) -> InventoryService:

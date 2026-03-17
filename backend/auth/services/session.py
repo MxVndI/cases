@@ -36,6 +36,9 @@ class SessionService:
 
         return data
 
+    async def delete_session(self, session_id: UUID):
+        await self.repo.delete(session_id)
+
     async def update_session_user_info(
         self, session_id: UUID, user_info: dict
     ) -> Session | None:
@@ -43,7 +46,6 @@ class SessionService:
         session = await self.get_session(session_id)
         if not session:
             return None
-        print(user_info)
 
         if session.custom_data.get("user"):
             session.custom_data["user"].update(user_info)
@@ -52,14 +54,15 @@ class SessionService:
 
         session.last_activity = datetime.now(tz=UTC)
         await session.save()
-        await self.redis.setex(
-            f"{self.prefix}{session_id}",
-            int(
+        await self.repo.redis.create(
+            prefix=self.repo.prefix,
+            key=str(session_id),
+            value=session.model_dump(),
+            ttl=int(
                 (
-                    session.exipres_at.astimezone(tz=UTC) - datetime.now(tz=UTC)
+                    session.expires_at.astimezone(tz=UTC) - datetime.now(tz=UTC)
                 ).total_seconds()
             ),
-            session.model_dump_json(),
         )
 
         return session
@@ -70,19 +73,19 @@ class SessionService:
         if not session:
             return None
 
-        # TODO make it type safe idk
         session = session.model_copy(update=kwargs)
 
         session.last_activity = datetime.now(tz=UTC)
         await session.save()
-        await self.redis.setex(
-            f"{self.prefix}{session_id}",
-            int(
+        await self.repo.redis.create(
+            prefix=self.repo.prefix,
+            key=str(session_id),
+            value=session.model_dump(),
+            ttl=int(
                 (
-                    session.exipres_at.astimezone(tz=UTC) - datetime.now(tz=UTC)
+                    session.expires_at.astimezone(tz=UTC) - datetime.now(tz=UTC)
                 ).total_seconds()
             ),
-            session.model_dump_json(),
         )
 
         return session
@@ -92,7 +95,7 @@ class SessionService:
         sd = await Session.get(session_id)
         if sd:
             await sd.delete()
-        await self.redis.delete(f"{self.prefix}{session_id}")
+        await self.repo.redis.delete(f"{self.repo.prefix}{session_id}")
 
     # TODO  check for user_id in custom_data
     # async def delete_user_sessions(self, user_id: UUID):

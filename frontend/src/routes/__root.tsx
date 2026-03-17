@@ -5,6 +5,7 @@ import { NotFound } from '@/pages/NotFound'
 import { useAuth } from '@/AuthContext'
 import { Shield } from 'lucide-react'
 import { motion } from 'framer-motion'
+import { Toaster } from 'sonner'
 
 export const Route = createRootRoute({
     component: RootComponent,
@@ -16,6 +17,7 @@ function RootComponent() {
 
     return (
         <div className="min-h-screen flex flex-col bg-background text-foreground dark">
+            <Toaster position="bottom-right" theme="dark" richColors toastOptions={{ style: { background: '#1c1c1e', border: '1px solid rgba(255,255,255,0.1)' } }} />
             {/* Floating sticky navbar wrapper */}
             <div className="sticky top-0 z-50 pt-4">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">

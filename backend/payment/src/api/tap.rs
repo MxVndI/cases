@@ -3,6 +3,7 @@ use axum::{
     extract::State,
     http::{HeaderMap, StatusCode},
 };
+use redis::AsyncCommands;
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
 use uuid::Uuid;
@@ -11,6 +12,9 @@ use crate::{
     AppState, db::models::TransactionManager, shared::requests::CreateTransaction,
     shared::schemas::Currency,
 };
+
+const MAX_TAP_AMOUNT: f64 = 100000.0;
+const MAX_TAPS_PER_SECOND: i64 = 10;
 
 #[derive(Serialize, Deserialize, ToSchema)]
 pub struct TapRequest {
@@ -33,6 +37,7 @@ pub struct TapResponse {
     responses(
         (status = 200, description = "Transaction created successfully", body = TapResponse),
         (status = 401, description = "Unauthorized - invalid or missing sid cookie"),
+        (status = 429, description = "Too many requests - rate limit exceeded"),
         (status = 500, description = "Internal server error"),
     ),
 )]
@@ -41,6 +46,11 @@ pub async fn tap(
     State(state): State<AppState>,
     Json(payload): Json<TapRequest>,
 ) -> Result<Json<TapResponse>, StatusCode> {
+    // Проверка максимальной суммы за один tap
+    if payload.amount == 0.0 || payload.amount.abs() > MAX_TAP_AMOUNT {
+        return Err(StatusCode::BAD_REQUEST);
+    }
+
     // Получаем sid из куки
     let cookie_header = headers
         .get("cookie")
@@ -87,15 +97,40 @@ pub async fn tap(
 
     let user_id = Uuid::parse_str(&auth_data.uid).map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
 
-    // Создаем транзакцию от системы (Uuid::nil()) на аккаунт пользователя
+    // Rate limiting: INCR tap:{user_id}, EXPIRE 1 sec
+    let rate_key = format!("tap:{}", user_id);
+    let mut redis_conn = state.redis.clone();
+    let count: i64 = redis_conn
+        .incr(&rate_key, 1i64)
+        .await
+        .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+
+    if count == 1 {
+        let _: () = redis_conn
+            .expire(&rate_key, 1)
+            .await
+            .map_err(|_| StatusCode::INTERNAL_SERVER_ERROR)?;
+    }
+
+    if count > MAX_TAPS_PER_SECOND {
+        return Err(StatusCode::TOO_MANY_REQUESTS);
+    }
+
+    // Создаем транзакцию: положительное = system→user, отрицательное = user→system
     let db = state.client.database(&state.db);
+    let (from_id, to_id, abs_amount) = if payload.amount > 0.0 {
+        (Uuid::nil(), user_id, payload.amount)
+    } else {
+        (user_id, Uuid::nil(), payload.amount.abs())
+    };
     let transaction_data = CreateTransaction {
-        currency: Currency::RUB,
-        amount: payload.amount,
-        to: user_id,
+        currency: Currency::CHC,
+        amount: abs_amount,
+        to: to_id,
+        description: Some("Фарм".to_string()),
     };
 
-    match TransactionManager::create(&db, &transaction_data, Uuid::nil()).await {
+    match TransactionManager::create(&db, &transaction_data, from_id).await {
         Ok(_) => Ok(Json(TapResponse {
             success: true,
             message: "Транзакция успешно создана".to_string(),

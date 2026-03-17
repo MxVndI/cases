@@ -129,6 +129,18 @@
   }
 }
 
+.card-hover {
+  will-change: scale;
+  transition-property: scale, border-color, box-shadow;
+  transition-timing-function: cubic-bezier(0.16, 1, 0.3, 1);
+  transition-duration: 100ms;
+  backface-visibility: hidden;
+}
+.card-hover:hover {
+  transition-duration: 300ms;
+  scale: 1.04;
+}
+
 @layer utilities {
   .scrollbar-none {
     -ms-overflow-style: none;

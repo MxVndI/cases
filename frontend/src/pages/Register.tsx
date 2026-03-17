@@ -2,32 +2,58 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { motion, useReducedMotion } from "framer-motion";
-import { KeyRound, Mail, User } from "lucide-react";
+import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
+import { Mail, Loader2, ArrowLeft, User } from "lucide-react";
 import type { FormEvent } from "react";
 import { useState } from "react";
 import { useAuth } from "@/AuthContext";
-import { mockAuth } from "@/services/api";
+import { authApi } from "@/services/api";
 import caseHubLogo from "@/assets/casehub-logo.svg";
 
 export function Register() {
     const shouldReduceMotion = useReducedMotion();
     const navigate = useNavigate();
-    const { refetchUser } = useAuth();
-    const [nickname, setNickname] = useState("");
+    const { refetchUser, user } = useAuth();
     const [email, setEmail] = useState("");
-    const [password, setPassword] = useState("");
-    const [confirmPassword, setConfirmPassword] = useState("");
+    const [code, setCode] = useState("");
+    const [nickname, setNickname] = useState("");
+    const [step, setStep] = useState<'email' | 'code'>('email');
+    const [loading, setLoading] = useState(false);
+    const [error, setError] = useState("");
 
-    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+    const handleSendCode = async (event: FormEvent<HTMLFormElement>) => {
         event.preventDefault();
-        if (password !== confirmPassword) {
-            return;
+        setError("");
+        setLoading(true);
+        try {
+            await authApi.sendCode(email);
+            setStep('code');
+        } catch (e: any) {
+            setError(e?.response?.data?.detail || "Не удалось отправить код");
+        } finally {
+            setLoading(false);
         }
-        mockAuth.register(nickname, email);
-        await refetchUser();
-        navigate({ to: "/profile" });
     };
+
+    const handleVerifyCode = async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+        setError("");
+        setLoading(true);
+        try {
+            await authApi.verifyCode(code, nickname);
+            await refetchUser();
+            navigate({ to: '/' });
+        } catch (e: any) {
+            setError(e?.response?.data?.detail || "Неверный код");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    if (user) {
+        navigate({ to: '/' });
+        return null;
+    }
 
     return (
         <div className="relative min-h-screen flex items-center justify-center px-4 py-8 sm:py-12">
@@ -81,81 +107,110 @@ export function Register() {
                     <img src={caseHubLogo} alt="CaseHub" className="h-14 w-auto" />
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-4 mb-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="nickname" className="text-sm font-medium text-foreground">
-                            Имя пользователя
-                        </Label>
-                        <div className="relative">
-                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                id="nickname"
-                                value={nickname}
-                                onChange={(event) => setNickname(event.target.value)}
-                                className="pl-10 rounded-xl border-border/60 bg-background/50 text-foreground focus:border-orange-500/50 focus:ring-orange-500/20"
-                                required
-                            />
-                        </div>
-                    </div>
+                <AnimatePresence mode="wait">
+                    {step === 'email' ? (
+                        <motion.form
+                            key="email-step"
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: -20 }}
+                            transition={{ duration: 0.25 }}
+                            onSubmit={handleSendCode}
+                            className="space-y-4 mb-6"
+                        >
+                            <div className="space-y-2">
+                                <Label htmlFor="email" className="text-sm font-medium text-foreground">
+                                    Электронная почта
+                                </Label>
+                                <div className="relative">
+                                    <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        id="email"
+                                        type="email"
+                                        value={email}
+                                        onChange={(event) => setEmail(event.target.value)}
+                                        className="pl-10 rounded-xl border-border/60 bg-background/50 text-foreground focus:border-orange-500/50 focus:ring-orange-500/20"
+                                        required
+                                    />
+                                </div>
+                            </div>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="email" className="text-sm font-medium text-foreground">
-                            Электронная почта
-                        </Label>
-                        <div className="relative">
-                            <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                id="email"
-                                type="email"
-                                value={email}
-                                onChange={(event) => setEmail(event.target.value)}
-                                className="pl-10 rounded-xl border-border/60 bg-background/50 text-foreground focus:border-orange-500/50 focus:ring-orange-500/20"
-                                required
-                            />
-                        </div>
-                    </div>
+                            {error && <p className="text-sm text-red-400">{error}</p>}
 
-                    <div className="space-y-2">
-                        <Label htmlFor="password" className="text-sm font-medium text-foreground">
-                            Пароль
-                        </Label>
-                        <div className="relative">
-                            <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                id="password"
-                                type="password"
-                                value={password}
-                                onChange={(event) => setPassword(event.target.value)}
-                                className="pl-10 rounded-xl border-border/60 bg-background/50 text-foreground focus:border-orange-500/50 focus:ring-orange-500/20"
-                                required
-                            />
-                        </div>
-                    </div>
+                            <Button
+                                type="submit"
+                                disabled={loading}
+                                className="mt-4 w-full cursor-pointer bg-orange-500 hover:bg-white text-white hover:text-black font-semibold py-6 rounded-xl transition-all duration-300 ease-out"
+                            >
+                                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Получить код"}
+                            </Button>
+                        </motion.form>
+                    ) : (
+                        <motion.form
+                            key="code-step"
+                            initial={{ opacity: 0, x: 20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            exit={{ opacity: 0, x: 20 }}
+                            transition={{ duration: 0.25 }}
+                            onSubmit={handleVerifyCode}
+                            className="space-y-4 mb-6"
+                        >
+                            <p className="text-sm text-muted-foreground text-center">
+                                Код отправлен на <span className="text-white">{email}</span>
+                            </p>
 
-                    <div className="space-y-2">
-                        <Label htmlFor="confirmPassword" className="text-sm font-medium text-foreground">
-                            Повторите пароль
-                        </Label>
-                        <div className="relative">
-                            <KeyRound className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                            <Input
-                                id="confirmPassword"
-                                type="password"
-                                value={confirmPassword}
-                                onChange={(event) => setConfirmPassword(event.target.value)}
-                                className="pl-10 rounded-xl border-border/60 bg-background/50 text-foreground focus:border-orange-500/50 focus:ring-orange-500/20"
-                                required
-                            />
-                        </div>
-                    </div>
+                            <div className="space-y-2">
+                                <Label htmlFor="nickname" className="text-sm font-medium text-foreground">
+                                    Имя пользователя
+                                </Label>
+                                <div className="relative">
+                                    <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                    <Input
+                                        id="nickname"
+                                        value={nickname}
+                                        onChange={(event) => setNickname(event.target.value)}
+                                        placeholder="Ваш никнейм"
+                                        className="pl-10 rounded-xl border-border/60 bg-background/50 text-foreground focus:border-orange-500/50 focus:ring-orange-500/20"
+                                        required
+                                        autoFocus
+                                    />
+                                </div>
+                            </div>
 
-                    <Button
-                        type="submit"
-                        className="mt-4 w-full cursor-pointer bg-orange-500 hover:bg-white text-white hover:text-black font-semibold py-6 rounded-xl transition-all duration-300 ease-out"
-                    >
-                        Зарегистрироваться
-                    </Button>
-                </form>
+                            <div className="space-y-2">
+                                <Label htmlFor="code" className="text-sm font-medium text-foreground">
+                                    Код подтверждения
+                                </Label>
+                                <Input
+                                    id="code"
+                                    value={code}
+                                    onChange={(event) => setCode(event.target.value)}
+                                    className="rounded-xl border-border/60 bg-background/50 text-foreground text-center text-2xl tracking-[0.5em] font-mono focus:border-orange-500/50 focus:ring-orange-500/20"
+                                    maxLength={6}
+                                    required
+                                />
+                            </div>
+
+                            {error && <p className="text-sm text-red-400">{error}</p>}
+
+                            <Button
+                                type="submit"
+                                disabled={loading}
+                                className="mt-4 w-full cursor-pointer bg-orange-500 hover:bg-white text-white hover:text-black font-semibold py-6 rounded-xl transition-all duration-300 ease-out"
+                            >
+                                {loading ? <Loader2 className="h-5 w-5 animate-spin" /> : "Зарегистрироваться"}
+                            </Button>
+
+                            <button
+                                type="button"
+                                onClick={() => { setStep('email'); setError(''); setCode(''); setNickname(''); }}
+                                className="flex items-center justify-center gap-1 w-full text-sm text-muted-foreground hover:text-white transition-colors cursor-pointer"
+                            >
+                                <ArrowLeft className="h-4 w-4" /> Изменить почту
+                            </button>
+                        </motion.form>
+                    )}
+                </AnimatePresence>
 
                 <p className="text-center text-xs text-muted-foreground">
                     Продолжая, вы соглашаетесь с нашими{" "}

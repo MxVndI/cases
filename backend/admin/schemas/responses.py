@@ -14,6 +14,25 @@ class Weapon(BaseModel):
     type: str
 
 
+class WeaponTypeResponse(BaseModel):
+    id: UUID
+    name: str
+    created_at: datetime
+
+
+class WeaponEntityResponse(BaseModel):
+    id: UUID
+    name: str
+    type: str
+    created_at: datetime
+
+
+class TagResponse(BaseModel):
+    id: UUID
+    name: str
+    created_at: datetime
+
+
 class ItemResponse(BaseModel):
     id: UUID
     img_url: str | None = None
@@ -25,9 +44,8 @@ class ItemResponse(BaseModel):
 
 
 class CaseContentItem(BaseModel):
-    item_id: UUID
+    item: ItemResponse
     drop_chance: float
-    item: ItemResponse | None = None
 
 
 class CaseResponse(BaseModel):
@@ -35,10 +53,8 @@ class CaseResponse(BaseModel):
     img_url: str | None = None
     price: float
     name: str
+    system_name: str | None = None
+    tag: str | None = None
+    status: str = "active"
     created_at: datetime
     case_content: list[CaseContentItem]
-
-
-class AdminAuthResponse(BaseModel):
-    access_token: str
-    token_type: str = "bearer"

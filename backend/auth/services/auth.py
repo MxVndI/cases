@@ -5,6 +5,7 @@ import logging
 from typing import Literal
 from uuid import UUID, uuid4
 
+import aiohttp
 import shortuuid
 from fastapi import Request
 from fastapi.responses import RedirectResponse
@@ -39,7 +40,8 @@ class AuthService:
         self.allowed_tokens = settings.api_tokens
         self.sso_dict = sso_dict
         self.redis = redis_service
-        self.mail_serive = mail_service
+        self.mail_service = mail_service
+        self.settings = settings
 
     def sign_session(self, session_id: UUID) -> str:
 
@@ -93,37 +95,43 @@ class AuthService:
         await self.redis.create(
             prefix="cvid:", key=str(ver_ses_id), value=code, ttl=10 * 60
         )
-        self.mail_serive.send_email(email, "Code verification", str(code))
-        response = RedirectResponse(url="/auth/email/login/finish", status_code=303)
+        try:
+            self.mail_service.send_email(email, "Code verification", str(code))
+        except Exception as e:
+            logger.error(f"Failed to send email: {e}")
+            # In dev mode, log the code so it can be retrieved from Redis
+            logger.info(f"Verification code for {email}: {code}")
+
+        from fastapi.responses import JSONResponse
+        response = JSONResponse(content={"ok": True, "message": "Code sent"})
 
         response.set_cookie(
             key="email",
             value=email,
             httponly=True,
-            # secure=True,
+            secure=self.settings.cookie_secure,
             samesite="lax",
-            max_age=30 * 24 * 60 * 60,
+            max_age=10 * 60,
         )
 
         response.set_cookie(
             key="cvid",
             value=str(ver_ses_id),
             httponly=True,
-            # secure=True,
+            secure=self.settings.cookie_secure,
             samesite="lax",
-            max_age=30 * 24 * 60 * 60,
+            max_age=10 * 60,
         )
         return response
 
-    async def finish_verify_user_email(self, email: EmailStr, cvid: str, code: str):
+    async def finish_verify_user_email(self, email: EmailStr, cvid: str, code: str, nickname: str | None = None):
 
         req_code = await self.redis.get(f"cvid:{cvid}")
-        print(req_code, code)
         if req_code == code:
-            return await self.register_user(email, "email")
-        response = RedirectResponse(url="/auth-error")
+            return await self.register_user(email, "email", redirect=False, nickname=nickname)
 
-        return response
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail="Invalid code")
 
     async def verify_user_oauth(
         self, provider: Literal["yandex", "discord"], request: Request
@@ -138,36 +146,82 @@ class AuthService:
                 return await self.register_user(user.email, user.provider)
         return RedirectResponse(url="/auth-error")
 
-    async def register_user(self, email, provider):
+    async def register_user(self, email, provider, redirect=True, nickname=None):
 
-        if not self.broker:
-            raise
         user_data = None
+        body = {"email": email}
+        if nickname:
+            body["nickname"] = nickname
         try:
-            user_data = await self.broker.request(
-                stream="user.rpc", message={"email": email, "action": "get"}, timeout=5
-            )
-        except TimeoutError as e:
-            # TODO amqp logic and maybe retries
-            ...
-        data = json.loads(user_data.body) if user_data else None
-        ses_id = await self.session_service.create_session(email, provider, data)
+            async with aiohttp.ClientSession() as session:
+                headers = {"Authorization": f"Bearer {self.allowed_tokens[0]}"}
+                async with session.post(
+                    f"{self.settings.user_service_url}/v1/users/",
+                    json=body,
+                    headers=headers,
+                    timeout=aiohttp.ClientTimeout(total=5),
+                ) as resp:
+                    if resp.status == 200:
+                        user_data = await resp.json()
+        except Exception as e:
+            logger.error(f"Failed to get/create user: {e}")
+        ses_id = await self.session_service.create_session(email, provider, user_data)
 
-        response = RedirectResponse(url="http://localhost:5173/welcome")
         signed_ses = self.sign_session(ses_id)
 
+        if redirect:
+            response = RedirectResponse(url=f"{self.settings.frontend_url}/welcome")
+        else:
+            from fastapi.responses import JSONResponse
+            response = JSONResponse(content={"ok": True, "user": user_data})
+
+        # Clear any old sid cookies (both host-only and domain variants)
+        response.delete_cookie("sid", path="/")
+        response.delete_cookie("sid", path="/", domain=self.settings.cookie_domain)
         response.set_cookie(
             key="sid",
             value=signed_ses,
             httponly=True,
-            # secure=True,
+            secure=self.settings.cookie_secure,
             samesite="lax",
             max_age=30 * 24 * 60 * 60,
             path="/",
-            domain="localhost",
         )
 
         return response
+
+    async def init_profile_update_code(self, email: EmailStr):
+        ver_ses_id = uuid4()
+        code = shortuuid.ShortUUID().random(length=6)
+        await self.redis.create(
+            prefix="cvid:", key=str(ver_ses_id), value=code, ttl=10 * 60
+        )
+        try:
+            self.mail_service.send_email(email, "Profile update code", str(code))
+        except Exception as e:
+            logger.error(f"Failed to send email: {e}")
+            logger.info(f"Profile update code for {email}: {code}")
+
+        from fastapi.responses import JSONResponse
+        response = JSONResponse(content={"ok": True, "message": "Code sent"})
+        response.set_cookie(
+            key="cvid",
+            value=str(ver_ses_id),
+            httponly=True,
+            secure=self.settings.cookie_secure,
+            samesite="lax",
+            max_age=10 * 60,
+        )
+        return response
+
+    async def finish_profile_update(self, cvid: str, code: str):
+        req_code = await self.redis.get(f"cvid:{cvid}")
+        if req_code != code:
+            from fastapi import HTTPException
+            raise HTTPException(status_code=400, detail="Invalid code")
+        await self.redis.delete(f"cvid:{cvid}")
+        from fastapi.responses import JSONResponse
+        return JSONResponse(content={"ok": True, "verified": True})
 
     async def verify_session_handler(self, msg: dict):
         signed_sid = msg.get("sid")

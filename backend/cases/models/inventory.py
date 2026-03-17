@@ -10,8 +10,17 @@ def time_now():
 
 
 class InventoryItem(BaseModel):
+    id: UUID = Field(default_factory=uuid4)
     item_id: UUID
     obtained_at: datetime = Field(default_factory=time_now)
+
+    @field_serializer("id")
+    def serialize_id(self, id: UUID):
+        return str(id)
+
+    @field_serializer("item_id")
+    def serialize_item_id(self, item_id: UUID):
+        return str(item_id)
 
 
 class Inventory(Document):

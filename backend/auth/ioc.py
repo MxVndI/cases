@@ -28,8 +28,8 @@ class SSOProvider(Provider):
         return YandexSSO(
             client_id=settings.yandex_cid,
             client_secret=settings.yandex_cs,
-            redirect_uri="http://localhost:8000/auth/yandex/callback",
-            allow_insecure_http=True,
+            redirect_uri=f"{settings.frontend_url}/auth/yandex/callback",
+            allow_insecure_http=not settings.cookie_secure,
             scope=["login:email"],
         )
 
@@ -38,8 +38,8 @@ class SSOProvider(Provider):
         return DiscordSSO(
             client_id=settings.discord_cid,
             client_secret=settings.discord_cs,
-            redirect_uri="http://localhost:8000/auth/discord/callback",
-            allow_insecure_http=True,
+            redirect_uri=f"{settings.frontend_url}/auth/discord/callback",
+            allow_insecure_http=not settings.cookie_secure,
             scope=["email"],
         )
 
