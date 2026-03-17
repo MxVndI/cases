@@ -58,9 +58,15 @@
 
 /* Hide default cursor on desktop when custom cursor is active */
 @media (hover: hover) and (pointer: fine) {
-  *,
-  *::before,
-  *::after {
+  .custom-cursor-active,
+  .custom-cursor-active *,
+  .custom-cursor-active *::before,
+  .custom-cursor-active *::after {
     cursor: none !important;
   }
+}
+
+/* Restore pointer cursor on interactive elements when custom cursor is off */
+.cursor-target {
+  cursor: pointer;
 }

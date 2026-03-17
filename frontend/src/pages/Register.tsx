@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from "@/components/ui/input-otp";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
 import { Mail, Loader2, ArrowLeft, User } from "lucide-react";
@@ -178,17 +179,29 @@ export function Register() {
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="code" className="text-sm font-medium text-foreground">
+                                <Label className="text-sm font-medium text-foreground">
                                     Код подтверждения
                                 </Label>
-                                <Input
-                                    id="code"
-                                    value={code}
-                                    onChange={(event) => setCode(event.target.value)}
-                                    className="rounded-xl border-border/60 bg-background/50 text-foreground text-center text-2xl tracking-[0.5em] font-mono focus:border-orange-500/50 focus:ring-orange-500/20"
-                                    maxLength={6}
-                                    required
-                                />
+                                <div className="flex justify-center">
+                                    <InputOTP
+                                        maxLength={6}
+                                        value={code}
+                                        onChange={(value) => { setCode(value); setError(""); }}
+                                        disabled={loading}
+                                    >
+                                        <InputOTPGroup>
+                                            <InputOTPSlot index={0} />
+                                            <InputOTPSlot index={1} />
+                                            <InputOTPSlot index={2} />
+                                        </InputOTPGroup>
+                                        <InputOTPSeparator />
+                                        <InputOTPGroup>
+                                            <InputOTPSlot index={3} />
+                                            <InputOTPSlot index={4} />
+                                            <InputOTPSlot index={5} />
+                                        </InputOTPGroup>
+                                    </InputOTP>
+                                </div>
                             </div>
 
                             {error && <p className="text-sm text-red-400">{error}</p>}

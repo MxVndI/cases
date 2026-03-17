@@ -1,6 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from "@/components/ui/input-otp";
 import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
 import type { FormEvent } from "react";
 import { useState } from 'react';
@@ -182,22 +183,30 @@ export function Login() {
                                 </div>
 
                                 <div className="space-y-2">
-                                    <Label htmlFor="code" className="text-sm font-medium text-foreground">
+                                    <Label className="text-sm font-medium text-foreground">
                                         Код подтверждения
                                     </Label>
-                                    <Input
-                                        id="code"
-                                        type="text"
-                                        inputMode="text"
-                                        maxLength={6}
-                                        value={code}
-                                        onChange={(e) => { setCode(e.target.value); setError(""); }}
-                                        placeholder="XXXXXX"
-                                        className="text-center text-2xl tracking-[0.5em] rounded-xl border-border/60 bg-background/50 text-foreground placeholder:text-muted-foreground focus:border-orange-500/50 focus:ring-orange-500/20 font-mono"
-                                        required
-                                        autoFocus
-                                        disabled={loading}
-                                    />
+                                    <div className="flex justify-center">
+                                        <InputOTP
+                                            maxLength={6}
+                                            value={code}
+                                            onChange={(value) => { setCode(value); setError(""); }}
+                                            autoFocus
+                                            disabled={loading}
+                                        >
+                                            <InputOTPGroup>
+                                                <InputOTPSlot index={0} />
+                                                <InputOTPSlot index={1} />
+                                                <InputOTPSlot index={2} />
+                                            </InputOTPGroup>
+                                            <InputOTPSeparator />
+                                            <InputOTPGroup>
+                                                <InputOTPSlot index={3} />
+                                                <InputOTPSlot index={4} />
+                                                <InputOTPSlot index={5} />
+                                            </InputOTPGroup>
+                                        </InputOTP>
+                                    </div>
                                 </div>
 
                                 {error && (

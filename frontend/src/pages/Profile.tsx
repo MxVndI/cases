@@ -1,5 +1,8 @@
 import { useState, useMemo } from "react";
 import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
+import CountUp from "@/components/CountUp";
+import { InputOTP, InputOTPGroup, InputOTPSlot, InputOTPSeparator } from "@/components/ui/input-otp";
+import { usePreferences } from "@/PreferencesContext";
 import { Link } from "@tanstack/react-router";
 import { useAuth } from "@/AuthContext";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
@@ -99,6 +102,7 @@ function WinRow({ win }: { win: WinHistoryEntry }) {
 export function Profile() {
     const shouldReduceMotion = useReducedMotion();
     const { user, updateProfile, isLoading } = useAuth();
+    const { customCursor, setCustomCursor, countUpAnimations, setCountUpAnimations } = usePreferences();
     const queryClient = useQueryClient();
     const [activeTab, setActiveTab] = useState<Tab>("overview");
     const [nickname, setNickname] = useState(user?.nickname || "");
@@ -423,7 +427,7 @@ export function Profile() {
                                     </div>
                                     <div className="pl-[52px]">
                                         <p className="text-2xl font-bold text-foreground">{pluralItems(activeInventory.length)}</p>
-                                        <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1">{inventoryTotal.toLocaleString()} <Coins className="h-3 w-3" /></p>
+                                        <p className="text-xs text-muted-foreground mt-2 flex items-center gap-1"><CountUp to={inventoryTotal} separator=" " duration={0.5} /> <Coins className="h-3 w-3" /></p>
                                     </div>
                                 </div>
                                 <div className="rounded-2xl border border-border/60 bg-card/80 p-6 backdrop-blur-xl">
@@ -434,7 +438,7 @@ export function Profile() {
                                         <span className="text-sm text-muted-foreground">Открыто кейсов</span>
                                     </div>
                                     <div className="pl-[52px]">
-                                        <p className="text-2xl font-bold text-foreground">{winsStats?.total_opened ?? 0}</p>
+                                        <p className="text-2xl font-bold text-foreground"><CountUp to={winsStats?.total_opened ?? 0} duration={0.5} /></p>
                                         <p className="text-xs text-muted-foreground mt-2">за всё время</p>
                                     </div>
                                 </div>
@@ -692,21 +696,30 @@ export function Profile() {
                                                 Код подтверждения отправлен на <span className="text-orange-500 font-medium">{user?.email}</span>
                                             </p>
                                             <div className="space-y-2">
-                                                <Label htmlFor="profile-code" className="text-sm font-medium text-foreground">
+                                                <Label className="text-sm font-medium text-foreground">
                                                     Код подтверждения
                                                 </Label>
-                                                <Input
-                                                    id="profile-code"
-                                                    type="text"
-                                                    inputMode="text"
-                                                    maxLength={6}
-                                                    value={profileCode}
-                                                    onChange={(e) => { setProfileCode(e.target.value); setProfileError(""); }}
-                                                    placeholder="XXXXXX"
-                                                    className="text-center text-2xl tracking-[0.5em] rounded-xl border-border/60 bg-background/50 text-foreground font-mono focus:border-orange-500/50 focus:ring-orange-500/20"
-                                                    required
-                                                    autoFocus
-                                                />
+                                                <div className="flex justify-center">
+                                                    <InputOTP
+                                                        maxLength={6}
+                                                        value={profileCode}
+                                                        onChange={(value) => { setProfileCode(value); setProfileError(""); }}
+                                                        autoFocus
+                                                        disabled={profileCodeLoading}
+                                                    >
+                                                        <InputOTPGroup>
+                                                            <InputOTPSlot index={0} />
+                                                            <InputOTPSlot index={1} />
+                                                            <InputOTPSlot index={2} />
+                                                        </InputOTPGroup>
+                                                        <InputOTPSeparator />
+                                                        <InputOTPGroup>
+                                                            <InputOTPSlot index={3} />
+                                                            <InputOTPSlot index={4} />
+                                                            <InputOTPSlot index={5} />
+                                                        </InputOTPGroup>
+                                                    </InputOTP>
+                                                </div>
                                             </div>
                                             {profileError && <p className="text-sm text-red-400">{profileError}</p>}
                                             <Button
@@ -726,6 +739,53 @@ export function Profile() {
                                         </motion.form>
                                     )}
                                 </AnimatePresence>
+                            </div>
+
+                            {/* Внешний вид */}
+                            <div className="rounded-2xl border border-border/60 bg-card/80 p-6 backdrop-blur-xl">
+                                <h2 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                                    <Settings className="h-5 w-5 text-orange-500" /> Внешний вид
+                                </h2>
+                                <div className="space-y-4">
+                                    <label className="flex items-center justify-between gap-4 cursor-pointer group">
+                                        <div>
+                                            <p className="text-sm font-medium text-foreground">Кастомный курсор</p>
+                                            <p className="text-xs text-muted-foreground">Курсор-прицел с уголками, прилипающий к кнопкам</p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            role="switch"
+                                            aria-checked={customCursor}
+                                            onClick={() => setCustomCursor(!customCursor)}
+                                            className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                                                customCursor ? 'bg-orange-500' : 'bg-border'
+                                            }`}
+                                        >
+                                            <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg transform transition duration-200 ease-in-out ${
+                                                customCursor ? 'translate-x-5' : 'translate-x-0'
+                                            }`} />
+                                        </button>
+                                    </label>
+                                    <label className="flex items-center justify-between gap-4 cursor-pointer group">
+                                        <div>
+                                            <p className="text-sm font-medium text-foreground">Анимация чисел</p>
+                                            <p className="text-xs text-muted-foreground">Плавное нарастание показателей баланса, инвентаря и статистики</p>
+                                        </div>
+                                        <button
+                                            type="button"
+                                            role="switch"
+                                            aria-checked={countUpAnimations}
+                                            onClick={() => setCountUpAnimations(!countUpAnimations)}
+                                            className={`relative inline-flex h-6 w-11 flex-shrink-0 rounded-full border-2 border-transparent transition-colors duration-200 ease-in-out ${
+                                                countUpAnimations ? 'bg-orange-500' : 'bg-border'
+                                            }`}
+                                        >
+                                            <span className={`pointer-events-none inline-block h-5 w-5 rounded-full bg-white shadow-lg transform transition duration-200 ease-in-out ${
+                                                countUpAnimations ? 'translate-x-5' : 'translate-x-0'
+                                            }`} />
+                                        </button>
+                                    </label>
+                                </div>
                             </div>
                         </motion.div>
                     )}

@@ -1,5 +1,6 @@
 import { Link } from "@tanstack/react-router";
 import { motion, useReducedMotion } from "framer-motion";
+import CountUp from "@/components/CountUp";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/AuthContext";
@@ -149,7 +150,7 @@ export function Balance() {
                                         Текущий баланс
                                     </p>
                                     <p className="text-3xl sm:text-4xl font-bold text-white">
-                                        {balanceLoading ? "..." : balance.toLocaleString()}
+                                        {balanceLoading ? "..." : <CountUp to={balance} separator=" " duration={0.5} />}
                                     </p>
 
                                 </div>
@@ -167,7 +168,7 @@ export function Balance() {
                                 </div>
                                 <span className="text-xs sm:text-sm text-muted-foreground truncate">Потрачено</span>
                             </div>
-                            <p className="text-xl sm:text-2xl font-bold text-foreground">{totalSpent.toLocaleString()}</p>
+                            <p className="text-xl sm:text-2xl font-bold text-foreground"><CountUp to={totalSpent} separator=" " duration={0.5} /></p>
                         </div>
 
                         <div className="rounded-2xl border border-border/60 bg-card/80 p-3 sm:p-6 backdrop-blur-xl">
@@ -177,7 +178,7 @@ export function Balance() {
                                 </div>
                                 <span className="text-xs sm:text-sm text-muted-foreground truncate">Получено</span>
                             </div>
-                            <p className="text-xl sm:text-2xl font-bold text-foreground">{totalReceived.toLocaleString()}</p>
+                            <p className="text-xl sm:text-2xl font-bold text-foreground"><CountUp to={totalReceived} separator=" " duration={0.5} /></p>
                         </div>
 
                         <div className="rounded-2xl border border-border/60 bg-card/80 p-3 sm:p-6 backdrop-blur-xl">
@@ -196,7 +197,7 @@ export function Balance() {
                             <p className={`text-xl sm:text-2xl font-bold ${
                                 profit >= 0 ? "text-green-500" : "text-red-500"
                             }`}>
-                                {profit >= 0 ? "+" : ""}{profit.toLocaleString()}
+                                {profit >= 0 ? "+" : "−"}<CountUp to={Math.abs(profit)} separator=" " duration={0.5} />
                             </p>
                         </div>
 
@@ -207,7 +208,7 @@ export function Balance() {
                                 </div>
                                 <span className="text-xs sm:text-sm text-muted-foreground truncate">Заработано</span>
                             </div>
-                            <p className="text-xl sm:text-2xl font-bold text-orange-500">{earnedHC.toLocaleString()}</p>
+                            <p className="text-xl sm:text-2xl font-bold text-orange-500"><CountUp to={earnedHC} separator=" " duration={0.5} /></p>
                         </div>
                     </div>
 

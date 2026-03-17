@@ -46,6 +46,12 @@
     --color-orange-400: #F7971D;
     --color-orange-500: #F7971D;
     --color-orange-600: #F7971D;
+    --animate-caret-blink: caret-blink 1.25s ease-out infinite;
+}
+
+@keyframes caret-blink {
+    0%, 70%, 100% { opacity: 1; }
+    20%, 50% { opacity: 0; }
 }
 
 :root {

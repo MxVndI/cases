@@ -4,6 +4,7 @@ import { useAuth } from "@/AuthContext";
 import { useQuery } from "@tanstack/react-query";
 import { paymentApi } from "@/services/api";
 import { Coins, ChevronDown, LogOut, User } from "lucide-react";
+import CountUp from "@/components/CountUp";
 import caseHubLogo from "@/assets/casehub-logo.svg";
 import {
     DropdownMenu,
@@ -46,7 +47,7 @@ export function Navbar() {
                                     className="cursor-target hidden sm:flex items-center gap-1.5 text-lg text-orange-500 font-bold hover:text-orange-400 transition-colors"
                                 >
                                     <Coins className="h-4 w-4" />
-                                    {(balance ?? 0).toLocaleString()}
+                                    <CountUp to={balance ?? 0} separator=" " duration={0.5} />
                                 </Link>
 
                                 {/* Username dropdown */}
@@ -62,7 +63,7 @@ export function Navbar() {
                                         <DropdownMenuItem asChild className="sm:hidden">
                                             <Link to="/balance" className="cursor-target flex items-center gap-2">
                                                 <Coins className="h-4 w-4 text-orange-500" />
-                                                <span className="text-orange-500 font-semibold">{(balance ?? 0).toLocaleString()}</span>
+                                                <span className="text-orange-500 font-semibold"><CountUp to={balance ?? 0} separator=" " duration={0.5} /></span>
                                             </Link>
                                         </DropdownMenuItem>
                                         <DropdownMenuSeparator className="sm:hidden" />

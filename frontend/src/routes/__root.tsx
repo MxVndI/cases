@@ -7,6 +7,7 @@ import { Shield } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Toaster } from 'sonner'
 import TargetCursor from '@/components/TargetCursor'
+import { usePreferences } from '@/PreferencesContext'
 
 export const Route = createRootRoute({
     component: RootComponent,
@@ -15,10 +16,11 @@ export const Route = createRootRoute({
 
 function RootComponent() {
     const { user } = useAuth()
+    const { customCursor } = usePreferences()
 
     return (
-        <div className="min-h-screen flex flex-col bg-background text-foreground dark">
-            <TargetCursor spinDuration={5} hideDefaultCursor parallaxOn hoverDuration={1} />
+        <div className={`min-h-screen flex flex-col bg-background text-foreground dark${customCursor ? ' custom-cursor-active' : ''}`}>
+            {customCursor && <TargetCursor spinDuration={5} hideDefaultCursor parallaxOn hoverDuration={1} />}
             <Toaster position="bottom-right" theme="dark" richColors toastOptions={{ style: { background: '#1c1c1e', border: '1px solid rgba(255,255,255,0.1)' } }} />
             {/* Floating sticky navbar wrapper */}
             <div className="sticky top-0 z-50 pt-4">

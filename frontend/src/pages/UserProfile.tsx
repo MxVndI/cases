@@ -1,5 +1,6 @@
 import { useMemo, useState } from "react";
 import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
+import CountUp from "@/components/CountUp";
 import { useParams, Link, useNavigate } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import {
@@ -419,7 +420,7 @@ export function UserProfile() {
                                         </div>
                                         <div>
                                             <p className="text-sm text-muted-foreground">Баланс</p>
-                                            <p className="text-2xl font-bold text-white">{balance.toLocaleString()}</p>
+                                            <p className="text-2xl font-bold text-white"><CountUp to={balance} separator=" " duration={0.5} /></p>
                                         </div>
                                     </div>
                                 </div>
@@ -435,7 +436,7 @@ export function UserProfile() {
                                         <span className="text-sm text-muted-foreground">Открыто кейсов</span>
                                     </div>
                                     <div className="pl-[52px]">
-                                        <p className="text-2xl font-bold text-foreground">{winsStats?.total_opened ?? 0}</p>
+                                        <p className="text-2xl font-bold text-foreground"><CountUp to={winsStats?.total_opened ?? 0} duration={0.5} /></p>
                                         <p className="text-xs text-muted-foreground mt-1">за всё время</p>
                                     </div>
                                 </div>
@@ -449,7 +450,7 @@ export function UserProfile() {
                                     <div className="pl-[52px]">
                                         <p className="text-2xl font-bold text-foreground">{pluralItems(inventory.length)}</p>
                                         <p className="text-xs text-muted-foreground mt-1 flex items-center gap-1">
-                                            {inventoryTotal.toLocaleString()} <Coins className="h-3 w-3" />
+                                            <CountUp to={inventoryTotal} separator=" " duration={0.5} /> <Coins className="h-3 w-3" />
                                         </p>
                                     </div>
                                 </div>
