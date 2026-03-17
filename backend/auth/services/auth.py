@@ -99,8 +99,11 @@ class AuthService:
             self.mail_service.send_email(email, "Code verification", str(code))
         except Exception as e:
             logger.error(f"Failed to send email: {e}")
-            # In dev mode, log the code so it can be retrieved from Redis
-            logger.info(f"Verification code for {email}: {code}")
+            from fastapi import HTTPException
+            raise HTTPException(
+                status_code=503,
+                detail="Email delivery is not configured or unavailable",
+            )
 
         from fastapi.responses import JSONResponse
         response = JSONResponse(content={"ok": True, "message": "Code sent"})
@@ -154,7 +157,10 @@ class AuthService:
             body["nickname"] = nickname
         try:
             async with aiohttp.ClientSession() as session:
-                headers = {"Authorization": f"Bearer {self.allowed_tokens[0]}"}
+                service_token = self.settings.token or (self.allowed_tokens[0] if self.allowed_tokens else "")
+                if not service_token:
+                    raise RuntimeError("Service TOKEN/ALLOWED_TOKENS not configured")
+                headers = {"Authorization": f"Bearer {service_token}"}
                 async with session.post(
                     f"{self.settings.user_service_url}/v1/users/",
                     json=body,
@@ -200,7 +206,11 @@ class AuthService:
             self.mail_service.send_email(email, "Profile update code", str(code))
         except Exception as e:
             logger.error(f"Failed to send email: {e}")
-            logger.info(f"Profile update code for {email}: {code}")
+            from fastapi import HTTPException
+            raise HTTPException(
+                status_code=503,
+                detail="Email delivery is not configured or unavailable",
+            )
 
         from fastapi.responses import JSONResponse
         response = JSONResponse(content={"ok": True, "message": "Code sent"})

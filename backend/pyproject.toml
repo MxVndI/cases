@@ -8,6 +8,7 @@ dependencies = [
     "aiohttp>=3.13.3",
     "beanie>=2.0.1",
     "boto3>=1.42.63",
+    "cryptography>=46.0.0",
     "dishka>=1.8.0",
     "fastapi>=0.135.0",
     "fastapi-sso>=0.21.0",
@@ -24,3 +25,10 @@ dependencies = [
     "uvicorn>=0.41.0",
     "fastapi-storages>=0.3.0",
 ]
+
+[build-system]
+requires = ["setuptools>=80", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["auth", "user", "cases", "admin", "aml"]

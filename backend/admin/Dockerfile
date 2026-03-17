@@ -3,11 +3,13 @@ FROM python:3.13-slim
 WORKDIR /app
 
 # Установка зависимостей
-COPY pyproject.toml .
-RUN pip install --no-cache-dir .
-
-
+COPY pyproject.toml README.md ./
+COPY auth/ ./auth/
+COPY user/ ./user/
+COPY cases/ ./cases/
 COPY admin/ ./admin/
+COPY aml/ ./aml/
+RUN pip install --no-cache-dir .
 
 # Переменные окружения по умолчанию
 ENV PYTHONUNBUFFERED=1

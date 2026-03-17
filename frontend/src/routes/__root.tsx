@@ -3,7 +3,7 @@ import { Navbar } from '@/components/Navbar'
 import { Footer } from '@/components/Footer'
 import { NotFound } from '@/pages/NotFound'
 import { useAuth } from '@/AuthContext'
-import { Shield } from 'lucide-react'
+import { Shield, Database } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { Toaster } from 'sonner'
 import TargetCursor from '@/components/TargetCursor'
@@ -26,22 +26,36 @@ function RootComponent() {
             <div className="sticky top-0 z-50 pt-4">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
                     <Navbar />
-                    {/* Separate admin badge — positioned to the right of the main header */}
+                    {/* Separate admin badges — positioned to the right of the main header */}
                     {user?.role === "admin" && (
-                        <motion.div
-                            initial={{ opacity: 0, x: 20 }}
-                            animate={{ opacity: 1, x: 0 }}
-                            transition={{ duration: 0.3, delay: 0.1 }}
-                            className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-[calc(100%+12px)] hidden xl:block"
-                        >
-                            <Link
-                                to="/admin"
-                                className="cursor-target flex items-center gap-1.5 rounded-xl border border-red-500/30 bg-card/80 backdrop-blur-xl px-4 h-16 text-sm font-medium text-red-400 hover:text-red-300 hover:border-red-500/50 transition-all shadow-lg"
+                        <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-[calc(100%+12px)] hidden xl:flex flex-col gap-2">
+                            <motion.div
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.3, delay: 0.1 }}
                             >
-                                <Shield className="h-4 w-4" />
-                                Панель администратора
-                            </Link>
-                        </motion.div>
+                                <Link
+                                    to="/admin"
+                                    className="cursor-target flex items-center gap-1.5 rounded-xl border border-red-500/30 bg-card/80 backdrop-blur-xl px-4 h-10 text-sm font-medium text-red-400 hover:text-red-300 hover:border-red-500/50 transition-all shadow-lg"
+                                >
+                                    <Shield className="h-4 w-4" />
+                                    Панель администратора
+                                </Link>
+                            </motion.div>
+                            <motion.div
+                                initial={{ opacity: 0, x: 20 }}
+                                animate={{ opacity: 1, x: 0 }}
+                                transition={{ duration: 0.3, delay: 0.15 }}
+                            >
+                                <a
+                                    href="http://localhost/aml"
+                                    className="cursor-target flex items-center gap-1.5 rounded-xl border border-blue-500/30 bg-card/80 backdrop-blur-xl px-4 h-10 text-sm font-medium text-blue-400 hover:text-blue-300 hover:border-blue-500/50 transition-all shadow-lg"
+                                >
+                                    <Database className="h-4 w-4" />
+                                    Настройки БД (AML)
+                                </a>
+                            </motion.div>
+                        </div>
                     )}
                 </div>
             </div>
