@@ -273,7 +273,7 @@ services:
     restart: unless-stopped
 
   grafana:
-    image: grafana/grafana:11.5.2
+    image: grafana/grafana:latest
     container_name: grafana-ch
     ports:
       - "3000:3000"
