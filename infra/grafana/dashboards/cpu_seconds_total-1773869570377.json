@@ -18,7 +18,6 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 5,
   "links": [],
   "panels": [
     {
@@ -116,7 +115,7 @@
           "refId": "A"
         }
       ],
-      "title": "New panel",
+      "title": "cpu_seconds_total",
       "type": "timeseries"
     }
   ],
@@ -134,5 +133,5 @@
   "timezone": "browser",
   "title": "cpu_seconds_total",
   "uid": "ad8rvpn",
-  "version": 1
+  "version": 3
 }
