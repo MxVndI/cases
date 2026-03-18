@@ -64,6 +64,9 @@ class ServiceProvider(Provider):
         return MailSender(
             settings.smtp_server,
             settings.smtp_port,
+            settings.smtp_use_ssl,
+            settings.smtp_starttls,
+            settings.smtp_timeout_s,
             settings.email_address,
             settings.email_password,
         )

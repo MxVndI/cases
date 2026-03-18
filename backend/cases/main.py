@@ -1,4 +1,5 @@
 from contextlib import asynccontextmanager
+from prometheus_fastapi_instrumentator import Instrumentator
 
 import uvicorn
 from dishka.integrations.fastapi import setup_dishka
@@ -17,6 +18,8 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+
+Instrumentator().instrument(app).expose(app)
 
 origins = ["*"]
 

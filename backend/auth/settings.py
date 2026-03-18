@@ -1,3 +1,4 @@
+from pydantic import Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -29,12 +30,18 @@ class Settings(BaseSettings):
     # soundcloud_cid: str = ""
     # soundcloud_cs: str = ""
 
-    smtp_port: str = ""
     smtp_server: str = ""
+    smtp_port: int = 587
+    smtp_use_ssl: bool = False
+    smtp_starttls: bool = True
+    smtp_timeout_s: int = 10
     email_address: str = ""
     email_password: str = ""
     secret_key: str = ""
-    api_tokens: list[str]
+    # Token used by auth-service to call other internal services (e.g. user-service)
+    token: str = Field(default="", validation_alias="TOKEN")
+    # Keep backward compatibility with existing env naming in repo (.env.example uses ALLOWED_TOKENS)
+    api_tokens: list[str] = Field(default_factory=list, validation_alias="ALLOWED_TOKENS")
     frontend_url: str = "http://localhost:5173"
     cookie_domain: str = "localhost"
     cookie_secure: bool = False

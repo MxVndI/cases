@@ -52,11 +52,9 @@ services:
     restart: always
     environment:
       ME_CONFIG_MONGODB_SERVER: mongodb
-      ME_CONFIG_BASICAUTH_USERNAME: admin
-      ME_CONFIG_BASICAUTH_PASSWORD: admin
       ME_CONFIG_MONGODB_URL: mongodb://mongodb:27017/
-    ports:
-      - "8081:8081"
+      ME_CONFIG_BASICAUTH: "false"
+    # Do not expose admin UI directly; access via AML proxy
     depends_on:
       mongodb:
         condition: service_healthy
@@ -67,10 +65,8 @@ services:
     image: rediscommander/redis-commander:latest
     restart: always
     environment:
-    
-      REDIS_HOSTS: local:redis:6379 
-    ports:
-      - 8082:8081 
+      REDIS_HOSTS: local:redis:6379
+    # Do not expose admin UI directly; access via AML proxy
     depends_on:
       - redis
     networks:
@@ -120,9 +116,43 @@ services:
       MONGODB_DB_NAME: auth_db      
       APP_NAME: auth.api
       LOG_LEVEL: INFO
+      USER_SERVICE_URL: http://userservice:8000
+      SMTP_SERVER: ${SMTP_SERVER:-}
+      SMTP_PORT: ${SMTP_PORT:-587}
+      SMTP_USE_SSL: ${SMTP_USE_SSL:-false}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-true}
+      SMTP_TIMEOUT_S: ${SMTP_TIMEOUT_S:-10}
+      EMAIL_ADDRESS: ${EMAIL_ADDRESS:-}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD:-}
     depends_on:   
       - redis    
       - mongodb 
+    networks:
+      - backend
+    restart: unless-stopped
+
+  amlservice:
+    build:
+      context: ./backend
+      dockerfile: aml/Dockerfile_api
+    container_name: aml.api-ch
+    # Not exposed directly; accessed via Traefik
+    env_file:
+      - .env
+    environment:
+      MONGODB_DB_NAME: aml_db
+      APP_NAME: aml.api
+      LOG_LEVEL: INFO
+      AUTH_SERVICE_URL: http://authservice:8000
+      FRONTEND_URL: http://localhost:5173
+      MONGO_EXPRESS_USER: ${MONGO_EXPRESS_USER:-}
+      MONGO_EXPRESS_PASSWORD: ${MONGO_EXPRESS_PASSWORD:-}
+      REDIS_COMMANDER_HTTP_USER: ${REDIS_COMMANDER_HTTP_USER:-}
+      REDIS_COMMANDER_HTTP_PASSWORD: ${REDIS_COMMANDER_HTTP_PASSWORD:-}
+    depends_on:
+      - redis
+      - mongodb
+      - authservice
     networks:
       - backend
     restart: unless-stopped
@@ -140,6 +170,7 @@ services:
       MONGODB_DB_NAME: user_db      
       APP_NAME: user.service
       LOG_LEVEL: INFO
+      AUTH_SERVICE_URL: http://authservice:8000
     depends_on:
       - redis
       - mongodb    
@@ -221,11 +252,56 @@ services:
       - backend
     restart: unless-stopped
 
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    container_name: prometheus-ch
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    depends_on:
+      - authservice
+      - casesservice
+      - paymentservice
+    networks:
+      - backend
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana-ch
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: admin
+      GF_SECURITY_ADMIN_PASSWORD: admin
+    volumes:
+      - grafana_data:/var/lib/grafana
+      
+      # provisioning (YAML)
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning
+
+      # dashboards (JSON)
+      - ./infra/grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
+    networks:
+      - backend
+    restart: unless-stopped
+    
+
  
 volumes:
   casehub_db_data:
   casehub_redis_data:
   casehub_rustfs_data:
+  prometheus_data:
+  grafana_data:
 
 networks:
   backend:
