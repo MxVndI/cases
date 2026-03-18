@@ -46,6 +46,14 @@ http:
         - cors-headers
       service: payment-api-service
 
+    aml:
+      rule: "PathPrefix(`/aml`) || Path(`/mongo-admin`) || Path(`/redis-admin`)"
+      entryPoints:
+        - web
+      middlewares:
+        - cors-headers
+      service: aml-service
+
   middlewares:
     auth-stripprefix:
       stripPrefix:
@@ -128,6 +136,14 @@ http:
       loadBalancer:
         servers:
           - url: "http://paymentservice:8000"
+        healthCheck:
+          path: /health
+          interval: 30s
+
+    aml-service:
+      loadBalancer:
+        servers:
+          - url: "http://amlservice:8000"
         healthCheck:
           path: /health
           interval: 30s
