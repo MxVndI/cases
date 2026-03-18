@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 1,
+  "id": 3,
   "links": [],
   "panels": [
     {
@@ -55,6 +55,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
+            "showValues": false,
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -70,7 +71,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -101,7 +102,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.5.2",
+      "pluginVersion": "12.3.0",
       "targets": [
         {
           "datasource": {
@@ -115,13 +116,13 @@
           "refId": "A"
         }
       ],
-      "title": "Panel Title",
+      "title": "Requests per minute Cassesservice",
       "type": "timeseries"
     }
   ],
   "preload": false,
   "refresh": "",
-  "schemaVersion": 40,
+  "schemaVersion": 42,
   "tags": [],
   "templating": {
     "list": []
@@ -134,6 +135,5 @@
   "timezone": "browser",
   "title": "Requests per minute Cassesservice",
   "uid": "dfgep9solxlhcf",
-  "version": 1,
-  "weekStart": ""
+  "version": 3
 }
