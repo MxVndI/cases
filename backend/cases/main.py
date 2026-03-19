@@ -6,8 +6,12 @@ from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from ioc import container
+from logging_setup import LoggingMiddleware, setup_logging
 from routes import router
 from services.db import connect_db
+from settings import Settings
+
+setup_logging(service_name=Settings().app_name, log_level=Settings().log_level)
 
 
 @asynccontextmanager
@@ -31,6 +35,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(LoggingMiddleware)
 
 
 @app.get("/health")

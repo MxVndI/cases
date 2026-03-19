@@ -6,9 +6,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_swagger_ui_html
 from ioc import container
+from logging_setup import LoggingMiddleware, setup_logging
 from routes import router
 from settings import Settings
 from services.storage import StorageService
+
+setup_logging(service_name=Settings().app_name, log_level=Settings().log_level)
 
 
 @asynccontextmanager
@@ -36,6 +39,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(LoggingMiddleware)
 
 
 @app.get("/health")

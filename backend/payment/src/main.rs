@@ -118,6 +118,17 @@ async fn metrics_middleware(req: Request<axum::body::Body>, next: Next) -> Respo
     let status = response.status();
     let status_str = status.as_u16().to_string();
     let elapsed = start.elapsed().as_secs_f64();
+    let duration_ms = (elapsed * 1000.0).round() as u64;
+
+    if path != "/health" && path != "/metrics" {
+        if status.is_server_error() {
+            tracing::error!(method = %method, path = %path, status_code = %status.as_u16(), duration_ms = duration_ms, "HTTP request");
+        } else if status.is_client_error() {
+            tracing::warn!(method = %method, path = %path, status_code = %status.as_u16(), duration_ms = duration_ms, "HTTP request");
+        } else {
+            tracing::info!(method = %method, path = %path, status_code = %status.as_u16(), duration_ms = duration_ms, "HTTP request");
+        }
+    }
 
     HTTP_REQUESTS_TOTAL
         .with_label_values(&[&method, &path, &status_str])
@@ -138,6 +149,16 @@ async fn metrics_middleware(req: Request<axum::body::Body>, next: Next) -> Respo
 
 #[tokio::main]
 async fn main() {
+    tracing_subscriber::fmt()
+        .json()
+        .with_env_filter(
+            tracing_subscriber::EnvFilter::try_from_default_env()
+                .unwrap_or_else(|_| tracing_subscriber::EnvFilter::new("info")),
+        )
+        .with_target(true)
+        .flatten_event(true)
+        .init();
+
     let (client, db) = get_db().await;
 
     let redis_url =
@@ -173,9 +194,9 @@ async fn main() {
         .await
         .unwrap();
 
-    println!("Server started on http://127.0.0.1:8000");
-    println!("Swagger UI available at http://127.0.0.1:8000/docs");
-    println!("Metrics available at http://127.0.0.1:8000/metrics");
+    tracing::info!("Server started on http://127.0.0.1:8000");
+    tracing::info!("Swagger UI available at http://127.0.0.1:8000/docs");
+    tracing::info!("Metrics available at http://127.0.0.1:8000/metrics");
 
     axum::serve(listener, app).await.unwrap();
 }

@@ -1,4 +1,3 @@
-import logging
 from contextlib import asynccontextmanager
 
 import uvicorn
@@ -7,10 +6,12 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.openapi.docs import get_swagger_ui_html
 from ioc import container
+from logging_setup import LoggingMiddleware, setup_logging
 from routes import v1_router
 from services.database import connect_db
+from settings import settings
 
-logger = logging.getLogger(__name__)
+setup_logging(service_name=settings.app_name, log_level=settings.log_level)
 
 
 @asynccontextmanager
@@ -36,6 +37,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(LoggingMiddleware)
 app.include_router(v1_router)
 
 

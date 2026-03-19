@@ -1,4 +1,3 @@
-import logging
 from contextlib import asynccontextmanager
 from prometheus_fastapi_instrumentator import Instrumentator
 
@@ -7,11 +6,12 @@ from dishka.integrations.fastapi import setup_dishka
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from ioc import container
+from logging_setup import LoggingMiddleware, setup_logging
 from routes.api import router
 from services.database import connect_db
+from settings import Settings
 
-logger = logging.getLogger(__name__)
-logger.setLevel(logging.INFO)
+setup_logging(service_name=Settings().app_name, log_level=Settings().log_level)
 
 
 @asynccontextmanager
@@ -34,6 +34,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+app.add_middleware(LoggingMiddleware)
 
 
 @app.get("/health")
