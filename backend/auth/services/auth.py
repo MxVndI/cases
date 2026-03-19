@@ -1,6 +1,5 @@
 import hashlib
 import hmac
-import json
 import logging
 from typing import Literal
 from uuid import UUID, uuid4
@@ -195,6 +194,34 @@ class AuthService:
         )
 
         return response
+
+    async def get_current_user_data(self, session_user: dict | None) -> dict | None:
+        if not session_user:
+            return None
+
+        user_id = session_user.get("id")
+        if not user_id:
+            return session_user
+
+        try:
+            async with aiohttp.ClientSession() as session:
+                service_token = self.settings.token or (
+                    self.allowed_tokens[0] if self.allowed_tokens else ""
+                )
+                if not service_token:
+                    raise RuntimeError("Service TOKEN/ALLOWED_TOKENS not configured")
+                headers = {"Authorization": f"Bearer {service_token}"}
+                async with session.get(
+                    f"{self.settings.user_service_url}/v1/users/{user_id}",
+                    headers=headers,
+                    timeout=aiohttp.ClientTimeout(total=5),
+                ) as resp:
+                    if resp.status == 200:
+                        return await resp.json()
+        except Exception as e:
+            logger.error(f"Failed to fetch current user data: {e}")
+
+        return session_user
 
     async def init_profile_update_code(self, email: EmailStr):
         ver_ses_id = uuid4()

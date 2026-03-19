@@ -1501,7 +1501,7 @@ export function Admin() {
                                     </div>
                                     {/* Role filter */}
                                     <div className="flex gap-2">
-                                        {([["all", "Все роли"], ["user", "Пользователи"], ["admin", "Администраторы"], ...(user?.role === "superadmin" ? [["superadmin", "Суперадмины"]] : [])] as const).map(([val, label]) => (
+                                        {([["all", "Все роли"], ["user", "Пользователи"], ["admin", "Администраторы"], ...(user?.role === "superadmin" ? [["superadmin", "Суперадминистраторы"]] : [])] as const).map(([val, label]) => (
                                             <button
                                                 key={val}
                                                 onClick={() => setRoleFilter(val as UserRoleFilter)}
@@ -1549,7 +1549,9 @@ export function Admin() {
                                                         >
                                                             {u.nickname}
                                                         </Link>
-                                                        {u.role === "admin" ? (
+                                                        {u.role === "superadmin" ? (
+                                                            <span className="px-1.5 py-0.5 rounded-full bg-purple-500/20 text-xs text-purple-400">Суперадминистратор</span>
+                                                        ) : u.role === "admin" ? (
                                                             <span className="px-1.5 py-0.5 rounded-full bg-red-500/20 text-xs text-red-400">Администратор</span>
                                                         ) : (
                                                             <span className="px-1.5 py-0.5 rounded-full bg-blue-500/20 text-xs text-blue-400">Пользователь</span>

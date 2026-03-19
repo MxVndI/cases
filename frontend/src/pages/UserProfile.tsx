@@ -357,6 +357,11 @@ export function UserProfile() {
                                             <h1 className="text-xl sm:text-2xl font-bold text-foreground">
                                                 {profile.nickname}
                                             </h1>
+                                            {isAdmin && profile.role === "superadmin" && (
+                                                <span className="px-2 py-0.5 rounded-full bg-purple-500/20 border border-purple-500/30 text-xs font-medium text-purple-400 flex items-center gap-1">
+                                                    <Shield className="h-3 w-3" /> Суперадминистратор
+                                                </span>
+                                            )}
                                             {isAdmin && profile.role === "admin" && (
                                                 <span className="px-2 py-0.5 rounded-full bg-red-500/20 border border-red-500/30 text-xs font-medium text-red-400 flex items-center gap-1">
                                                     <Shield className="h-3 w-3" /> Администратор
@@ -369,7 +374,7 @@ export function UserProfile() {
                                             <div className="mt-2 flex flex-wrap items-center gap-3 text-sm text-muted-foreground">
                                                 <span className="inline-flex items-center gap-1.5">
                                                     <Shield className="h-3.5 w-3.5" />
-                                                    Роль: {profile.role === "admin" ? "Администратор" : "Пользователь"}
+                                                    Роль: {profile.role === "superadmin" ? "Суперадминистратор" : profile.role === "admin" ? "Администратор" : "Пользователь"}
                                                 </span>
                                                 <span className={`inline-flex items-center gap-1.5 ${
                                                     profile.status === "blocked" ? "text-red-400" : ""

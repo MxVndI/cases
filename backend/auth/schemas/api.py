@@ -32,6 +32,7 @@ class User(BaseModel):
     id: UUID
     email: EmailStr
     nickname: str
+    role: str = "user"
     status: Literal["active", "blocked"]
     model_config = ConfigDict(extra="ignore")
 

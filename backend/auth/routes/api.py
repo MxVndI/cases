@@ -33,7 +33,10 @@ async def me(
     sid = cookie.sid
     sid = auth_service.verify_session(sid)
     if data := await session_service.get_session_user(sid):
-        return {"authenticated": True, "user": data}
+        current_user = await auth_service.get_current_user_data(data)
+        if current_user != data:
+            await session_service.update_session_user_info(sid, current_user)
+        return {"authenticated": True, "user": current_user}
     raise HTTPException(status_code=404)
 
 

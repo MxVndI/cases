@@ -380,7 +380,7 @@ export function Profile() {
                                     )}
                                     {user?.role === "superadmin" && (
                                         <span className="px-2 py-0.5 rounded-full bg-purple-500/20 border border-purple-500/30 text-xs font-medium text-purple-400 flex items-center gap-1">
-                                            <Shield className="h-3 w-3" /> Суперадмин
+                                            <Shield className="h-3 w-3" /> Суперадминистратор
                                         </span>
                                     )}
                                 </div>
