@@ -94,11 +94,11 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+      args:
+        VITE_API_BASE_URL: http://localhost/api
     container_name: frontend-ch
     ports:
       - "5173:5173"
-    environment:
-      VITE_API_BASE_URL: http://localhost/api
     networks:
       - backend
     restart: unless-stopped

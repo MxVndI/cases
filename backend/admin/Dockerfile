@@ -1,8 +1,7 @@
-FROM python:3.13-slim
-
-WORKDIR /app
-
-# Установка зависимостей
+FROM python:3.13-slim AS builder
+WORKDIR /build
+RUN python -m venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 COPY pyproject.toml README.md ./
 COPY auth/ ./auth/
 COPY user/ ./user/
@@ -11,11 +10,17 @@ COPY admin/ ./admin/
 COPY aml/ ./aml/
 RUN pip install --no-cache-dir .
 
-# Переменные окружения по умолчанию
+FROM python:3.13-slim
+COPY --from=builder /opt/venv /opt/venv
+ENV PATH="/opt/venv/bin:$PATH"
 ENV PYTHONUNBUFFERED=1
 ENV LOG_LEVEL=INFO
 ENV PYTHONPATH=/app
-
-# Запуск приложения
+WORKDIR /app
+COPY admin/ ./admin/
+COPY auth/ ./auth/
+COPY user/ ./user/
+COPY cases/ ./cases/
+COPY aml/ ./aml/
 WORKDIR /app/admin
 CMD ["python", "main.py"]
