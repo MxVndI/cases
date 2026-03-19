@@ -12,7 +12,7 @@ class AdminAuth:
         self.user_service_url = settings.user_service_url
         self.token = settings.token
 
-    async def get_admin_user_id(self, sid: str) -> str:
+    async def get_admin_user_id(self, sid: str, require_superadmin: bool = False) -> str:
         """Verify session via auth service, then check user role is admin."""
         # Step 1: Verify session with auth service
         try:
@@ -42,7 +42,11 @@ class AdminAuth:
                 if resp.status != 200:
                     raise HTTPException(status_code=401, detail="User not found")
                 user_data = await resp.json()
-                if user_data.get("role") != "admin":
+                role = user_data.get("role")
+                if require_superadmin:
+                    if role != "superadmin":
+                        raise HTTPException(status_code=403, detail="Superadmin access required")
+                elif role not in ("admin", "superadmin"):
                     raise HTTPException(status_code=403, detail="Admin access required")
                 return uid
         except HTTPException:

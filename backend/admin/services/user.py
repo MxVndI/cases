@@ -64,6 +64,24 @@ class UserService:
     async def unblock_user(self, user_id: str):
         return await self._update_status(user_id, "active")
 
+    async def update_role(self, user_id: str, new_role: str):
+        try:
+            async with self.session.patch(
+                f"{self.base_url}/v1/users/{user_id}/role",
+                json={"role": new_role},
+                headers=self._headers(),
+            ) as response:
+                if response.status == 200:
+                    return await response.json()
+                elif response.status == 404:
+                    return None
+                else:
+                    logger.error(f"User service error: {response.status}")
+                    response.raise_for_status()
+        except Exception as e:
+            logger.error(f"Error updating role: {e}")
+            raise
+
     async def _update_status(self, user_id: str, new_status: str):
         try:
             async with self.session.patch(

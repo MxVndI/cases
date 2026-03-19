@@ -56,10 +56,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     const logoutMutation = useMutation({
         mutationFn: authApi.logout,
         onSuccess: () => {
-            // Инвалидируем кэш пользователя
-            queryClient.invalidateQueries({ queryKey: authKeys.user() });
-            // Очищаем кэш
-            queryClient.clear();
+            // window.location.href вызывает полную перезагрузку страницы,
+            // которая и так сбрасывает весь кэш — вызывать queryClient.clear()
+            // не нужно и вредно: он триггерит ре-рендер до навигации,
+            // из-за чего защищённые страницы мигают <NotFound />.
+            window.location.href = '/';
+        },
+        onError: () => {
+            // Даже при ошибке на бэкенде перенаправляем на главную.
+            // Полная перезагрузка страницы сбросит все локальные состояния.
+            window.location.href = '/';
         },
     });
 

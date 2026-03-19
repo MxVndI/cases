@@ -3,16 +3,11 @@ from uuid import UUID
 
 from dishka.integrations.fastapi import DishkaRoute, FromDishka, inject
 from fastapi import APIRouter, Cookie, Depends, Header, HTTPException, Query, status
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, EmailStr
 from services.session import SessionService
 from services.user import UserService
 
 router = APIRouter(prefix="/users", route_class=DishkaRoute)
-
-
-class Cookies(BaseModel):
-    sid: str
-    model_config = ConfigDict(extra="ignore")
 
 
 class CreateUserRequest(BaseModel):
@@ -39,6 +34,10 @@ class UpdateStatusRequest(BaseModel):
     status: str
 
 
+class UpdateRoleRequest(BaseModel):
+    role: str
+
+
 class UpdateMeRequest(BaseModel):
     nickname: str | None = None
 
@@ -54,10 +53,14 @@ def _verify_service_token(authorization: str | None) -> None:
 
 @inject
 async def get_current_user_id(
-    cookies: Annotated[Cookies, Cookie()],
     sd: FromDishka[SessionService],
+    sid: Annotated[str | None, Cookie()] = None,
 ) -> str:
-    user_id = await sd.get_user_id_by_sid(cookies.sid)
+    if not sid:
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid session"
+        )
+    user_id = await sd.get_user_id_by_sid(sid)
     if not user_id:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid session"
@@ -170,6 +173,27 @@ async def update_user_status(
     )
 
 
+@router.patch("/{user_id}/role", response_model=CreateUserResponse)
+async def update_user_role(
+    user_id: str,
+    body: UpdateRoleRequest,
+    us: FromDishka[UserService],
+    authorization: Annotated[str | None, Header()] = None,
+):
+    """Update user role — inter-service call with token auth (superadmin only)"""
+    _verify_service_token(authorization)
+    allowed_roles = {"user", "admin"}
+    if body.role not in allowed_roles:
+        raise HTTPException(status_code=400, detail=f"Role must be one of: {allowed_roles}")
+    user = await us.update_role(user_id, body.role)
+    if not user:
+        raise HTTPException(status_code=404, detail="User not found")
+    return CreateUserResponse(
+        id=user.id, email=user.email, nickname=user.nickname,
+        role=user.role, status=user.status,
+    )
+
+
 @router.post("/", response_model=CreateUserResponse)
 async def create_user(
     request: CreateUserRequest,
@@ -180,7 +204,7 @@ async def create_user(
     _verify_service_token(authorization)
 
     # Проверяем, существует ли уже пользователь
-    existing_user = await us.get_user_by_email(request.email)
+    existing_user = await us.find_user_by_email(request.email)
     if existing_user:
         return CreateUserResponse(
             id=existing_user.id,
@@ -193,7 +217,7 @@ async def create_user(
     # Создаем нового пользователя
     from models.user import User
 
-    new_user = User(email=request.email)
+    new_user = User(email=request.email, nickname=request.nickname) if request.nickname else User(email=request.email)
     await new_user.save()
 
     return CreateUserResponse(

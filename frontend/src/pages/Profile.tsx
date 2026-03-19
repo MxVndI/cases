@@ -378,6 +378,11 @@ export function Profile() {
                                             <Shield className="h-3 w-3" /> Администратор
                                         </span>
                                     )}
+                                    {user?.role === "superadmin" && (
+                                        <span className="px-2 py-0.5 rounded-full bg-purple-500/20 border border-purple-500/30 text-xs font-medium text-purple-400 flex items-center gap-1">
+                                            <Shield className="h-3 w-3" /> Суперадмин
+                                        </span>
+                                    )}
                                 </div>
                                 <p className="text-sm text-muted-foreground flex items-center gap-2">
                                     <Mail className="h-3.5 w-3.5" /> {user?.email}

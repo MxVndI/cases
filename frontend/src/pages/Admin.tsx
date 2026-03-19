@@ -27,7 +27,7 @@ import { NotFound } from "@/pages/NotFound";
 
 type AdminTab = "cases" | "users" | "items" | "rarities" | "weapons";
 type UserStatusFilter = "all" | "active" | "blocked";
-type UserRoleFilter = "all" | "user" | "admin";
+type UserRoleFilter = "all" | "user" | "admin" | "superadmin";
 type CaseStatusFilter = "all" | "active" | "disabled";
 type CaseSortMode = "default" | "price-asc" | "price-desc" | "items-asc" | "items-desc" | "status-asc" | "status-desc";
 
@@ -498,6 +498,10 @@ export function Admin() {
     const [blockConfirmOpen, setBlockConfirmOpen] = useState(false);
     const [targetUser, setTargetUser]             = useState<User | null>(null);
 
+    // ── Role confirmation ──
+    const [roleConfirmOpen, setRoleConfirmOpen] = useState(false);
+    const [roleTargetUser, setRoleTargetUser]   = useState<User | null>(null);
+
     // ── Item dialogs ──
     const [addItemOpen, setAddItemOpen]         = useState(false);
     const [editItemOpen, setEditItemOpen]       = useState(false);
@@ -527,7 +531,7 @@ export function Admin() {
     const [weaponForm, setWeaponForm] = useState({ name: "", typeId: "", typeName: "" });
 
     // ── Access control ──
-    if (user?.role !== "admin") {
+    if (user?.role !== "admin" && user?.role !== "superadmin") {
         return <NotFound />;
     }
 
@@ -702,6 +706,11 @@ export function Admin() {
         setBlockConfirmOpen(true);
     };
 
+    const openRoleConfirm = (u: User) => {
+        setRoleTargetUser(u);
+        setRoleConfirmOpen(true);
+    };
+
     const handleToggleBlock = async () => {
         if (!targetUser) return;
         setMutating(true);
@@ -718,6 +727,22 @@ export function Admin() {
             setMutating(false);
             setBlockConfirmOpen(false);
             setTargetUser(null);
+        }
+    };
+
+    const handleToggleRole = async () => {
+        if (!roleTargetUser) return;
+        setMutating(true);
+        try {
+            const newRole = roleTargetUser.role === "admin" ? "user" : "admin";
+            await adminApi.updateUserRole(roleTargetUser.id, newRole);
+            await queryClient.invalidateQueries({ queryKey: ["admin-users"] });
+        } catch (e) {
+            console.error("Failed to toggle role:", e);
+        } finally {
+            setMutating(false);
+            setRoleConfirmOpen(false);
+            setRoleTargetUser(null);
         }
     };
 
@@ -1476,10 +1501,10 @@ export function Admin() {
                                     </div>
                                     {/* Role filter */}
                                     <div className="flex gap-2">
-                                        {([["all", "Все роли"], ["user", "Пользователи"], ["admin", "Администраторы"]] as const).map(([val, label]) => (
+                                        {([["all", "Все роли"], ["user", "Пользователи"], ["admin", "Администраторы"], ...(user?.role === "superadmin" ? [["superadmin", "Суперадмины"]] : [])] as const).map(([val, label]) => (
                                             <button
                                                 key={val}
-                                                onClick={() => setRoleFilter(val)}
+                                                onClick={() => setRoleFilter(val as UserRoleFilter)}
                                                 className={`px-3 py-2 rounded-xl text-xs font-medium border transition-all ${
                                                     roleFilter === val
                                                         ? "bg-orange-500 text-white border-orange-500"
@@ -1547,23 +1572,42 @@ export function Admin() {
                                                 </div>
                                             </div>
                                             <div className="flex items-center gap-4 flex-shrink-0">
-                                                {u.role !== "admin" && (
-                                                    <Button
-                                                        onClick={() => openBlockConfirm(u)}
-                                                        variant="outline"
-                                                        size="sm"
-                                                        className={`rounded-xl text-xs ${
-                                                            u.status === "active"
-                                                                ? "border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
-                                                                : "border-green-500/30 text-green-400 hover:bg-green-500/10 hover:text-green-300"
-                                                        }`}
-                                                    >
-                                                        {u.status === "active" ? (
-                                                            <Ban className="h-3.5 w-3.5" />
-                                                        ) : (
-                                                            <CheckCircle className="h-3.5 w-3.5" />
+                                                {u.role !== "superadmin" && (
+                                                    <>
+                                                        {user?.role === "superadmin" && (
+                                                            <Button
+                                                                onClick={() => openRoleConfirm(u)}
+                                                                variant="outline"
+                                                                size="sm"
+                                                                title={u.role === "admin" ? "Снять администратора" : "Назначить администратором"}
+                                                                className={`rounded-xl text-xs ${
+                                                                    u.role === "admin"
+                                                                        ? "border-yellow-500/30 text-yellow-400 hover:bg-yellow-500/10 hover:text-yellow-300"
+                                                                        : "border-orange-500/30 text-orange-400 hover:bg-orange-500/10 hover:text-orange-300"
+                                                                }`}
+                                                            >
+                                                                <Shield className="h-3.5 w-3.5" />
+                                                            </Button>
                                                         )}
-                                                    </Button>
+                                                        {u.role !== "admin" && (
+                                                            <Button
+                                                                onClick={() => openBlockConfirm(u)}
+                                                                variant="outline"
+                                                                size="sm"
+                                                                className={`rounded-xl text-xs ${
+                                                                    u.status === "active"
+                                                                        ? "border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"
+                                                                        : "border-green-500/30 text-green-400 hover:bg-green-500/10 hover:text-green-300"
+                                                                }`}
+                                                            >
+                                                                {u.status === "active" ? (
+                                                                    <Ban className="h-3.5 w-3.5" />
+                                                                ) : (
+                                                                    <CheckCircle className="h-3.5 w-3.5" />
+                                                                )}
+                                                            </Button>
+                                                        )}
+                                                    </>
                                                 )}
                                             </div>
                                         </div>
@@ -1992,6 +2036,38 @@ export function Admin() {
                             ) : (
                                 <><CheckCircle className="h-4 w-4 mr-1" /> Разблокировать</>
                             )}
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+            {/* ════════════  ROLE TOGGLE CONFIRMATION  ════════════ */}
+            <Dialog open={roleConfirmOpen} onOpenChange={setRoleConfirmOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Shield className="h-5 w-5 text-yellow-400" />
+                            {roleTargetUser?.role === "admin" ? "Снять администратора?" : "Назначить администратором?"}
+                        </DialogTitle>
+                        <DialogDescription>
+                            {roleTargetUser?.role === "admin" ? (
+                                <>Пользователь <span className="font-semibold text-foreground">{roleTargetUser?.nickname}</span> потеряет права администратора.</>
+                            ) : (
+                                <>Пользователь <span className="font-semibold text-foreground">{roleTargetUser?.nickname}</span> получит права администратора.</>
+                            )}
+                        </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setRoleConfirmOpen(false)} className="rounded-xl">
+                            Отмена
+                        </Button>
+                        <Button
+                            onClick={handleToggleRole}
+                            disabled={mutating}
+                            className="rounded-xl bg-yellow-500 hover:bg-yellow-600 text-white"
+                        >
+                            <Shield className="h-4 w-4 mr-1" />
+                            {roleTargetUser?.role === "admin" ? "Снять" : "Назначить"}
                         </Button>
                     </DialogFooter>
                 </DialogContent>

@@ -2,8 +2,13 @@ from uuid import UUID
 
 from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, Depends, HTTPException, Query
-from routes.deps import require_admin
+from pydantic import BaseModel
+from routes.deps import require_admin, require_superadmin
 from services.user import UserService
+
+
+class UpdateRoleRequest(BaseModel):
+    role: str
 
 router = APIRouter(prefix="/users", route_class=DishkaRoute, tags=["Users"])
 
@@ -64,6 +69,20 @@ async def unblock_user(
 ):
     """Разблокировать пользователя"""
     result = await us.unblock_user(user_id)
+    if result is None:
+        raise HTTPException(404, detail="User not found")
+    return result
+
+
+@router.patch("/{user_id}/role", summary="Изменить роль пользователя")
+async def update_user_role(
+    user_id: str,
+    body: UpdateRoleRequest,
+    us: FromDishka[UserService],
+    _: str = Depends(require_superadmin),
+):
+    """Изменить роль пользователя (только superadmin)"""
+    result = await us.update_role(user_id, body.role)
     if result is None:
         raise HTTPException(404, detail="User not found")
     return result
