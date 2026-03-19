@@ -474,6 +474,9 @@ export const adminApi = {
   unblockUser: async (userId: string): Promise<void> => {
     await api.post(`/admin/users/${userId}/unblock`);
   },
+  updateUserRole: async (userId: string, role: 'user' | 'admin'): Promise<void> => {
+    await api.patch(`/admin/users/${userId}/role`, { role });
+  },
 
   // Calculate chances
   calculateChances: async (itemIds: string[]): Promise<{ item_id: string; drop_chance: number }[]> => {

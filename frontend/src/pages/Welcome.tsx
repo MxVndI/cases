@@ -81,7 +81,7 @@ export function Welcome() {
     const queryClient = useQueryClient();
     const { user } = useAuth();
     const [feedSlots, setFeedSlots] = useState(4);
-    const isAdmin = user?.role === "admin";
+    const isAdmin = user?.role === "admin" || user?.role === "superadmin";
 
     // Tick every second to keep relative timestamps live
     const [, setTick] = useState(0);

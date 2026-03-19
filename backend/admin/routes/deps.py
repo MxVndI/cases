@@ -21,3 +21,15 @@ async def require_admin(
     if not cookie.sid:
         raise HTTPException(status_code=401, detail="Authentication required")
     return await auth.get_admin_user_id(cookie.sid)
+
+
+@inject
+async def require_superadmin(
+    cookie: Annotated[AdminCookies, Cookie()],
+    auth: FromDishka[AdminAuth],
+) -> str:
+    """Dependency that ensures the request is from an authenticated superadmin.
+    Returns the superadmin's user_id."""
+    if not cookie.sid:
+        raise HTTPException(status_code=401, detail="Authentication required")
+    return await auth.get_admin_user_id(cookie.sid, require_superadmin=True)

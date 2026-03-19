@@ -26,6 +26,10 @@ class UserService:
 
         return data
 
+    async def find_user_by_email(self, email: EmailStr):
+        """Gets user without creating"""
+        return await User.find_one(User.email == email)
+
     async def update_user(self, user_id: str | UUID, **fields) -> User | None:
         user = await User.get(user_id)
         if not user:
@@ -41,6 +45,14 @@ class UserService:
         if not user:
             return None
         user.status = new_status
+        await user.save()
+        return user
+
+    async def update_role(self, user_id: str | UUID, new_role: str) -> User | None:
+        user = await User.get(user_id)
+        if not user:
+            return None
+        user.role = new_role
         await user.save()
         return user
 

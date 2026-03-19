@@ -77,7 +77,7 @@ export function UserProfile() {
     const navigate = useNavigate();
     const queryClient = useQueryClient();
     const { user: currentUser } = useAuth();
-    const isAdmin = currentUser?.role === "admin";
+    const isAdmin = currentUser?.role === "admin" || currentUser?.role === "superadmin";
 
     const nickname = (userName ?? "").trim();
 

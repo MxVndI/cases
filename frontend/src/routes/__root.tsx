@@ -27,7 +27,7 @@ function RootComponent() {
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative">
                     <Navbar />
                     {/* Separate admin badges — positioned to the right of the main header */}
-                    {user?.role === "admin" && (
+                    {(user?.role === "admin" || user?.role === "superadmin") && (
                         <div className="absolute right-0 top-1/2 -translate-y-1/2 translate-x-[calc(100%+12px)] hidden xl:flex flex-col gap-2">
                             <motion.div
                                 initial={{ opacity: 0, x: 20 }}
