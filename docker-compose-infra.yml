@@ -1,3 +1,5 @@
+# See DEPLOY_SECRETS_CHECKLIST.md for GitHub Secrets and server .env quick-fill template.
+
 services:
     # traefik:
     #     image: traefik:v3.0
@@ -27,10 +29,12 @@ services:
             - /mnt/rustfs/data:/data
         command: /data
         environment:
-            RUSTFS_ACCESS_KEY: rustfsadmin
-            RUSTFS_SECRET_KEY: rustfsadmin
+            RUSTFS_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-}
+            RUSTFS_SECRET_KEY: ${RUSTFS_SECRET_KEY:-}
             RUSTFS_LOG_LEVEL: info
         user: "root"
+        networks:
+            - backend
     redis:
         image: redis:8.4.0
         container_name: redis-ch
@@ -60,14 +64,16 @@ services:
         restart: always
         environment:
             ME_CONFIG_MONGODB_SERVER: mongodb
-            ME_CONFIG_BASICAUTH_USERNAME: admin
-            ME_CONFIG_BASICAUTH_PASSWORD: admin
+            ME_CONFIG_BASICAUTH_USERNAME: ${MONGO_EXPRESS_USER:-}
+            ME_CONFIG_BASICAUTH_PASSWORD: ${MONGO_EXPRESS_PASSWORD:-}
             ME_CONFIG_MONGODB_URL: mongodb://mongodb:27017/
         ports:
             - "8081:8081"
         depends_on:
             mongodb:
                 condition: service_healthy
+        networks:
+            - backend
 
     redis-commander:
         image: rediscommander/redis-commander:latest
@@ -78,7 +84,14 @@ services:
             - 8082:8081
         depends_on:
             - redis
+        networks:
+            - backend
 
 volumes:
     casehub_db_data:
     casehub_redis_data:
+
+networks:
+    backend:
+        external: true
+        name: casehub_backend

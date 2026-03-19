@@ -1,3 +1,4 @@
+# See DEPLOY_SECRETS_CHECKLIST.md for GitHub Secrets and server .env quick-fill template.
 
 services: 
   traefik:
@@ -46,21 +47,6 @@ services:
       timeout: 5s
       retries: 5
 
-  mongo-express:
-    image: mongo-express
-    container_name: mongo-express-ch
-    restart: always
-    environment:
-      ME_CONFIG_MONGODB_SERVER: mongodb
-      ME_CONFIG_MONGODB_URL: mongodb://mongodb:27017/
-      ME_CONFIG_BASICAUTH: "false"
-    # Do not expose admin UI directly; access via AML proxy
-    depends_on:
-      mongodb:
-        condition: service_healthy
-    networks:
-      - backend
-
   redis-commander:
     image: rediscommander/redis-commander:latest
     restart: always
@@ -91,22 +77,20 @@ services:
       - backend
 
   frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
+    image: ${FRONTEND_IMAGE}
+    pull_policy: always
     container_name: frontend-ch
     ports:
       - "5173:5173"
     environment:
-      VITE_API_BASE_URL: http://localhost/api
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
     networks:
       - backend
     restart: unless-stopped
 
   authservice:
-    build:
-      context: ./backend
-      dockerfile: auth/Dockerfile_api
+    image: ${AUTHSERVICE_IMAGE}
+    pull_policy: always
     container_name: auth.api-ch
     ports:
       - "8000:8000"
@@ -132,9 +116,8 @@ services:
     restart: unless-stopped
 
   amlservice:
-    build:
-      context: ./backend
-      dockerfile: aml/Dockerfile_api
+    image: ${AMLSERVICE_IMAGE}
+    pull_policy: always
     container_name: aml.api-ch
     # Not exposed directly; accessed via Traefik
     env_file:
@@ -144,7 +127,7 @@ services:
       APP_NAME: aml.api
       LOG_LEVEL: INFO
       AUTH_SERVICE_URL: http://authservice:8000
-      FRONTEND_URL: http://localhost:5173
+      FRONTEND_URL: ${FRONTEND_URL:-}
       MONGO_EXPRESS_USER: ${MONGO_EXPRESS_USER:-}
       MONGO_EXPRESS_PASSWORD: ${MONGO_EXPRESS_PASSWORD:-}
       REDIS_COMMANDER_HTTP_USER: ${REDIS_COMMANDER_HTTP_USER:-}
@@ -158,9 +141,8 @@ services:
     restart: unless-stopped
 
   userservice:
-    build:
-      context: ./backend
-      dockerfile: user/Dockerfile_api
+    image: ${USERSERVICE_IMAGE}
+    pull_policy: always
     container_name: community.api-ch
     ports:
       - "8001:8000"
@@ -179,9 +161,8 @@ services:
     restart: unless-stopped
 
   casesservice:
-    build:
-      context: ./backend
-      dockerfile: cases/Dockerfile
+    image: ${CASESSERVICE_IMAGE}
+    pull_policy: always
     container_name: cases.api-ch
     ports:
       - "8002:8000"
@@ -202,9 +183,8 @@ services:
     restart: unless-stopped
 
   adminservice:
-    build:
-      context: ./backend
-      dockerfile: admin/Dockerfile
+    image: ${ADMINSERVICE_IMAGE}
+    pull_policy: always
     container_name: admin.api-ch
     ports:
       - "8012:8012"
@@ -218,10 +198,10 @@ services:
       USER_SERVICE_URL: http://userservice:8000
       AUTH_SERVICE_URL: http://authservice:8000
       S3_ENDPOINT: http://rustfs-server:9000
-      S3_ACCESS_KEY: rustfsadmin
-      S3_SECRET_KEY: rustfsadmin
-      S3_BUCKET: casehub
-      S3_PUBLIC_URL: http://localhost:9000
+      S3_ACCESS_KEY: ${RUSTFS_ACCESS_KEY:-}
+      S3_SECRET_KEY: ${RUSTFS_SECRET_KEY:-}
+      S3_BUCKET: ${S3_BUCKET:-casehub}
+      S3_PUBLIC_URL: ${S3_PUBLIC_URL:-}
     depends_on:
       - casesservice
       - userservice
@@ -232,9 +212,8 @@ services:
     restart: unless-stopped
 
   paymentservice:
-    build:
-      context: ./backend/payment
-      dockerfile: Dockerfile
+    image: ${PAYMENTSERVICE_IMAGE}
+    pull_policy: always
     container_name: payment.api-ch
     ports:
       - "8003:8000"
@@ -305,4 +284,5 @@ volumes:
 
 networks:
   backend:
+    name: casehub_backend
     driver: bridge
