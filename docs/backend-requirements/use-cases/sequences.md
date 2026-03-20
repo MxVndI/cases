@@ -41,6 +41,7 @@ sequenceDiagram
     FE-->>Гость: Страница /welcome
 
     Note over Auth,Redis: sid подписан HMAC-SHA256;<br/>TTL сессии — 30 дней
+
 ```
 
 ---
