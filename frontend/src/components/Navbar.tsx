@@ -41,13 +41,15 @@ export function Navbar() {
                     <div className="flex items-center gap-3 sm:gap-5">
                         {user ? (
                             <>
-                                {/* Balance — visible sm+ */}
+                                {/* Balance — icon always visible, number hidden on mobile */}
                                 <Link
                                     to="/balance"
-                                    className="cursor-target hidden sm:flex items-center gap-1.5 text-lg text-orange-500 font-bold hover:text-orange-400 transition-colors"
+                                    className="cursor-target flex items-center gap-1.5 text-lg text-orange-500 font-bold hover:text-orange-400 transition-colors"
                                 >
                                     <Coins className="h-4 w-4" />
-                                    <CountUp to={balance ?? 0} separator=" " duration={0.5} />
+                                    <span className="hidden sm:inline">
+                                        <CountUp to={balance ?? 0} separator=" " duration={0.5} />
+                                    </span>
                                 </Link>
 
                                 {/* Username dropdown */}

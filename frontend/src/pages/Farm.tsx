@@ -343,12 +343,12 @@ export function Farm() {
                                 onMouseUp={() => setIsPressed(false)}
                                 onMouseLeave={() => setIsPressed(false)}
                                 whileTap={{ scale: 0.92 }}
-                                className={`cursor-target relative w-48 h-48 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 shadow-2xl shadow-orange-500/40 flex items-center justify-center cursor-pointer transition-all duration-100 select-none ${
+                                className={`cursor-target relative w-36 h-36 sm:w-48 sm:h-48 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 shadow-2xl shadow-orange-500/40 flex items-center justify-center cursor-pointer transition-all duration-100 select-none ${
                                     isPressed ? "shadow-orange-500/60" : ""
                                 }`}
                             >
                                 <div className="absolute inset-2 rounded-full bg-gradient-to-br from-orange-300/30 to-transparent" />
-                                <Coins className="h-20 w-20 text-white drop-shadow-lg relative z-10" />
+                                <Coins className="h-14 w-14 sm:h-20 sm:w-20 text-white drop-shadow-lg relative z-10" />
                             </motion.button>
 
                             {/* Click particles */}
@@ -389,29 +389,29 @@ export function Farm() {
                                         : "border-border/40 bg-card/50 opacity-50 cursor-not-allowed"
                                 }`}
                             >
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-yellow-500/10 rounded-xl flex items-center justify-center">
-                                            <Zap className="h-6 w-6 text-yellow-500" />
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-yellow-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <Zap className="h-5 w-5 sm:h-6 sm:w-6 text-yellow-500" />
                                         </div>
-                                        <div>
-                                            <p className="font-semibold text-foreground">Усиленный клик <span className="text-xs text-muted-foreground ml-1">Lv.{farm.clickPowerLevel + 1}/{CLICK_POWER_COSTS.length}</span></p>
-                                            <p className="text-sm text-muted-foreground">
+                                        <div className="min-w-0">
+                                            <p className="font-semibold text-foreground text-sm sm:text-base">Усиленный клик <span className="text-xs text-muted-foreground ml-1">Lv.{farm.clickPowerLevel + 1}/{CLICK_POWER_COSTS.length}</span></p>
+                                            <p className="text-xs sm:text-sm text-muted-foreground">
                                                 +1 за клик (сейчас: {farm.clickPower})
                                             </p>
                                         </div>
                                     </div>
-                                    <span className="text-sm font-bold text-orange-500 flex items-center gap-1">{clickPowerCost} <Coins className="h-3.5 w-3.5" /></span>
+                                    <span className="text-sm font-bold text-orange-500 flex items-center gap-1 flex-shrink-0">{clickPowerCost} <Coins className="h-3.5 w-3.5" /></span>
                                 </div>
                             </motion.button>
                         ) : (
                             <div className="rounded-2xl border border-green-500/30 bg-green-500/5 p-5">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center">
-                                        <Zap className="h-6 w-6 text-green-500" />
+                                <div className="flex items-center gap-3 sm:gap-4">
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <Zap className="h-5 w-5 sm:h-6 sm:w-6 text-green-500" />
                                     </div>
                                     <div>
-                                        <p className="font-semibold text-green-400">Усиленный клик — MAX</p>
+                                        <p className="font-semibold text-green-400 text-sm sm:text-base">Усиленный клик — MAX</p>
                                         <p className="text-sm text-muted-foreground">{farm.clickPower} за клик</p>
                                     </div>
                                 </div>
@@ -431,29 +431,29 @@ export function Farm() {
                                         : "border-border/40 bg-card/50 opacity-50 cursor-not-allowed"
                                 }`}
                             >
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-purple-500/10 rounded-xl flex items-center justify-center">
-                                            <Layers className="h-6 w-6 text-purple-400" />
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <Layers className="h-5 w-5 sm:h-6 sm:w-6 text-purple-400" />
                                         </div>
-                                        <div>
-                                            <p className="font-semibold text-foreground">Мультипликатор <span className="text-xs text-muted-foreground ml-1">Lv.{farm.clickMultiplierLevel + 1}/{CLICK_MULTIPLIER_COSTS.length}</span></p>
-                                            <p className="text-sm text-muted-foreground">
+                                        <div className="min-w-0">
+                                            <p className="font-semibold text-foreground text-sm sm:text-base">Мультипликатор <span className="text-xs text-muted-foreground ml-1">Lv.{farm.clickMultiplierLevel + 1}/{CLICK_MULTIPLIER_COSTS.length}</span></p>
+                                            <p className="text-xs sm:text-sm text-muted-foreground">
                                                 Умножает доход с клика (сейчас: ×{farm.clickMultiplierLevel + 1})
                                             </p>
                                         </div>
                                     </div>
-                                    <span className="text-sm font-bold text-purple-400 flex items-center gap-1">{clickMultiplierCost} <Coins className="h-3.5 w-3.5" /></span>
+                                    <span className="text-sm font-bold text-purple-400 flex items-center gap-1 flex-shrink-0">{clickMultiplierCost} <Coins className="h-3.5 w-3.5" /></span>
                                 </div>
                             </motion.button>
                         ) : (
                             <div className="rounded-2xl border border-green-500/30 bg-green-500/5 p-5">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center">
-                                        <Layers className="h-6 w-6 text-green-500" />
+                                <div className="flex items-center gap-3 sm:gap-4">
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <Layers className="h-5 w-5 sm:h-6 sm:w-6 text-green-500" />
                                     </div>
                                     <div>
-                                        <p className="font-semibold text-green-400">Мультипликатор — MAX</p>
+                                        <p className="font-semibold text-green-400 text-sm sm:text-base">Мультипликатор — MAX</p>
                                         <p className="text-sm text-muted-foreground">×{farm.clickMultiplierLevel + 1} к каждому клику</p>
                                     </div>
                                 </div>
@@ -473,29 +473,29 @@ export function Farm() {
                                         : "border-border/40 bg-card/50 opacity-50 cursor-not-allowed"
                                 }`}
                             >
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center">
-                                            <TrendingUp className="h-6 w-6 text-green-500" />
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-green-500" />
                                         </div>
-                                        <div>
-                                            <p className="font-semibold text-foreground">Авто-кликер <span className="text-xs text-muted-foreground ml-1">Lv.{farm.autoClickerLevel + 1}/{AUTO_CLICKER_COSTS.length}</span></p>
-                                            <p className="text-sm text-muted-foreground">
+                                        <div className="min-w-0">
+                                            <p className="font-semibold text-foreground text-sm sm:text-base">Авто-кликер <span className="text-xs text-muted-foreground ml-1">Lv.{farm.autoClickerLevel + 1}/{AUTO_CLICKER_COSTS.length}</span></p>
+                                            <p className="text-xs sm:text-sm text-muted-foreground">
                                                 +1/тик автоматически (сейчас: {farm.autoClickerLevel}/сек)
                                             </p>
                                         </div>
                                     </div>
-                                    <span className="text-sm font-bold text-orange-500 flex items-center gap-1">{autoClickerCost} <Coins className="h-3.5 w-3.5" /></span>
+                                    <span className="text-sm font-bold text-orange-500 flex items-center gap-1 flex-shrink-0">{autoClickerCost} <Coins className="h-3.5 w-3.5" /></span>
                                 </div>
                             </motion.button>
                         ) : (
                             <div className="rounded-2xl border border-green-500/30 bg-green-500/5 p-5">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center">
-                                        <TrendingUp className="h-6 w-6 text-green-500" />
+                                <div className="flex items-center gap-3 sm:gap-4">
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <TrendingUp className="h-5 w-5 sm:h-6 sm:w-6 text-green-500" />
                                     </div>
                                     <div>
-                                        <p className="font-semibold text-green-400">Авто-кликер — MAX</p>
+                                        <p className="font-semibold text-green-400 text-sm sm:text-base">Авто-кликер — MAX</p>
                                         <p className="text-sm text-muted-foreground">{farm.autoClickerLevel}/сек</p>
                                     </div>
                                 </div>
@@ -515,29 +515,29 @@ export function Farm() {
                                         : "border-border/40 bg-card/50 opacity-50 cursor-not-allowed"
                                 }`}
                             >
-                                <div className="flex items-center justify-between">
-                                    <div className="flex items-center gap-4">
-                                        <div className="w-12 h-12 bg-blue-500/10 rounded-xl flex items-center justify-center">
-                                            <Timer className="h-6 w-6 text-blue-400" />
+                                <div className="flex flex-wrap items-center justify-between gap-2">
+                                    <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                                        <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                            <Timer className="h-5 w-5 sm:h-6 sm:w-6 text-blue-400" />
                                         </div>
-                                        <div>
-                                            <p className="font-semibold text-foreground">Авто-скорость <span className="text-xs text-muted-foreground ml-1">Lv.{farm.autoClickerSpeedLevel + 1}/{AUTO_SPEED_COSTS.length}</span></p>
-                                            <p className="text-sm text-muted-foreground">
+                                        <div className="min-w-0">
+                                            <p className="font-semibold text-foreground text-sm sm:text-base">Авто-скорость <span className="text-xs text-muted-foreground ml-1">Lv.{farm.autoClickerSpeedLevel + 1}/{AUTO_SPEED_COSTS.length}</span></p>
+                                            <p className="text-xs sm:text-sm text-muted-foreground">
                                                 Интервал: {currentIntervalLabel}мс → {nextIntervalLabel}мс
                                             </p>
                                         </div>
                                     </div>
-                                    <span className="text-sm font-bold text-blue-400 flex items-center gap-1">{autoSpeedCost} <Coins className="h-3.5 w-3.5" /></span>
+                                    <span className="text-sm font-bold text-blue-400 flex items-center gap-1 flex-shrink-0">{autoSpeedCost} <Coins className="h-3.5 w-3.5" /></span>
                                 </div>
                             </motion.button>
                         ) : (
                             <div className="rounded-2xl border border-green-500/30 bg-green-500/5 p-5">
-                                <div className="flex items-center gap-4">
-                                    <div className="w-12 h-12 bg-green-500/10 rounded-xl flex items-center justify-center">
-                                        <Timer className="h-6 w-6 text-green-500" />
+                                <div className="flex items-center gap-3 sm:gap-4">
+                                    <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-500/10 rounded-xl flex items-center justify-center flex-shrink-0">
+                                        <Timer className="h-5 w-5 sm:h-6 sm:w-6 text-green-500" />
                                     </div>
                                     <div>
-                                        <p className="font-semibold text-green-400">Авто-скорость — MAX</p>
+                                        <p className="font-semibold text-green-400 text-sm sm:text-base">Авто-скорость — MAX</p>
                                         <p className="text-sm text-muted-foreground">Интервал: {currentIntervalLabel}мс</p>
                                     </div>
                                 </div>
