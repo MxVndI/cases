@@ -1,4 +1,4 @@
-# B-UC-4.1: Инвентарь и баланс
+﻿# B-UC-4.1: Инвентарь и баланс
 
 **Эпик:** [Epic B4: Инвентарь и баланс](../epics/epic-b04-inventory.md)
 
@@ -72,3 +72,7 @@
 ## Связанные User Stories
 
 - [B-US-4.3](../user-stories/b-us-4.3.md)
+
+---
+
+> 📊 **Диаграмма последовательности:** [sequences.md → B-UC-4.1](sequences.md)

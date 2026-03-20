@@ -1,4 +1,4 @@
-# B-UC-5.1: Аутентификация администратора (Admin BFF)
+﻿# B-UC-5.1: Аутентификация администратора (Admin BFF)
 
 **Эпик:** [Epic B5: Администрирование (API)](../epics/epic-b05-admin.md)
 
@@ -50,3 +50,7 @@ Admin Service (BFF) проксирует запросы к другим серв
 
 - [B-US-5.1](../user-stories/b-us-5.1.md)
 - [B-US-5.2](../user-stories/b-us-5.2.md)
+
+---
+
+> 📊 **Диаграмма последовательности:** [sequences.md → B-UC-5.1](sequences.md)
