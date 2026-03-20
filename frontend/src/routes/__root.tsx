@@ -14,6 +14,16 @@ export const Route = createRootRoute({
     notFoundComponent: NotFound,
 })
 
+const resolveAmlUrl = (): string => {
+    if (typeof window === 'undefined') {
+        return 'http://localhost/aml'
+    }
+    const { protocol, hostname } = window.location
+    return `${protocol}//${hostname}/aml`
+}
+
+const amlUrl = import.meta.env.VITE_AML_URL || resolveAmlUrl()
+
 function RootComponent() {
     const { user } = useAuth()
     const { customCursor } = usePreferences()
@@ -48,7 +58,7 @@ function RootComponent() {
                                 transition={{ duration: 0.3, delay: 0.15 }}
                             >
                                 <a
-                                    href="http://localhost/aml"
+                                    href={amlUrl}
                                     className="cursor-target flex items-center gap-1.5 rounded-xl border border-blue-500/30 bg-card/80 backdrop-blur-xl px-4 h-10 text-sm font-medium text-blue-400 hover:text-blue-300 hover:border-blue-500/50 transition-all shadow-lg"
                                 >
                                     <Database className="h-4 w-4" />
