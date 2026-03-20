@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 from typing import Annotated
 from uuid import UUID
 
@@ -88,6 +89,12 @@ async def proxy_any(
     if ch:
         headers["Cookie"] = ch
 
+    # Inject Basic auth credentials for targets that require it
+    if target.auth_mode == "basic":
+        username, password = await secret.decrypt_credentials(mapping.credentials_id)
+        token = base64.b64encode(f"{username}:{password}".encode()).decode()
+        headers["Authorization"] = f"Basic {token}"
+
     upstream_base = str(target.endpoint).rstrip("/")
     upstream_url = f"{upstream_base}/{path}"
     if request.url.query:
@@ -118,6 +125,25 @@ async def proxy_any(
             resp_headers.pop("WWW-Authenticate", None)
 
         content = await resp.read()
+
+        # For grafana, rewrite root-relative links so assets/navigation stay under the proxy path
+        if (
+            target.type == "grafana"
+            and isinstance(content, (bytes, bytearray))
+        ):
+            ct = resp_headers.get("Content-Type", "")
+            if ct.startswith("text/html"):
+                try:
+                    text = content.decode("utf-8", errors="replace")
+                    prefix = f"/aml/proxy/{target_id}"
+                    text = text.replace('href="/', f'href="{prefix}/')
+                    text = text.replace("href='/", f"href='{prefix}/")
+                    text = text.replace('src="/', f'src="{prefix}/')
+                    text = text.replace("src='/", f"src='{prefix}/")
+                    text = text.replace('action="/', f'action="{prefix}/')
+                    content = text.encode("utf-8")
+                except Exception:
+                    pass
 
         # For mongo-express, rewrite root-relative links + lightly restyle UI to feel modern
         if (

@@ -13,7 +13,15 @@ export interface LoginCredentials {
 
 export const MOCK_MODE = false;
 
-export const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost/api';
+const resolveDefaultApiBaseUrl = (): string => {
+  if (typeof window === 'undefined') {
+    return 'http://localhost/api';
+  }
+  const { protocol, hostname } = window.location;
+  return `${protocol}//${hostname}/api`;
+};
+
+export const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || resolveDefaultApiBaseUrl();
 
 const api = axios.create({
   baseURL: apiBaseUrl,
@@ -476,6 +484,9 @@ export const adminApi = {
   },
   updateUserRole: async (userId: string, role: 'user' | 'admin'): Promise<void> => {
     await api.patch(`/admin/users/${userId}/role`, { role });
+  },
+  grantBalance: async (userId: string, amount: number): Promise<void> => {
+    await api.post(`/admin/users/${userId}/grant-balance`, { amount });
   },
 
   // Calculate chances

@@ -14,6 +14,16 @@ export const Route = createRootRoute({
     notFoundComponent: NotFound,
 })
 
+const resolveAmlUrl = (): string => {
+    if (typeof window === 'undefined') {
+        return 'http://localhost/aml'
+    }
+    const { protocol, hostname } = window.location
+    return `${protocol}//${hostname}/aml`
+}
+
+const amlUrl = import.meta.env.VITE_AML_URL || resolveAmlUrl()
+
 function RootComponent() {
     const { user } = useAuth()
     const { customCursor } = usePreferences()

@@ -222,9 +222,24 @@ export function Welcome() {
         }
     }, [feedSlots]);
 
+    // Compute max price dynamically from loaded cases so the filter isn't capped at 600
+    const computedMaxPrice = useMemo(() => {
+        if (!cases.length) return MAX_PRICE;
+        const maxCasePrice = Math.max(...(cases as CaseData[]).map((c) => c.price ?? 0));
+        return Math.max(MAX_PRICE, Math.ceil(maxCasePrice / 100) * 100);
+    }, [cases]);
+
     // Price
     const [priceMin, setPriceMin] = useState(0);
     const [priceMax, setPriceMax] = useState(MAX_PRICE);
+
+    const prevComputedMaxRef = useRef(MAX_PRICE);
+    useEffect(() => {
+        const prev = prevComputedMaxRef.current;
+        prevComputedMaxRef.current = computedMaxPrice;
+        // Only raise the ceiling if the user hasn't manually restricted priceMax
+        setPriceMax((m) => (m >= prev ? computedMaxPrice : m));
+    }, [computedMaxPrice]);
 
     // Rarity
     const [selectedRarities, setSelectedRarities] = useState<Set<string>>(new Set());
@@ -277,14 +292,14 @@ export function Welcome() {
 
     const resetFilters = () => {
         setPriceMin(0);
-        setPriceMax(MAX_PRICE);
+        setPriceMax(computedMaxPrice);
         setSelectedRarities(new Set());
         setSelectedTags(new Set());
         setStatusFilter("all");
         setSortMode("default");
     };
 
-    const priceFiltered = priceMin > 0 || priceMax < MAX_PRICE;
+    const priceFiltered = priceMin > 0 || priceMax < computedMaxPrice;
     const activeFilterCount =
         (priceFiltered ? 1 : 0) +
         (selectedRarities.size > 0 ? 1 : 0) +
@@ -423,7 +438,7 @@ export function Welcome() {
                         filterCount={activeFilterCount}
                         onReset={resetFilters}
                     >
-                        <PriceRangeInputs min={priceMin} max={priceMax} onMinChange={setPriceMin} onMaxChange={setPriceMax} maxValue={MAX_PRICE} />
+                        <PriceRangeInputs min={priceMin} max={priceMax} onMinChange={setPriceMin} onMaxChange={setPriceMax} maxValue={computedMaxPrice} />
 
                         {/* Сортировка */}
                         <SortButtons options={sortOptions} current={sortMode} onChange={setSortMode} label="Сортировка" />

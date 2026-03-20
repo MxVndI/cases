@@ -1,0 +1,14 @@
+# Prevent local .env files from being baked into the Docker image.
+# VITE_* variables must be injected at runtime via docker run -e or docker-compose environment.
+.env
+.env.local
+.env.*.local
+.env.development
+.env.production
+
+# Dev artifacts — not needed in image
+node_modules
+dist
+.tanstack/tmp
+test-results
+playwright-report

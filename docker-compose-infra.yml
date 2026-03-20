@@ -39,18 +39,17 @@ services:
         image: redis:8.4.0
         container_name: redis-ch
         restart: always
-        ports:
-            - "6379:6379"
+        # ports NOT exposed to host — accessible only within Docker network
         volumes:
             - casehub_redis_data:/data
 
     mongodb:
         image: mongo:8.0
         container_name: mongodb-ch
-        ports:
-            - "27017:27017"
+        # ports NOT exposed to host — accessible only within Docker network
         volumes:
             - casehub_db_data:/data/db
+            - ./mongo-init.js:/docker-entrypoint-initdb.d/init.js:ro
 
         healthcheck:
             test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]

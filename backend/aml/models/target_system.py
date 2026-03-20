@@ -8,7 +8,7 @@ from pydantic import ConfigDict, Field, HttpUrl, field_serializer
 from models.common import time_now
 
 
-TargetType = Literal["redis", "mongo"]
+TargetType = Literal["redis", "mongo", "grafana"]
 AuthMode = Literal["basic", "form", "none"]
 
 

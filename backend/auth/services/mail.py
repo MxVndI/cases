@@ -1,6 +1,5 @@
 import smtplib
 import ssl
-
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
@@ -24,12 +23,14 @@ class MailSender:
         self.address = address
         self.password = password
 
-    def send_email(self, recipient, subject, body):
-        if not self.server or not self.address or not self.password:
-            raise RuntimeError("SMTP is not configured (SMTP_SERVER/EMAIL_ADDRESS/EMAIL_PASSWORD)")
+    def send_email(self, recipient: str, subject: str, body: str) -> None:
+        if not self.server:
+            raise RuntimeError("SMTP is not configured (SMTP_SERVER)")
+
+        sender = self.address or "noreply@casehub.local"
 
         message = MIMEMultipart()
-        message["From"] = self.address
+        message["From"] = sender
         message["To"] = recipient
         message["Subject"] = subject
         message.attach(MIMEText(body, "plain"))
@@ -41,7 +42,7 @@ class MailSender:
                 self.server, self.port, timeout=self.timeout_s, context=context
             ) as server:
                 server.login(self.address, self.password)
-                server.sendmail(self.address, recipient, message.as_string())
+                server.sendmail(sender, recipient, message.as_string())
             return
 
         with smtplib.SMTP(self.server, self.port, timeout=self.timeout_s) as server:
@@ -50,4 +51,4 @@ class MailSender:
                 server.starttls(context=context)
                 server.ehlo()
             server.login(self.address, self.password)
-            server.sendmail(self.address, recipient, message.as_string())
+            server.sendmail(sender, recipient, message.as_string())

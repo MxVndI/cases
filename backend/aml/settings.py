@@ -38,6 +38,10 @@ class Settings(BaseSettings):
     mongo_express_password: str = ""
     redis_commander_http_user: str = ""
     redis_commander_http_password: str = ""
+    grafana_user: str = ""
+    grafana_password: str = ""
+    # Fixed UUID for the Grafana TargetSystem DB entry.
+    grafana_target_id: str = "f47ac10b-58cc-4372-a567-0e02b2c3d479"
 
 
 settings = Settings()

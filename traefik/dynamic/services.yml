@@ -54,6 +54,13 @@ http:
         - cors-headers
       service: aml-service
 
+    frontend:
+      rule: "PathPrefix(`/`)"
+      entryPoints:
+        - web
+      service: frontend-service
+      # Lowest priority (short rule) — matches only after all /api/* and /aml routes
+
   middlewares:
     auth-stripprefix:
       stripPrefix:
@@ -85,6 +92,9 @@ http:
         accessControlAllowOriginList:
           - "http://localhost:5173"
           - "http://localhost:3000"
+          - "http://5.129.253.136:5173"
+          - "http://5.129.253.136"
+          - "http://5.129.253.136:80"
         accessControlAllowCredentials: true
         accessControlAllowMethods:
           - "GET"
@@ -147,5 +157,10 @@ http:
         healthCheck:
           path: /health
           interval: 30s
+
+    frontend-service:
+      loadBalancer:
+        servers:
+          - url: "http://frontend-ch:5173"
 
 

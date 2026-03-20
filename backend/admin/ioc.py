@@ -7,6 +7,7 @@ from dishka.integrations.fastapi import FastapiProvider
 from services.auth import AdminAuth
 from services.case import CaseService
 from services.item import ItemService
+from services.payment import PaymentService
 from services.rarity import RarityService
 from services.storage import StorageService
 from services.tag import TagService
@@ -79,6 +80,10 @@ class ServiceProvider(Provider):
     @provide(scope=Scope.REQUEST)
     def get_user_service(self, st: Settings, cs: ClientSession) -> UserService:
         return UserService(settings=st, session=cs)
+
+    @provide(scope=Scope.REQUEST)
+    def get_payment_service(self, st: Settings, cs: ClientSession) -> PaymentService:
+        return PaymentService(settings=st, session=cs)
 
     @provide(scope=Scope.REQUEST)
     def get_weapon_type_service(self, st: Settings, cs: ClientSession) -> WeaponTypeService:
