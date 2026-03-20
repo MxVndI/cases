@@ -15,6 +15,68 @@ function uuidv4() {
 const now = new Date().toISOString();
 
 // ─────────────────────────────────────────────────────────────────────────────
+// WEAPON TYPES
+// ─────────────────────────────────────────────────────────────────────────────
+const weaponTypes = [
+  'Нож', 'Винтовки', 'Винтовка', 'Пистолет', 'Дробовик', 'Пулемет', 'Пистолет-пулемет',
+];
+
+let wtIns = 0, wtSkip = 0;
+for (const typeName of weaponTypes) {
+  const r = db.weapontype.updateOne(
+    { name: typeName },
+    { $setOnInsert: { _id: uuidv4(), name: typeName, created_at: now } },
+    { upsert: true }
+  );
+  if (r.upsertedCount > 0) { print('[WTYPE INSERT] ' + typeName); wtIns++; }
+  else                      { print('[WTYPE SKIP]   ' + typeName); wtSkip++; }
+}
+print('WeaponTypes: ' + wtIns + ' inserted, ' + wtSkip + ' skipped.\n');
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WEAPONS
+// ─────────────────────────────────────────────────────────────────────────────
+// Unique weapon name + type pairs derived from items
+const weapons = [
+  { name: 'Кукри',           type: 'Нож' },
+  { name: 'AK-47',           type: 'Винтовки' },
+  { name: 'Glock-18',        type: 'Пистолет' },
+  { name: 'Штык-нож',        type: 'Нож' },
+  { name: 'Nova',            type: 'Дробовик' },
+  { name: 'M249',            type: 'Пулемет' },
+  { name: 'MAG-7',           type: 'Дробовик' },
+  { name: 'Стилет',          type: 'Нож' },
+  { name: 'P2000',           type: 'Пистолет' },
+  { name: 'FAMAS',           type: 'Винтовка' },
+  { name: 'MP9',             type: 'Пистолет-пулемет' },
+  { name: 'Нож-бабочка',     type: 'Нож' },
+  { name: 'Desert Eagle',    type: 'Пистолет' },
+  { name: 'PP-Bizon',        type: 'Пистолет-пулемет' },
+  { name: 'Нож «Бродяга»',   type: 'Нож' },
+  { name: 'CZ75-Auto',       type: 'Пистолет' },
+  { name: 'Galil AR',        type: 'Винтовка' },
+  { name: 'Negev',           type: 'Пулемет' },
+  { name: 'SCAR-20',         type: 'Винтовка' },
+  { name: 'Sawed-Off',       type: 'Дробовик' },
+  { name: 'UMP-45',          type: 'Пистолет-пулемет' },
+  { name: 'Револьвер R8',    type: 'Пистолет' },
+  { name: 'Коготь',          type: 'Нож' },
+  { name: 'SSG 08',          type: 'Винтовка' },
+];
+
+let wIns = 0, wSkip = 0;
+for (const w of weapons) {
+  const r = db.weapon.updateOne(
+    { name: w.name, type: w.type },
+    { $setOnInsert: { _id: uuidv4(), name: w.name, type: w.type, created_at: now } },
+    { upsert: true }
+  );
+  if (r.upsertedCount > 0) { print('[WEAPON INSERT] ' + w.name + ' (' + w.type + ')'); wIns++; }
+  else                      { print('[WEAPON SKIP]   ' + w.name); wSkip++; }
+}
+print('Weapons: ' + wIns + ' inserted, ' + wSkip + ' skipped.\n');
+
+// ─────────────────────────────────────────────────────────────────────────────
 // CASES
 // ─────────────────────────────────────────────────────────────────────────────
 const cases = [
