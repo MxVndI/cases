@@ -23,7 +23,7 @@ const weaponTypes = [
 
 let wtIns = 0, wtSkip = 0;
 for (const typeName of weaponTypes) {
-  const r = db.weapontype.updateOne(
+  const r = db.WeaponType.updateOne(
     { name: typeName },
     { $setOnInsert: { _id: uuidv4(), name: typeName, created_at: now } },
     { upsert: true }
@@ -66,7 +66,7 @@ const weapons = [
 
 let wIns = 0, wSkip = 0;
 for (const w of weapons) {
-  const r = db.weapon.updateOne(
+  const r = db.Weapon.updateOne(
     { name: w.name, type: w.type },
     { $setOnInsert: { _id: uuidv4(), name: w.name, type: w.type, created_at: now } },
     { upsert: true }
@@ -94,7 +94,7 @@ const cases = [
 
 let cIns = 0, cSkip = 0;
 for (const c of cases) {
-  const r = db.case.updateOne(
+  const r = db.Case.updateOne(
     { $or: [{ name: c.name }, { system_name: c.system_name }] },
     { $setOnInsert: { _id: uuidv4(), name: c.name, system_name: c.system_name, img_url: c.img_url,
         price: 100, status: 'active', tag: null, created_at: now, case_content: [] } },
@@ -152,7 +152,7 @@ for (const it of items) {
   const rarityName = it.rarity || 'Ширпотреб';
   const rarityColor = rarityColors[rarityName] || '#b0c3d9';
 
-  const r = db.item.updateOne(
+  const r = db.Item.updateOne(
     { name: it.name },
     { $setOnInsert: { _id: uuidv4(), name: it.name, img_url: it.img_url, price: 0,
         weapon: { name: weaponName, type: it.type },

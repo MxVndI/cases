@@ -8,7 +8,7 @@ import { useRarities } from "@/hooks/useRarities";
 import { FilterPanel, PriceRangeInputs, RarityFilterButtons, SortButtons, StatusFilterButtons, TagFilterButtons } from "@/components/filters";
 import { useAuth } from "@/AuthContext";
 
-const MAX_PRICE = 600;
+const MAX_PRICE = 100;
 
 type SortMode = "default" | "price-asc" | "price-desc" | "items-asc" | "items-desc" | "status-asc" | "status-desc";
 type StatusFilter = "all" | "active" | "disabled";

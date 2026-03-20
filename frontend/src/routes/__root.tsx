@@ -16,7 +16,7 @@ export const Route = createRootRoute({
 
 const resolveAmlUrl = (): string => {
     if (typeof window === 'undefined') {
-        return 'http://localhost/aml'
+        return 'http://5.129.253.136/aml'
     }
     const { protocol, hostname } = window.location
     return `${protocol}//${hostname}/aml`
@@ -52,7 +52,7 @@ function RootComponent() {
                                 Панель администратора
                             </Link>
                             <a
-                                href="http://localhost/aml"
+                                href="http://5.129.253.136/aml"
                                 className="cursor-target flex items-center gap-1.5 rounded-xl border border-blue-500/30 bg-card/80 backdrop-blur-xl px-3 py-1.5 text-xs font-medium text-blue-400 hover:text-blue-300 hover:border-blue-500/50 transition-all shadow-lg whitespace-nowrap flex-shrink-0"
                             >
                                 <Database className="h-3.5 w-3.5" />
