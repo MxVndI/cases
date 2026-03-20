@@ -1,4 +1,4 @@
-# B-UC-6.1: Развёртывание инфраструктуры
+﻿# B-UC-6.1: Развёртывание инфраструктуры
 
 **Эпик:** [Epic B6: Инфраструктура](../epics/epic-b06-infra.md)
 
@@ -42,3 +42,7 @@
 - [B-US-6.2](../user-stories/b-us-6.2.md)
 - [B-US-6.3](../user-stories/b-us-6.3.md)
 - [B-US-6.4](../user-stories/b-us-6.4.md)
+
+---
+
+> 📊 **Диаграмма последовательности:** [sequences.md → B-UC-6.1](sequences.md)

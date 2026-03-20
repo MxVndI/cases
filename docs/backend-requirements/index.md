@@ -2,13 +2,13 @@
 
 ## О проекте
 
-CaseHub — веб-платформа для открытия виртуальных кейсов CS2. Бэкенд реализован на микросервисной архитектуре: пять независимых сервисов (четыре на Python/FastAPI + один на Rust/Axum), взаимодействующих через HTTP (межсервисные токены) и Redis Streams (RPC). Traefik v3 используется как API Gateway с маршрутизацией и CORS. Все сервисы контейнеризованы через Docker Compose.
+CaseHub — веб-платформа для открытия виртуальных кейсов CS2. Бэкенд реализован на микросервисной архитектуре: шесть независимых сервисов (пять на Python/FastAPI + один на Rust/Axum), взаимодействующих через HTTP (межсервисные токены) и Redis Streams (RPC). Traefik v3 используется как API Gateway с маршрутизацией и CORS. Все сервисы контейнеризованы через Docker Compose.
 
 ## Технологический стек
 
 - **Фреймворки:** FastAPI (Python), Axum (Rust)
 - **ORM/ODM:** Beanie (MongoDB ODM), mongodb-ro (Rust)
-- **База данных:** MongoDB 8.0 (отдельная БД для каждого сервиса: auth_db, user_db, cases_db, payment_db)
+- **База данных:** MongoDB 8.0 (отдельная БД для каждого сервиса: auth_db, user_db, cases_db, payment_db, aml_db)
 - **Кеширование / pub-sub:** Redis 8.4
 - **Межсервисная коммуникация:** Redis Streams (FastStream), HTTP с Bearer-токенами
 - **DI-контейнер:** Dishka (Python-сервисы)
@@ -17,6 +17,7 @@ CaseHub — веб-платформа для открытия виртуальн
 - **Хранилище файлов:** RustFS (S3-совместимое)
 - **API Gateway:** Traefik v3
 - **Контейнеризация:** Docker, Docker Compose
+- **Мониторинг:** Prometheus, Grafana, Loki, Promtail
 - **Валюта:** CaseHubCoin (CHC)
 
 ## Микросервисы
@@ -28,12 +29,15 @@ CaseHub — веб-платформа для открытия виртуальн
 | **Cases Service** | Кейсы, предметы, редкости, теги, оружие, типы оружия, инвентарь, история выигрышей, ферма (sync/claim), SSE-лента | Python / FastAPI | 8000 | — |
 | **Admin Service** | BFF для админ-панели: проксирует CRUD к Cases/User/Auth, загрузка изображений в S3 | Python / FastAPI | 8012 | — |
 | **Payment Service** | Баланс, транзакции, tap (кликер), ежедневный бонус | Rust / Axum | 8000 | — |
+| **AML Service** | Шлюз управляющих UI (mongo-express, redis-commander): envelope encryption, прокси, upstream sessions, аудит | Python / FastAPI | 8000 | — |
 
 ## Структура документации
 
 ### Общие разделы
 
 - [Глоссарий](../glossary.md) — термины, роли, сущности
+- [ER-диаграмма (draw.io)](er-diagram.drawio) — интерактивная версия, открывать в [app.diagrams.net](https://app.diagrams.net)
+- [Диаграммы последовательностей](use-cases/sequences.md) — Mermaid sequence diagrams
 
 ### Эпики
 
@@ -44,11 +48,12 @@ CaseHub — веб-платформа для открытия виртуальн
 | 3 | [Управление кейсами и справочниками](epics/epic-b03-cases.md) | Cases Service: полный CRUD кейсов/предметов/редкостей/тегов/оружия/типов оружия, открытие кейсов, SSE-лента, история выигрышей | 6 | 3 | 28 |
 | 4 | [Инвентарь и баланс](epics/epic-b04-inventory.md) | Инвентарь (Cases Service) + баланс/транзакции (Payment Service): просмотр, продажа, sell-all | 3 | 2 | 10 |
 | 5 | [Администрирование (BFF)](epics/epic-b05-admin.md) | Admin Service: cookie-аутентификация с проверкой роли, проксирование CRUD к Cases/User, загрузка изображений | 4 | 2 | 14 |
-| 6 | [Инфраструктура](epics/epic-b06-infra.md) | Docker-контейнеризация всех 5 сервисов, Traefik, MongoDB, Redis, RustFS, DI-контейнеры Dishka, Redis Streams | 4 | 1 | 20 |
+| 6 | [Инфраструктура](epics/epic-b06-infra.md) | Docker-контейнеризация всех 5 сервисов, Traefik, MongoDB, Redis, RustFS, DI-контейнеры Dishka, Redis Streams, мониторинг (Prometheus, Grafana, Loki, Promtail) | 5 | 2 | 31 |
 | 7 | [Ферма — бэкенд](epics/epic-b07-farm.md) | Серверный фарм (sync/claim в Cases Service) + tap/daily-bonus в Payment Service | 3 | 2 | 10 |
-| | **Итого** | | **29** | **17** | **121** |
+| 8 | [AML — Шлюз управляющих UI](epics/epic-b08-aml.md) | Проксированный доступ к mongo-express и redis-commander: envelope encryption, upstream sessions, аудит-лог, Dishka DI | 3 | 2 | 11 |
+| | **Итого** | | **33** | **20** | **143** |
 
-### User Stories (29)
+### User Stories (33)
 
 | Код | Название | Эпик |
 |-----|----------|------|
@@ -78,11 +83,15 @@ CaseHub — веб-платформа для открытия виртуальн
 | [B-US-6.2](user-stories/b-us-6.2.md) | Traefik и API Gateway | Epic B6 |
 | [B-US-6.3](user-stories/b-us-6.3.md) | Базы данных (MongoDB, Redis) | Epic B6 |
 | [B-US-6.4](user-stories/b-us-6.4.md) | Межсервисная коммуникация (Redis Streams) | Epic B6 |
+| [B-US-6.5](user-stories/b-us-6.5.md) | Мониторинг и сбор логов (Prometheus + Grafana + Loki) | Epic B6 |
 | [B-US-7.1](user-stories/b-us-7.1.md) | Серверная синхронизация фермы (sync/claim) | Epic B7 |
 | [B-US-7.2](user-stories/b-us-7.2.md) | Tap-эндпоинт (кликер) | Epic B7 |
 | [B-US-7.3](user-stories/b-us-7.3.md) | Ежедневный бонус | Epic B7 |
+| [B-US-8.1](user-stories/b-us-8.1.md) | Проксированный доступ к управляющим UI | Epic B8 |
+| [B-US-8.2](user-stories/b-us-8.2.md) | Управление целевыми системами и маппингами | Epic B8 |
+| [B-US-8.3](user-stories/b-us-8.3.md) | Безопасное хранение учётных данных (envelope encryption) | Epic B8 |
 
-### Use Cases (17)
+### Use Cases (20)
 
 | Код | Название | Эпик |
 |-----|----------|------|
@@ -101,10 +110,13 @@ CaseHub — веб-платформа для открытия виртуальн
 | [B-UC-5.1](use-cases/b-uc-5.1.md) | Управление пользователями (admin BFF) | Epic B5 |
 | [B-UC-5.2](use-cases/b-uc-5.2.md) | Проксирование CRUD и загрузка изображений | Epic B5 |
 | [B-UC-6.1](use-cases/b-uc-6.1.md) | Развёртывание инфраструктуры | Epic B6 |
+| [B-UC-6.2](use-cases/b-uc-6.2.md) | Мониторинг сервисов через Grafana | Epic B6 |
 | [B-UC-7.1](use-cases/b-uc-7.1.md) | Синхронизация прогресса фермы | Epic B7 |
 | [B-UC-7.2](use-cases/b-uc-7.2.md) | Tap и ежедневный бонус | Epic B7 |
+| [B-UC-8.1](use-cases/b-uc-8.1.md) | Доступ администратора к управляющему UI через AML | Epic B8 |
+| [B-UC-8.2](use-cases/b-uc-8.2.md) | Bootstrap маппингов при первом входе | Epic B8 |
 
-### Задачи (121)
+### Задачи (143)
 
 Все задачи находятся в папке [tasks/](tasks/). Кодировка: `TASK-B{epic}.{us}.{seq}`.
 

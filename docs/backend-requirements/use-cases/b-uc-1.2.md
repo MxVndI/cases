@@ -1,4 +1,4 @@
-# B-UC-1.2: Авторизация по email
+﻿# B-UC-1.2: Авторизация по email
 
 **Эпик:** [Epic B1: Аутентификация и авторизация](../epics/epic-b01-auth.md)
 
@@ -56,3 +56,7 @@
 ## Связанные User Stories
 
 - [B-US-1.2](../user-stories/b-us-1.2.md)
+
+---
+
+> 📊 **Диаграмма последовательности:** [sequences.md → B-UC-1.2](sequences.md)

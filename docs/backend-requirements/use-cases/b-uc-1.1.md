@@ -1,4 +1,4 @@
-# B-UC-1.1: Авторизация через OAuth
+﻿# B-UC-1.1: Авторизация через OAuth
 
 **Эпик:** [Epic B1: Аутентификация и авторизация](../epics/epic-b01-auth.md)
 
@@ -46,3 +46,7 @@
 ## Связанные User Stories
 
 - [B-US-1.1](../user-stories/b-us-1.1.md)
+
+---
+
+> 📊 **Диаграмма последовательности:** [sequences.md → B-UC-1.1](sequences.md)
