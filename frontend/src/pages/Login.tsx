@@ -8,7 +8,7 @@ import { useState } from 'react';
 import { useAuth } from '@/AuthContext';
 import { FaDiscord, FaYandexInternational } from "react-icons/fa";
 import { Mail, Loader2, ArrowLeft } from "lucide-react";
-import { Link, useNavigate } from "@tanstack/react-router";
+import { useNavigate } from "@tanstack/react-router";
 import { authApi } from "@/services/api";
 import caseHubLogo from "@/assets/casehub-logo.svg";
 const socialProviders = [
@@ -64,36 +64,6 @@ export function Login() {
 
     return (
         <div className="relative min-h-screen flex items-center justify-center px-4 py-8 sm:py-12">
-            <Link
-                to="/"
-                aria-label="На главную"
-                className="peer/home-edge hidden lg:block fixed inset-y-0 left-0 z-10 w-24 cursor-pointer"
-            />
-            <Link
-                to="/register"
-                aria-label="Нет аккаунта?"
-                className="peer/register-edge hidden lg:block fixed inset-y-0 right-0 z-10 w-24 cursor-pointer"
-            />
-            <Link
-                to="/"
-                className="peer/home hidden lg:block fixed left-8 top-1/2 z-20 -translate-y-1/2 origin-left transform-gpu text-2xl font-semibold text-muted-foreground transition-all duration-300 ease-out hover:scale-110 hover:text-white peer-hover/home-edge:scale-110 peer-hover/home-edge:text-white"
-            >
-                На главную
-            </Link>
-            <div
-                aria-hidden="true"
-                className="hidden lg:block pointer-events-none fixed inset-y-0 left-0 z-0 w-[30vw] max-w-[440px] opacity-0 transition-opacity duration-300 ease-out peer-hover/home:opacity-100 peer-hover/home-edge:opacity-100 bg-[linear-gradient(to_right,rgba(249,115,22,0.11),rgba(251,146,60,0.055)_35%,rgba(255,200,120,0.02)_65%,transparent),conic-gradient(from_290deg_at_0%_50%,rgba(249,115,22,0.06),rgba(251,146,60,0.025),transparent,rgba(249,115,22,0.04))] blur-xl"
-            />
-            <Link
-                to="/register"
-                className="peer/register hidden lg:block fixed right-8 top-1/2 z-20 -translate-y-1/2 origin-right transform-gpu text-2xl font-semibold text-muted-foreground transition-all duration-300 ease-out hover:scale-110 hover:text-white peer-hover/register-edge:scale-110 peer-hover/register-edge:text-white"
-            >
-                Нет аккаунта?
-            </Link>
-            <div
-                aria-hidden="true"
-                className="hidden lg:block pointer-events-none fixed inset-y-0 right-0 z-0 w-[30vw] max-w-[440px] opacity-0 transition-opacity duration-300 ease-out peer-hover/register:opacity-100 peer-hover/register-edge:opacity-100 bg-[linear-gradient(to_left,rgba(255,255,255,0.09),rgba(255,255,255,0.045)_35%,rgba(255,255,255,0.015)_65%,transparent),conic-gradient(from_250deg_at_100%_50%,rgba(255,255,255,0.055),rgba(255,255,255,0.02),transparent,rgba(255,255,255,0.04))] blur-xl"
-            />
             <motion.div
                 initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 16 }}
                 animate={{ opacity: 1, y: 0 }}

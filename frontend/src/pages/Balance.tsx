@@ -101,25 +101,8 @@ export function Balance() {
     };
 
     return (
-        <div className="relative min-h-screen bg-background">
-            {/* Full-left "На главную" edge button — fixed to viewport */}
-            <Link
-                to="/"
-                aria-label="На главную"
-                className="peer/home-edge hidden lg:block fixed inset-y-0 left-0 z-10 w-24 cursor-pointer"
-            />
-            <Link
-                to="/"
-                className="peer/home hidden lg:block fixed left-8 top-1/2 z-20 -translate-y-1/2 origin-left transform-gpu text-2xl font-semibold text-muted-foreground transition-all duration-300 ease-out hover:scale-110 hover:text-white peer-hover/home-edge:scale-110 peer-hover/home-edge:text-white"
-            >
-                На главную
-            </Link>
-            <div
-                aria-hidden="true"
-                className="hidden lg:block pointer-events-none fixed inset-y-0 left-0 z-0 w-[30vw] max-w-[440px] opacity-0 transition-opacity duration-300 ease-out peer-hover/home:opacity-100 peer-hover/home-edge:opacity-100 bg-[linear-gradient(to_right,rgba(249,115,22,0.11),rgba(251,146,60,0.055)_35%,rgba(255,200,120,0.02)_65%,transparent),conic-gradient(from_290deg_at_0%_50%,rgba(249,115,22,0.06),rgba(251,146,60,0.025),transparent,rgba(249,115,22,0.04))] blur-xl"
-            />
-
-            <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        <div className="min-h-screen bg-background">
+            <main className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
                 <motion.div
                     initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -305,24 +288,24 @@ export function Balance() {
                                 return (
                                     <div
                                         key={tx.id}
-                                        className="flex items-center justify-between p-4 rounded-xl border border-border/40 bg-background/50"
+                                        className="flex flex-wrap items-center justify-between gap-2 p-3 sm:p-4 rounded-xl border border-border/40 bg-background/50"
                                     >
-                                        <div className="flex items-center gap-4">
-                                            <div className={`w-10 h-10 rounded-lg flex items-center justify-center border-2 ${iconBorder} ${iconBg}`}>
+                                        <div className="flex items-center gap-3 sm:gap-4 min-w-0">
+                                            <div className={`w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center border-2 flex-shrink-0 ${iconBorder} ${iconBg}`}>
                                                 {icon}
                                             </div>
-                                            <div>
-                                                <p className="font-medium text-foreground">
+                                            <div className="min-w-0">
+                                                <p className="font-medium text-foreground text-sm sm:text-base truncate">
                                                     {label}
                                                 </p>
                                                 {txDate && (
-                                                    <p className="text-sm text-muted-foreground">
+                                                    <p className="text-xs sm:text-sm text-muted-foreground">
                                                         {txDate.toLocaleDateString("ru-RU")} {txDate.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })}
                                                     </p>
                                                 )}
                                             </div>
                                         </div>
-                                        <p className={`font-semibold flex items-center gap-1 ${amountColor}`}>
+                                        <p className={`font-semibold flex items-center gap-1 flex-shrink-0 ${amountColor}`}>
                                             {isIncoming ? "+" : "-"}{Math.floor(Math.abs(tx.amount)).toLocaleString()}
                                         </p>
                                     </div>

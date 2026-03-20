@@ -1413,24 +1413,7 @@ export function Admin() {
 
     return (
         <div className="relative min-h-screen bg-background">
-            {/* Full-left "На главную" edge button — fixed to viewport */}
-            <Link
-                to="/"
-                aria-label="На главную"
-                className="peer/home-edge hidden lg:block fixed inset-y-0 left-0 z-10 w-24 cursor-pointer"
-            />
-            <Link
-                to="/"
-                className="peer/home hidden lg:block fixed left-8 top-1/2 z-20 -translate-y-1/2 origin-left transform-gpu text-2xl font-semibold text-muted-foreground transition-all duration-300 ease-out hover:scale-110 hover:text-white peer-hover/home-edge:scale-110 peer-hover/home-edge:text-white"
-            >
-                На главную
-            </Link>
-            <div
-                aria-hidden="true"
-                className="hidden lg:block pointer-events-none fixed inset-y-0 left-0 z-0 w-[30vw] max-w-[440px] opacity-0 transition-opacity duration-300 ease-out peer-hover/home:opacity-100 peer-hover/home-edge:opacity-100 bg-[linear-gradient(to_right,rgba(249,115,22,0.11),rgba(251,146,60,0.055)_35%,rgba(255,200,120,0.02)_65%,transparent),conic-gradient(from_290deg_at_0%_50%,rgba(249,115,22,0.06),rgba(251,146,60,0.025),transparent,rgba(249,115,22,0.04))] blur-xl"
-            />
-
-            <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+            <main className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
                 <motion.div
                     initial={{ opacity: 0, y: shouldReduceMotion ? 0 : 20 }}
                     animate={{ opacity: 1, y: 0 }}
@@ -1446,12 +1429,12 @@ export function Admin() {
                     </div>
 
                     {/* Tabs */}
-                    <div className="flex gap-2 mb-6">
+                    <div className="flex flex-wrap gap-2 mb-6">
                         {tabs.map(tab => (
                             <button
                                 key={tab.id}
                                 onClick={() => setActiveTab(tab.id)}
-                                className={`flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 ${
+                                className={`flex items-center gap-2 px-4 py-2 rounded-xl text-sm font-medium transition-all duration-200 whitespace-nowrap ${
                                     activeTab === tab.id
                                         ? "bg-orange-500 text-white shadow-lg shadow-orange-500/20"
                                         : "bg-card/80 text-muted-foreground hover:text-foreground border border-border/60 hover:border-orange-500/30"
@@ -1468,9 +1451,9 @@ export function Admin() {
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }}>
                             {/* Filters */}
                             <div className="rounded-2xl border border-border/60 bg-card/80 backdrop-blur-xl p-4 mb-4 space-y-3">
-                                <div className="flex flex-col sm:flex-row gap-3">
+                                <div className="flex flex-col gap-3">
                                     {/* Search */}
-                                    <div className="flex-1 relative">
+                                    <div className="relative">
                                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                                         <Input
                                             value={userSearch}
@@ -1480,7 +1463,7 @@ export function Admin() {
                                         />
                                     </div>
                                     {/* Status filter */}
-                                    <div className="flex gap-2">
+                                    <div className="flex gap-2 flex-wrap">
                                         {([["all", "Все"], ["active", "Активные"], ["blocked", "Заблокированные"]] as const).map(([val, label]) => (
                                             <button
                                                 key={val}
@@ -1500,7 +1483,7 @@ export function Admin() {
                                         ))}
                                     </div>
                                     {/* Role filter */}
-                                    <div className="flex gap-2">
+                                    <div className="flex gap-2 flex-wrap">
                                         {([["all", "Все роли"], ["user", "Пользователи"], ["admin", "Администраторы"], ...(user?.role === "superadmin" ? [["superadmin", "Суперадминистраторы"]] : [])] as const).map(([val, label]) => (
                                             <button
                                                 key={val}
@@ -1533,8 +1516,8 @@ export function Admin() {
                                 </div>
                                 <div className="divide-y divide-border/40">
                                     {filteredUsers.map(u => (
-                                        <div key={u.id} className="flex items-center justify-between p-4 hover:bg-background/30 transition-colors">
-                                            <div className="flex items-center gap-4 min-w-0">
+                                        <div key={u.id} className="flex flex-wrap items-center justify-between gap-2 p-3 sm:p-4 hover:bg-background/30 transition-colors">
+                                            <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                                                 <div className={`w-10 h-10 rounded-xl flex-shrink-0 flex items-center justify-center ${
                                                     u.status === "active" ? "bg-green-500/10" : "bg-red-500/10"
                                                 }`}>
@@ -1573,7 +1556,7 @@ export function Admin() {
                                                     )}
                                                 </div>
                                             </div>
-                                            <div className="flex items-center gap-4 flex-shrink-0">
+                                            <div className="flex items-center gap-2 flex-shrink-0">
                                                 {u.role !== "superadmin" && (
                                                     <>
                                                         {user?.role === "superadmin" && (
@@ -1630,9 +1613,9 @@ export function Admin() {
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
                             <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.6fr)_minmax(320px,0.9fr)] gap-6">
                                 <div className="space-y-4">
-                                    <div className="flex justify-between items-center">
+                                    <div className="flex flex-wrap justify-between items-center gap-2">
                                         <h2 className="text-lg font-semibold text-foreground">Кейсы ({filteredCases.length})</h2>
-                                        <Button onClick={openAddCase} className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl flex items-center gap-2">
+                                        <Button onClick={openAddCase} size="sm" className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl flex items-center gap-1.5">
                                             <Plus className="h-4 w-4" /> Добавить кейс
                                         </Button>
                                     </div>
@@ -1671,7 +1654,7 @@ export function Admin() {
                                     <div className="rounded-2xl border border-border/60 bg-card/80 backdrop-blur-xl overflow-hidden">
                                         <div className="divide-y divide-border/40">
                                             {filteredCases.map(c => (
-                                                <div key={c.id} className="flex items-center justify-between p-3 sm:p-4 gap-2 hover:bg-background/30 transition-colors">
+                                                <div key={c.id} className="flex flex-wrap items-center justify-between p-3 sm:p-4 gap-x-2 gap-y-2 hover:bg-background/30 transition-colors">
                                                     <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                                                         {c.img_url ? (
                                                             <img src={c.img_url} alt={c.name} className="w-10 h-10 sm:w-12 sm:h-12 rounded-xl object-cover border border-border/60 flex-shrink-0" />
@@ -1705,9 +1688,9 @@ export function Admin() {
                                 </div>
 
                                 <div>
-                                    <div className="flex justify-between items-center">
+                                    <div className="flex flex-wrap justify-between items-center gap-2">
                                         <h2 className="text-lg font-semibold text-foreground">Теги ({caseTags.length})</h2>
-                                        <Button onClick={openAddTag} className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl flex items-center gap-2">
+                                        <Button onClick={openAddTag} size="sm" className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl flex items-center gap-1.5">
                                             <Plus className="h-4 w-4" /> Добавить тег
                                         </Button>
                                     </div>
@@ -1718,7 +1701,7 @@ export function Admin() {
                                         ) : (
                                             <div className="divide-y divide-border/40">
                                                 {caseTags.map(tag => (
-                                                    <div key={tag.id} className="flex items-center justify-between p-4 hover:bg-background/30 transition-colors gap-3">
+                                                    <div key={tag.id} className="flex flex-wrap items-center justify-between p-3 sm:p-4 gap-3 hover:bg-background/30 transition-colors">
                                                         <div className="min-w-0">
                                                             <div className="flex items-center gap-2 flex-wrap">
                                                                 <Tags className="h-4 w-4 text-orange-400" />
@@ -1726,7 +1709,7 @@ export function Admin() {
                                                             </div>
                                                             <p className="text-xs text-muted-foreground">Используется в {tagUsageCounts.get(tag.name) ?? 0} кейсах</p>
                                                         </div>
-                                                        <div className="flex items-center gap-2">
+                                                        <div className="flex items-center gap-2 flex-shrink-0">
                                                             <Button onClick={() => openEditTag(tag)} variant="outline" size="sm" className="rounded-xl border-border/60 text-muted-foreground hover:text-foreground hover:border-orange-500/30"><Pencil className="h-3.5 w-3.5" /></Button>
                                                             <Button onClick={() => openDeleteTag(tag)} variant="outline" size="sm" className="rounded-xl border-red-500/30 text-red-400 hover:bg-red-500/10 hover:text-red-300"><Trash2 className="h-3.5 w-3.5" /></Button>
                                                         </div>
@@ -1744,9 +1727,9 @@ export function Admin() {
                     {/* ════════════════════  ITEMS TAB  ════════════════════ */}
                     {activeTab === "items" && (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-                            <div className="flex justify-between items-center">
+                            <div className="flex flex-wrap justify-between items-center gap-2">
                                 <h2 className="text-lg font-semibold text-foreground">Предметы ({filteredItems.length})</h2>
-                                <Button onClick={openAddItem} className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl flex items-center gap-2">
+                                <Button onClick={openAddItem} size="sm" className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl flex items-center gap-1.5">
                                     <Plus className="h-4 w-4" /> Добавить предмет
                                 </Button>
                             </div>
@@ -1782,7 +1765,7 @@ export function Admin() {
                                     {filteredItems.map(item => {
                                         const rk = getRarityKey(item);
                                         return (
-                                            <div key={item.id} className="flex items-center justify-between p-3 sm:p-4 gap-2 hover:bg-background/30 transition-colors">
+                                            <div key={item.id} className="flex flex-wrap items-center justify-between p-3 sm:p-4 gap-x-2 gap-y-2 hover:bg-background/30 transition-colors">
                                                 <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                                                     <ItemImage item={item} size="sm" />
                                                     <div className="min-w-0">
@@ -1810,9 +1793,9 @@ export function Admin() {
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
                             <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
                                 <div className="space-y-4">
-                                    <div className="flex justify-between items-center">
+                                    <div className="flex flex-wrap justify-between items-center gap-2">
                                         <h2 className="text-lg font-semibold text-foreground">Типы оружия ({weaponTypes.length})</h2>
-                                        <Button onClick={openAddWeaponType} className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl flex items-center gap-2">
+                                        <Button onClick={openAddWeaponType} size="sm" className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl flex items-center gap-1.5">
                                             <Plus className="h-4 w-4" /> Добавить тип
                                         </Button>
                                     </div>
@@ -1822,9 +1805,9 @@ export function Admin() {
                                         ) : (
                                             <div className="divide-y divide-border/40">
                                                 {weaponTypes.map(type => (
-                                                    <div key={type.id} className="flex items-center justify-between p-4 hover:bg-background/30 transition-colors">
-                                                        <p className="font-medium text-foreground">{type.name}</p>
-                                                        <div className="flex items-center gap-2">
+                                                    <div key={type.id} className="flex flex-wrap items-center justify-between p-3 sm:p-4 gap-2 hover:bg-background/30 transition-colors">
+                                                        <p className="font-medium text-foreground min-w-0 truncate">{type.name}</p>
+                                                        <div className="flex items-center gap-2 flex-shrink-0">
                                                             <Button onClick={() => openEditWeaponType(type)} variant="outline" size="sm" className="rounded-xl border-border/60 text-muted-foreground hover:text-foreground hover:border-orange-500/30">
                                                                 <Pencil className="h-3.5 w-3.5" />
                                                             </Button>
@@ -1841,9 +1824,9 @@ export function Admin() {
                                 </div>
 
                                 <div className="space-y-4">
-                                    <div className="flex justify-between items-center">
+                                    <div className="flex flex-wrap justify-between items-center gap-2">
                                         <h2 className="text-lg font-semibold text-foreground">Оружие ({weapons.length})</h2>
-                                        <Button onClick={openAddWeapon} className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl flex items-center gap-2">
+                                        <Button onClick={openAddWeapon} size="sm" className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl flex items-center gap-1.5">
                                             <Plus className="h-4 w-4" /> Добавить оружие
                                         </Button>
                                     </div>
@@ -1853,12 +1836,12 @@ export function Admin() {
                                         ) : (
                                             <div className="divide-y divide-border/40">
                                                 {weapons.map(weapon => (
-                                                    <div key={weapon.id} className="flex items-center justify-between p-4 hover:bg-background/30 transition-colors">
-                                                        <div>
-                                                            <p className="font-medium text-foreground">{weapon.name}</p>
-                                                            <p className="text-xs text-muted-foreground">Тип: {weapon.type}</p>
+                                                    <div key={weapon.id} className="flex flex-wrap items-center justify-between p-3 sm:p-4 gap-2 hover:bg-background/30 transition-colors">
+                                                        <div className="min-w-0">
+                                                            <p className="font-medium text-foreground truncate">{weapon.name}</p>
+                                                            <p className="text-xs text-muted-foreground truncate">Тип: {weapon.type}</p>
                                                         </div>
-                                                        <div className="flex items-center gap-2">
+                                                        <div className="flex items-center gap-2 flex-shrink-0">
                                                             <Button onClick={() => openEditWeapon(weapon)} variant="outline" size="sm" className="rounded-xl border-border/60 text-muted-foreground hover:text-foreground hover:border-orange-500/30">
                                                                 <Pencil className="h-3.5 w-3.5" />
                                                             </Button>
@@ -1880,9 +1863,9 @@ export function Admin() {
                     {/* ════════════════════  RARITIES TAB  ════════════════════ */}
                     {activeTab === "rarities" && (
                         <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="space-y-6">
-                            <div className="flex justify-between items-center">
+                            <div className="flex flex-wrap justify-between items-center gap-2">
                                 <h2 className="text-lg font-semibold text-foreground">Редкости ({rarities.length})</h2>
-                                <Button onClick={openAddRarity} className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl flex items-center gap-2">
+                                <Button onClick={openAddRarity} size="sm" className="bg-orange-500 hover:bg-orange-600 text-white rounded-xl flex items-center gap-1.5">
                                     <Plus className="h-4 w-4" /> Добавить редкость
                                 </Button>
                             </div>
@@ -1892,7 +1875,7 @@ export function Admin() {
                             <div className="rounded-2xl border border-border/60 bg-card/80 backdrop-blur-xl overflow-hidden">
                                 <div className="divide-y divide-border/40">
                                     {rarities.map(r => (
-                                        <div key={r.id} className="flex items-center justify-between p-3 sm:p-4 gap-2 hover:bg-background/30 transition-colors">
+                                        <div key={r.id} className="flex flex-wrap items-center justify-between p-3 sm:p-4 gap-2 hover:bg-background/30 transition-colors">
                                             <div className="flex items-center gap-3 sm:gap-4 min-w-0">
                                                 <div className="w-10 h-10 rounded-xl border border-border/60 flex items-center justify-center flex-shrink-0" style={{ backgroundColor: r.color + "20", borderColor: r.color + "40" }}>
                                                     <Palette className="h-5 w-5" style={{ color: r.color }} />
