@@ -12,7 +12,7 @@ sequenceDiagram
     participant FE as Frontend
     participant Traefik
     participant Auth as Auth Service
-    participant Provider as OAuth Provider<br/>(Discord / Яндекс)
+    participant Provider as OAuth Provider<br/>
     participant Redis
     participant MongoDB
     participant UserRPC as User Service<br/>(Redis Streams)
