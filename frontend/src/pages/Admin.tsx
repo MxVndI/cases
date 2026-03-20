@@ -502,6 +502,11 @@ export function Admin() {
     const [roleConfirmOpen, setRoleConfirmOpen] = useState(false);
     const [roleTargetUser, setRoleTargetUser]   = useState<User | null>(null);
 
+    // ── Grant balance dialog ──
+    const [grantBalanceOpen, setGrantBalanceOpen]     = useState(false);
+    const [grantBalanceUser, setGrantBalanceUser]     = useState<User | null>(null);
+    const [grantBalanceAmount, setGrantBalanceAmount] = useState("");
+
     // ── Item dialogs ──
     const [addItemOpen, setAddItemOpen]         = useState(false);
     const [editItemOpen, setEditItemOpen]       = useState(false);
@@ -709,6 +714,29 @@ export function Admin() {
     const openRoleConfirm = (u: User) => {
         setRoleTargetUser(u);
         setRoleConfirmOpen(true);
+    };
+
+    const openGrantBalance = (u: User) => {
+        setGrantBalanceUser(u);
+        setGrantBalanceAmount("");
+        setGrantBalanceOpen(true);
+    };
+
+    const handleGrantBalance = async () => {
+        if (!grantBalanceUser) return;
+        const amount = parseFloat(grantBalanceAmount);
+        if (isNaN(amount) || amount <= 0) return;
+        setMutating(true);
+        try {
+            await adminApi.grantBalance(grantBalanceUser.id, amount);
+        } catch (e) {
+            console.error("Failed to grant balance:", e);
+        } finally {
+            setMutating(false);
+            setGrantBalanceOpen(false);
+            setGrantBalanceUser(null);
+            setGrantBalanceAmount("");
+        }
     };
 
     const handleToggleBlock = async () => {
@@ -1609,6 +1637,15 @@ export function Admin() {
                                                                 )}
                                                             </Button>
                                                         )}
+                                                        <Button
+                                                            onClick={() => openGrantBalance(u)}
+                                                            variant="outline"
+                                                            size="sm"
+                                                            title="Выдать баланс"
+                                                            className="rounded-xl text-xs border-orange-500/30 text-orange-400 hover:bg-orange-500/10 hover:text-orange-300"
+                                                        >
+                                                            <Coins className="h-3.5 w-3.5" />
+                                                        </Button>
                                                     </>
                                                 )}
                                             </div>
@@ -2075,7 +2112,49 @@ export function Admin() {
                 </DialogContent>
             </Dialog>
 
-            {/* ════════════  ADD ITEM DIALOG  ════════════ */}
+            {/* ════════════  GRANT BALANCE DIALOG  ════════════ */}
+            <Dialog open={grantBalanceOpen} onOpenChange={setGrantBalanceOpen}>
+                <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                        <DialogTitle className="flex items-center gap-2">
+                            <Coins className="h-5 w-5 text-orange-400" />
+                            Выдать баланс
+                        </DialogTitle>
+                        <DialogDescription>
+                            Укажите сумму для пополнения баланса пользователя{" "}
+                            <span className="font-semibold text-foreground">{grantBalanceUser?.nickname}</span>.
+                        </DialogDescription>
+                    </DialogHeader>
+                    <div className="space-y-2 py-2">
+                        <Label className="text-sm text-foreground flex items-center gap-1.5">
+                            Сумма <Coins className="h-3.5 w-3.5 text-orange-500" />
+                        </Label>
+                        <Input
+                            type="number"
+                            min={1}
+                            value={grantBalanceAmount}
+                            onChange={e => setGrantBalanceAmount(e.target.value)}
+                            placeholder="1000"
+                            className="rounded-xl border-border/60 bg-background/50 text-foreground"
+                        />
+                    </div>
+                    <DialogFooter>
+                        <Button variant="outline" onClick={() => setGrantBalanceOpen(false)} className="rounded-xl">
+                            Отмена
+                        </Button>
+                        <Button
+                            onClick={handleGrantBalance}
+                            disabled={mutating || !grantBalanceAmount || parseFloat(grantBalanceAmount) <= 0}
+                            className="rounded-xl bg-orange-500 hover:bg-orange-600 text-white"
+                        >
+                            <Coins className="h-4 w-4 mr-1" />
+                            Выдать
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
+
+
             <Dialog open={addItemOpen} onOpenChange={setAddItemOpen}>
                 <DialogContent className="sm:max-w-xl">
                     <DialogHeader>

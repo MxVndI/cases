@@ -40,8 +40,7 @@ class Settings(BaseSettings):
     redis_commander_http_password: str = ""
     grafana_user: str = ""
     grafana_password: str = ""
-    # Fixed UUID shared with GF_SERVER_ROOT_URL in docker-compose so Grafana knows its proxy path.
-    # Override via GRAFANA_TARGET_ID env var if you change the docker-compose value.
+    # Fixed UUID for the Grafana TargetSystem DB entry.
     grafana_target_id: str = "f47ac10b-58cc-4372-a567-0e02b2c3d479"
 
 

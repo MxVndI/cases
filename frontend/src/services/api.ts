@@ -485,6 +485,9 @@ export const adminApi = {
   updateUserRole: async (userId: string, role: 'user' | 'admin'): Promise<void> => {
     await api.patch(`/admin/users/${userId}/role`, { role });
   },
+  grantBalance: async (userId: string, amount: number): Promise<void> => {
+    await api.post(`/admin/users/${userId}/grant-balance`, { amount });
+  },
 
   // Calculate chances
   calculateChances: async (itemIds: string[]): Promise<{ item_id: string; drop_chance: number }[]> => {

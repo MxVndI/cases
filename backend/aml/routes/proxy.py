@@ -126,6 +126,25 @@ async def proxy_any(
 
         content = await resp.read()
 
+        # For grafana, rewrite root-relative links so assets/navigation stay under the proxy path
+        if (
+            target.type == "grafana"
+            and isinstance(content, (bytes, bytearray))
+        ):
+            ct = resp_headers.get("Content-Type", "")
+            if ct.startswith("text/html"):
+                try:
+                    text = content.decode("utf-8", errors="replace")
+                    prefix = f"/aml/proxy/{target_id}"
+                    text = text.replace('href="/', f'href="{prefix}/')
+                    text = text.replace("href='/", f"href='{prefix}/")
+                    text = text.replace('src="/', f'src="{prefix}/')
+                    text = text.replace("src='/", f"src='{prefix}/")
+                    text = text.replace('action="/', f'action="{prefix}/')
+                    content = text.encode("utf-8")
+                except Exception:
+                    pass
+
         # For mongo-express, rewrite root-relative links + lightly restyle UI to feel modern
         if (
             target.type == "mongo"

@@ -4,11 +4,16 @@ from dishka.integrations.fastapi import DishkaRoute, FromDishka
 from fastapi import APIRouter, Depends, HTTPException, Query
 from pydantic import BaseModel
 from routes.deps import require_admin, require_superadmin
+from services.payment import PaymentService
 from services.user import UserService
 
 
 class UpdateRoleRequest(BaseModel):
     role: str
+
+
+class GrantBalanceRequest(BaseModel):
+    amount: float
 
 router = APIRouter(prefix="/users", route_class=DishkaRoute, tags=["Users"])
 
@@ -85,4 +90,20 @@ async def update_user_role(
     result = await us.update_role(user_id, body.role)
     if result is None:
         raise HTTPException(404, detail="User not found")
+    return result
+
+
+@router.post("/{user_id}/grant-balance", summary="Выдать баланс пользователю")
+async def grant_balance(
+    user_id: str,
+    body: GrantBalanceRequest,
+    ps: FromDishka[PaymentService],
+    _: str = Depends(require_admin),
+):
+    """Выдать баланс пользователю (только admin/superadmin)"""
+    if body.amount <= 0:
+        raise HTTPException(400, detail="Amount must be positive")
+    result = await ps.grant_balance(user_id, body.amount)
+    if result is None:
+        raise HTTPException(500, detail="Failed to grant balance")
     return result

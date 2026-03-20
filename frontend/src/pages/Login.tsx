@@ -6,20 +6,14 @@ import { motion, useReducedMotion, AnimatePresence } from "framer-motion";
 import type { FormEvent } from "react";
 import { useState } from 'react';
 import { useAuth } from '@/AuthContext';
-import { FaDiscord, FaYandexInternational } from "react-icons/fa";
 import { Mail, Loader2, ArrowLeft } from "lucide-react";
 import { Link, useNavigate } from "@tanstack/react-router";
 import { authApi } from "@/services/api";
 import caseHubLogo from "@/assets/casehub-logo.svg";
-const socialProviders = [
-    // { name: "Google", icon: FaGoogle, id: "google" },
-    { name: "Discord", icon: FaDiscord, id: "discord" },
-    { name: "Яндекс", icon: FaYandexInternational, id: "yandex" },
-];
 
 export function Login() {
     const shouldReduceMotion = useReducedMotion();
-    const { user, login, refetchUser } = useAuth();
+    const { user, refetchUser } = useAuth();
     const navigate = useNavigate();
     const [email, setEmail] = useState("");
     const [code, setCode] = useState("");
@@ -237,34 +231,6 @@ export function Login() {
                         </motion.div>
                     )}
                 </AnimatePresence>
-
-                {/* Разделитель */}
-                <div className="relative mb-6">
-                    <div className="absolute inset-0 flex items-center">
-                        <div className="w-full border-t border-border/40"></div>
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-card/90 px-4 text-muted-foreground backdrop-blur-sm rounded-full">
-                            или
-                        </span>
-                    </div>
-                </div>
-
-                {/* Социальные сети */}
-                <div className="mx-auto mb-6 grid w-full max-w-xs grid-cols-2 gap-3">
-                    {socialProviders.map((provider) => (
-                        <Button
-                            key={provider.name}
-                            variant="outline"
-                            onClick={() => login(provider.id)}
-                            className="cursor-target flex cursor-pointer items-center justify-center gap-2 rounded-xl border-border/60 bg-card/70 text-sm text-foreground transition-all duration-300 hover:-translate-y-1 hover:border-orange-500/50 hover:text-orange-500"
-                            aria-label={`Войти через ${provider.name}`}
-                        >
-                            <provider.icon className="h-4 w-4" aria-hidden />
-                            <span className="hidden sm:inline">{provider.name}</span>
-                        </Button>
-                    ))}
-                </div>
 
                 <p className="text-center text-xs text-muted-foreground">
                     Продолжая, вы соглашаетесь с нашими{" "}

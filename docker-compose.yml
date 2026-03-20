@@ -25,8 +25,7 @@ services:
     image: redis:8.4.0
     container_name: redis-ch
     restart: always
-    ports:
-      - "6379:6379"
+    # ports NOT exposed to host — accessible only within Docker network
     volumes:
       - casehub_redis_data:/data
     networks:
@@ -35,10 +34,10 @@ services:
   mongodb:
     image: mongo:8.0
     container_name: mongodb-ch
-    ports:
-      - "27017:27017"
+    # ports NOT exposed to host — accessible only within Docker network
     volumes:
       - casehub_db_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/init.js:ro
     networks:
       - backend
     healthcheck:
@@ -322,9 +321,10 @@ services:
     environment:
       GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
       GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
-      GF_AUTH_BASIC_ENABLED: "true"
-      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
-      GF_SERVER_ROOT_URL: "${GRAFANA_ROOT_URL:-http://localhost}/aml/proxy/${GRAFANA_TARGET_ID:-f47ac10b-58cc-4372-a567-0e02b2c3d479}/"
+      # Anonymous access — AML proxy already enforces admin session auth
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_BASIC_ENABLED: "false"
     volumes:
       - grafana_data:/var/lib/grafana
       

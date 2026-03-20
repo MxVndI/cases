@@ -7,12 +7,15 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from ioc import container
 from routes import router
+from scripts.seed_cases import seed_cases, seed_items
 from services.db import connect_db
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     await connect_db()
+    await seed_cases(dry_run=False)
+    await seed_items(dry_run=False)
 
     yield
 
