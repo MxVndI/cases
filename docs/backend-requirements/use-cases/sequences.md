@@ -37,10 +37,12 @@ sequenceDiagram
     Auth->>MongoDB: Создать Session {user_id, custom_data}
     Auth->>Redis: SET session:{sid} TTL 30d
 
-    Auth-->>FE: 302 Redirect /welcome<br/>Set-Cookie: sid=<HMAC-signed>
+    Auth-->>FE: 302 Redirect /welcome
+    <br/> Set-Cookie: sid=<HMAC-signed>
     FE-->>Гость: Страница /welcome
 
-    Note over Auth,Redis: sid подписан HMAC-SHA256;<br/>TTL сессии — 30 дней
+    Note over Auth,Redis: sid подписан HMAC-SHA256;
+    <br/> TTL сессии — 30 дней
 
 ```
 
