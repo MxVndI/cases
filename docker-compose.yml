@@ -162,6 +162,9 @@ services:
       MONGO_EXPRESS_PASSWORD: ${MONGO_EXPRESS_PASSWORD:-}
       REDIS_COMMANDER_HTTP_USER: ${REDIS_COMMANDER_HTTP_USER:-}
       REDIS_COMMANDER_HTTP_PASSWORD: ${REDIS_COMMANDER_HTTP_PASSWORD:-}
+      GRAFANA_USER: ${GRAFANA_USER:-admin}
+      GRAFANA_PASSWORD: ${GRAFANA_PASSWORD:-}
+      GRAFANA_TARGET_ID: ${GRAFANA_TARGET_ID:-f47ac10b-58cc-4372-a567-0e02b2c3d479}
     depends_on:
       - redis
       - mongodb
@@ -317,8 +320,11 @@ services:
     ports:
       - "3000:3000"
     environment:
-      GF_SECURITY_ADMIN_USER: admin
-      GF_SECURITY_ADMIN_PASSWORD: admin
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      GF_AUTH_BASIC_ENABLED: "true"
+      GF_SERVER_SERVE_FROM_SUB_PATH: "true"
+      GF_SERVER_ROOT_URL: "${GRAFANA_ROOT_URL:-http://localhost}/aml/proxy/${GRAFANA_TARGET_ID:-f47ac10b-58cc-4372-a567-0e02b2c3d479}/"
     volumes:
       - grafana_data:/var/lib/grafana
       

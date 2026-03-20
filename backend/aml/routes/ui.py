@@ -55,9 +55,18 @@ async def aml_home(
         return HTMLResponse("<h3>AML</h3><p>No active targets available.</p>", status_code=200)
 
     def card_for(t: TargetSystem) -> str:
-        accent = "#22c55e" if t.type == "mongo" else "#f97316"
-        icon = "🟢" if t.type == "mongo" else "🧰"
-        label = "MongoDB Admin" if t.type == "mongo" else "Redis Commander"
+        if t.type == "mongo":
+            accent = "#22c55e"
+            icon = "🟢"
+            label = "MongoDB Admin"
+        elif t.type == "redis":
+            accent = "#f97316"
+            icon = "🧰"
+            label = "Redis Commander"
+        else:  # grafana
+            accent = "#f97316"
+            icon = "📊"
+            label = "Grafana"
         return f"""
         <a class="aml-card" href="/aml/proxy/{t.id}/" target="_blank" rel="noopener noreferrer" data-type="{t.type}">
           <div class="aml-card-header">

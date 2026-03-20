@@ -1,5 +1,6 @@
 from __future__ import annotations
 
+import base64
 from typing import Annotated
 from uuid import UUID
 
@@ -87,6 +88,12 @@ async def proxy_any(
     ch = _cookie_header(cookies)
     if ch:
         headers["Cookie"] = ch
+
+    # Inject Basic auth credentials for targets that require it
+    if target.auth_mode == "basic":
+        username, password = await secret.decrypt_credentials(mapping.credentials_id)
+        token = base64.b64encode(f"{username}:{password}".encode()).decode()
+        headers["Authorization"] = f"Basic {token}"
 
     upstream_base = str(target.endpoint).rstrip("/")
     upstream_url = f"{upstream_base}/{path}"

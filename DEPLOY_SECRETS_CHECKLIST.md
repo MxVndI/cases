@@ -43,6 +43,10 @@ FRONTEND_URL=https://your-frontend-domain.com
 VITE_API_BASE_URL=https://your-domain.com/api
 MONGO_EXPRESS_USER=admin
 MONGO_EXPRESS_PASSWORD=strong_password
+GRAFANA_USER=admin
+GRAFANA_PASSWORD=strong_password
+GRAFANA_ROOT_URL=https://your-domain.com
+GRAFANA_TARGET_ID=f47ac10b-58cc-4372-a567-0e02b2c3d479
 ```
 
 ---
