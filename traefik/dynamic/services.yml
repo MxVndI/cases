@@ -1,0 +1,166 @@
+# Динамическая конфигурация роутеров и сервисов
+http:
+  routers:
+    auth-api:
+      rule: "PathPrefix(`/api/auth`)"
+      entryPoints:
+        - web
+      middlewares:
+        - auth-stripprefix
+        - cors-headers
+      service: auth-api-service
+
+    user-api:
+      rule: "PathPrefix(`/api/user`)"
+      entryPoints:
+        - web
+      middlewares:
+        - user-stripprefix
+        - cors-headers
+      service: user-api-service
+
+    cases-api:
+      rule: "PathPrefix(`/api/cases`)"
+      entryPoints:
+        - web
+      middlewares:
+        - cases-stripprefix
+        - cors-headers
+      service: cases-api-service
+
+    admin-api:
+      rule: "PathPrefix(`/api/admin`)"
+      entryPoints:
+        - web
+      middlewares:
+        - admin-stripprefix
+        - cors-headers
+      service: admin-api-service
+
+    payment-api:
+      rule: "PathPrefix(`/api/payment`)"
+      entryPoints:
+        - web
+      middlewares:
+        - payment-stripprefix
+        - cors-headers
+      service: payment-api-service
+
+    aml:
+      rule: "PathPrefix(`/aml`) || Path(`/mongo-admin`) || Path(`/redis-admin`)"
+      entryPoints:
+        - web
+      middlewares:
+        - cors-headers
+      service: aml-service
+
+    frontend:
+      rule: "PathPrefix(`/`)"
+      entryPoints:
+        - web
+      service: frontend-service
+      # Lowest priority (short rule) — matches only after all /api/* and /aml routes
+
+  middlewares:
+    auth-stripprefix:
+      stripPrefix:
+        prefixes:
+          - "/api/auth"
+
+    user-stripprefix:
+      stripPrefix:
+        prefixes:
+          - "/api/user"
+
+    cases-stripprefix:
+      stripPrefix:
+        prefixes:
+          - "/api/cases"
+
+    admin-stripprefix:
+      stripPrefix:
+        prefixes:
+          - "/api/admin"
+
+    payment-stripprefix:
+      stripPrefix:
+        prefixes:
+          - "/api/payment"
+
+    cors-headers:
+      headers:
+        accessControlAllowOriginList:
+          - "http://localhost:5173"
+          - "http://localhost:3000"
+          - "http://5.129.253.136:5173"
+          - "http://5.129.253.136"
+          - "http://5.129.253.136:80"
+        accessControlAllowCredentials: true
+        accessControlAllowMethods:
+          - "GET"
+          - "POST"
+          - "PUT"
+          - "PATCH"
+          - "DELETE"
+          - "OPTIONS"
+        accessControlAllowHeaders:
+          - "Content-Type"
+          - "Authorization"
+          - "Cookie"
+        accessControlMaxAge: 100
+
+  services:
+    auth-api-service:
+      loadBalancer:
+        servers:
+          - url: "http://authservice:8000"
+        healthCheck:
+          path: /health
+          interval: 30s
+
+    user-api-service:
+      loadBalancer:
+        servers:
+          - url: "http://userservice:8000"
+        healthCheck:
+          path: /health
+          interval: 30s
+
+    cases-api-service:
+      loadBalancer:
+        servers:
+          - url: "http://casesservice:8000"
+        healthCheck:
+          path: /health
+          interval: 30s
+
+    admin-api-service:
+      loadBalancer:
+        servers:
+          - url: "http://adminservice:8012"
+        healthCheck:
+          path: /health
+          interval: 30s
+
+    payment-api-service:
+      loadBalancer:
+        servers:
+          - url: "http://paymentservice:8000"
+        healthCheck:
+          path: /health
+          interval: 30s
+
+    aml-service:
+      loadBalancer:
+        servers:
+          - url: "http://amlservice:8000"
+        healthCheck:
+          path: /health
+          interval: 30s
+
+    frontend-service:
+      loadBalancer:
+        servers:
+          - url: "http://frontend-ch:5173"
+
+

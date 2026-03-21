@@ -1,0 +1,35 @@
+[project]
+name = "backend"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "aiohttp>=3.13.3",
+    "beanie>=2.0.1",
+    "boto3>=1.42.63",
+    "cryptography>=46.0.0",
+    "dishka>=1.8.0",
+    "fastapi>=0.135.0",
+    "fastapi-sso>=0.21.0",
+    "faststream>=0.6.7",
+    "loguru>=0.7.3",
+    "motor>=3.7.1",
+    "msgspec>=0.20.0",
+    "pydantic-settings>=2.13.1",
+    "pydantic[email,settings]>=2.12.5",
+    "python-multipart>=0.0.20",
+    "redis>=7.2.1",
+    "robyn>=0.80.0",
+    "shortuuid>=1.0.13",
+    "uvicorn>=0.41.0",
+    "fastapi-storages>=0.3.0",
+    "prometheus-fastapi-instrumentator>=7.1.0",
+]
+
+[build-system]
+requires = ["setuptools>=80", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools]
+packages = ["auth", "user", "cases", "admin", "aml"]

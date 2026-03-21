@@ -1,0 +1,356 @@
+# See DEPLOY_SECRETS_CHECKLIST.md for GitHub Secrets and server .env quick-fill template.
+
+services: 
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik-ch
+    ports:
+      - "80:80"
+      - "8080:8080"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro    
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic:/etc/traefik/dynamic:ro
+    networks:
+      - backend
+    depends_on:
+      - authservice
+      - userservice
+      - casesservice
+      - adminservice
+      - paymentservice
+    restart: unless-stopped
+
+  redis:
+    image: redis:8.4.0
+    container_name: redis-ch
+    restart: always
+    # ports NOT exposed to host — accessible only within Docker network
+    volumes:
+      - casehub_redis_data:/data
+    networks:
+      - backend
+
+  mongodb:
+    image: mongo:8.0
+    container_name: mongodb-ch
+    # ports NOT exposed to host — accessible only within Docker network
+    volumes:
+      - casehub_db_data:/data/db
+      - ./mongo-init.js:/docker-entrypoint-initdb.d/init.js:ro
+    networks:
+      - backend
+    healthcheck:
+      test: ["CMD", "mongosh", "--eval", "db.adminCommand('ping')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  mongo-express:
+    image: mongo-express
+    container_name: mongo-express-ch
+    restart: always
+    environment:
+      ME_CONFIG_MONGODB_SERVER: mongodb
+      ME_CONFIG_MONGODB_URL: mongodb://mongodb:27017/
+      ME_CONFIG_BASICAUTH: "false"
+    depends_on:
+      mongodb:
+        condition: service_healthy
+    networks:
+      - backend
+
+  redis-commander:
+    image: rediscommander/redis-commander:latest
+    restart: always
+    environment:
+      REDIS_HOSTS: local:redis:6379
+    # Do not expose admin UI directly; access via AML proxy
+    depends_on:
+      - redis
+    networks:
+      - backend
+
+  mailpit:
+    image: axllent/mailpit:latest
+    container_name: mailpit-ch
+    restart: unless-stopped
+    ports:
+      - "8025:8025"
+      - "1025:1025"
+    networks:
+      - backend
+
+ 
+  rustfs-server:
+    image: rustfs/rustfs:latest
+    container_name: rustfs_casehub
+    restart: unless-stopped
+    ports:
+      - "9000:9000"
+      - "9001:9001"
+    volumes:
+      - casehub_rustfs_data:/data
+    command: /data
+    environment:
+      RUSTFS_ACCESS_KEY: rustfsadmin
+      RUSTFS_SECRET_KEY: rustfsadmin
+      RUSTFS_LOG_LEVEL: info
+    networks:
+      - backend
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: frontend-ch
+    ports:
+      - "5173:5173"
+    environment:
+      VITE_API_BASE_URL: ${VITE_API_BASE_URL:-}
+    networks:
+      - backend
+    restart: unless-stopped
+
+  authservice:
+    build:
+      context: ./backend
+      dockerfile: auth/Dockerfile_api
+    container_name: auth.api-ch
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    environment:   
+      MONGODB_DB_NAME: auth_db      
+      APP_NAME: auth.api
+      LOG_LEVEL: INFO
+      USER_SERVICE_URL: http://userservice:8000
+      SMTP_SERVER: ${SMTP_SERVER:-mailpit-ch}
+      SMTP_PORT: ${SMTP_PORT:-1025}
+      SMTP_USE_SSL: ${SMTP_USE_SSL:-false}
+      SMTP_STARTTLS: ${SMTP_STARTTLS:-false}
+      SMTP_TIMEOUT_S: ${SMTP_TIMEOUT_S:-10}
+      EMAIL_ADDRESS: ${EMAIL_ADDRESS:-}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD:-}
+      FRONTEND_URL: ${FRONTEND_URL:-}
+      COOKIE_DOMAIN: ${COOKIE_DOMAIN:-}
+    depends_on:   
+      - redis    
+      - mongodb
+      - mailpit
+    networks:
+      - backend
+    restart: unless-stopped
+
+  amlservice:
+    build:
+      context: ./backend
+      dockerfile: aml/Dockerfile_api
+    container_name: aml.api-ch
+    # Not exposed directly; accessed via Traefik
+    env_file:
+      - .env
+    environment:
+      MONGODB_DB_NAME: aml_db
+      APP_NAME: aml.api
+      LOG_LEVEL: INFO
+      AUTH_SERVICE_URL: http://authservice:8000
+      FRONTEND_URL: ${FRONTEND_URL:-}
+      MONGO_EXPRESS_USER: ${MONGO_EXPRESS_USER:-}
+      MONGO_EXPRESS_PASSWORD: ${MONGO_EXPRESS_PASSWORD:-}
+      REDIS_COMMANDER_HTTP_USER: ${REDIS_COMMANDER_HTTP_USER:-}
+      REDIS_COMMANDER_HTTP_PASSWORD: ${REDIS_COMMANDER_HTTP_PASSWORD:-}
+      GRAFANA_USER: ${GRAFANA_USER:-admin}
+      GRAFANA_PASSWORD: ${GRAFANA_PASSWORD:-}
+      GRAFANA_TARGET_ID: ${GRAFANA_TARGET_ID:-f47ac10b-58cc-4372-a567-0e02b2c3d479}
+    depends_on:
+      - redis
+      - mongodb
+      - authservice
+    networks:
+      - backend
+    restart: unless-stopped
+
+  userservice:
+    build:
+      context: ./backend
+      dockerfile: user/Dockerfile_api
+    container_name: community.api-ch
+    ports:
+      - "8001:8000"
+    env_file:
+      - .env
+    environment:   
+      MONGODB_DB_NAME: user_db      
+      APP_NAME: user.service
+      LOG_LEVEL: INFO
+      AUTH_SERVICE_URL: http://authservice:8000
+    depends_on:
+      - redis
+      - mongodb    
+    networks:
+      - backend
+    restart: unless-stopped
+
+  casesservice:
+    build:
+      context: ./backend
+      dockerfile: cases/Dockerfile
+    container_name: cases.api-ch
+    ports:
+      - "8002:8000"
+    env_file:
+      - .env
+    environment:
+      MONGODB_DB_NAME: cases_db
+      APP_NAME: cases.service
+      LOG_LEVEL: INFO
+      AUTH_SERVICE_URL: http://authservice:8000
+      PAYMENT_SERVICE_URL: http://paymentservice:8000
+      USER_SERVICE_URL: http://userservice:8000
+    depends_on:
+      - redis
+      - mongodb
+    networks:
+      - backend
+    restart: unless-stopped
+
+  adminservice:
+    build:
+      context: ./backend
+      dockerfile: admin/Dockerfile
+    container_name: admin.api-ch
+    ports:
+      - "8012:8012"
+    env_file:
+      - .env
+    environment:
+      APP_NAME: admin.service
+      LOG_LEVEL: INFO
+      CASE_SERVICE_URL: http://casesservice:8000
+      PAYMENT_SERVICE_URL: http://paymentservice:8000
+      USER_SERVICE_URL: http://userservice:8000
+      AUTH_SERVICE_URL: http://authservice:8000
+      S3_ENDPOINT: http://rustfs-server:9000
+      S3_ACCESS_KEY: rustfsadmin
+      S3_SECRET_KEY: rustfsadmin
+      S3_BUCKET: casehub
+      S3_PUBLIC_URL: ${S3_PUBLIC_URL:-http://rustfs-server:9000}
+    depends_on:
+      - casesservice
+      - userservice
+      - authservice
+      - rustfs-server
+    networks:
+      - backend
+    restart: unless-stopped
+
+  paymentservice:
+    build:
+      context: ./backend/payment
+      dockerfile: Dockerfile
+    container_name: payment.api-ch
+    ports:
+      - "8003:8000"
+    env_file:
+      - .env
+    environment:
+      MONGODB_URL: mongodb://mongodb:27017
+      MONGODB_DB_NAME: payment_db
+      AUTH_SERVICE_URL: http://authservice:8000
+      REDIS_URL: redis://redis:6379
+    depends_on:
+      - mongodb
+      - redis
+    networks:
+      - backend
+    restart: unless-stopped
+
+  prometheus:
+    image: prom/prometheus:v3.2.1
+    container_name: prometheus-ch
+    ports:
+      - "9090:9090"
+    volumes:
+      - ./infra/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml:ro
+      - prometheus_data:/prometheus
+
+    command:
+      - "--config.file=/etc/prometheus/prometheus.yml"
+      - "--storage.tsdb.path=/prometheus"
+    depends_on:
+      - authservice
+      - casesservice
+      - paymentservice
+    networks:
+      - backend
+    restart: unless-stopped
+
+  loki:
+    image: grafana/loki:3.0.0
+    container_name: loki-ch
+    ports:
+      - "3100:3100"
+    volumes:
+      - ./infra/loki/loki-config.yml:/etc/loki/local-config.yaml:ro
+      - loki_data:/loki
+    command: -config.file=/etc/loki/local-config.yaml
+    networks:
+      - backend
+    restart: unless-stopped
+
+  promtail:
+    image: grafana/promtail:3.0.0
+    container_name: promtail-ch
+    volumes:
+      - ./infra/promtail/promtail-config.yml:/etc/promtail/config.yml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    command: -config.file=/etc/promtail/config.yml
+    depends_on:
+      - loki
+    networks:
+      - backend
+    restart: unless-stopped
+
+  grafana:
+    image: grafana/grafana:11.4.0
+    container_name: grafana-ch
+    ports:
+      - "3000:3000"
+    environment:
+      GF_SECURITY_ADMIN_USER: ${GRAFANA_USER:-admin}
+      GF_SECURITY_ADMIN_PASSWORD: ${GRAFANA_PASSWORD:-admin}
+      # Anonymous access — AML proxy already enforces admin session auth
+      GF_AUTH_ANONYMOUS_ENABLED: "true"
+      GF_AUTH_ANONYMOUS_ORG_ROLE: Admin
+      GF_AUTH_BASIC_ENABLED: "false"
+    volumes:
+      - grafana_data:/var/lib/grafana
+      
+      # provisioning (YAML)
+      - ./infra/grafana/provisioning:/etc/grafana/provisioning
+
+      # dashboards (JSON)
+      - ./infra/grafana/dashboards:/var/lib/grafana/dashboards
+    depends_on:
+      - prometheus
+      - loki
+    networks:
+      - backend
+    restart: unless-stopped
+    
+
+ 
+volumes:
+  casehub_db_data:
+  casehub_redis_data:
+  casehub_rustfs_data:
+  prometheus_data:
+  grafana_data:
+  loki_data:
+
+networks:
+  backend:
+    name: casehub_backend
+    driver: bridge

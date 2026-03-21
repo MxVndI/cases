@@ -1,0 +1,19 @@
+FROM python:3.13-slim
+
+WORKDIR /app
+
+# Установка зависимостей
+COPY pyproject.toml README.md ./
+COPY auth/ ./auth/
+COPY user/ ./user/
+COPY cases/ ./cases/
+COPY admin/ ./admin/
+COPY aml/ ./aml/
+RUN pip install --no-cache-dir -e .
+
+ENV PYTHONUNBUFFERED=1
+ENV LOG_LEVEL=INFO
+ENV PYTHONPATH=/app
+
+WORKDIR /app/aml
+CMD ["python", "api.py"]

@@ -1,0 +1,12 @@
+# yaml-language-server: $schema=https://raw.githubusercontent.com/grafana/grafana/main/conf/provisioning/datasources/sample.yaml
+apiVersion: 1
+
+datasources:
+  - name: Loki
+    uid: loki
+    type: loki
+    access: proxy
+    url: http://loki-ch:3100
+    isDefault: false
+    jsonData:
+      maxLines: 1000
